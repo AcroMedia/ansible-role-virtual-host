@@ -1,0 +1,4 @@
+---
+- name: safe reload nginx
+  become: true
+  shell: "test -x /usr/sbin/nginx && /usr/sbin/nginx -tt && test -x /usr/sbin/service && /usr/sbin/service nginx reload"

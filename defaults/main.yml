@@ -1,0 +1,12 @@
+---
+php_version: 7.1
+responsible_person: root
+web_root_dir_name: web
+letsencrypt_canonical: false
+redirect_code: 302
+
+# rewrite_target = '/index.php' # for D7 or D8,
+# rewrite_target = '/index.php' # for D6
+rewrite_target: '/index.php'
+image_cache_location: '/sites/.*/files/styles/'
+nginx_canonical_template: etc/nginx/sites-available/ACCCOUNT_PROJECT.le-ssl.conf.j2
