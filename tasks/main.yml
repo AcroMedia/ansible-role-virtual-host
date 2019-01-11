@@ -8,18 +8,15 @@
 - name: Try and expand the primal name's Certificate to include nginx aliases and canonical name. If DNS is pointing at the machine for these names, the command will work.
   shell:  >
     /usr/local/bin/certbot-auto --no-self-upgrade certonly --non-interactive --webroot --agree-tos -w /var/www/letsencrypt  --email webmaster@acromedia.com --cert-name {{ nginx_primal_name }} --keep -d "{{ nginx_canonical_name }},{{ nginx_aliases |join(',') }},{{ nginx_primal_name }}"
-  when:
-    letsencrypt_canonical == true
+  when: deploy_env == 'production'
+    and ssl == 'letsencrypt'
   register: letsencrypt_result
   ignore_errors: true
 
-- name: Put LE enabled nginx config in place for sites that have a working LE cert
+- name: Update nginx virtual host configuration for {{ nginx_primal_name }}
   template:
-    src: "{{ role_path }}/templates/{{ nginx_canonical_template }}"
+    src: "{{ role_path }}/templates/etc/nginx/sites-available/{{ deploy_env }}.{{ ssl }}.conf.j2"
     dest: /etc/nginx/sites-available/{{ nginx_primal_name }}
     backup: true
-  when: letsencrypt_result is defined
-    and letsencrypt_result.rc is defined
-    and letsencrypt_result.rc == 0
   notify:
     - safe reload nginx

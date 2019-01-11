@@ -1,0 +1,52 @@
+# {{ ansible_managed }}
+# See https://git.acromedia.com/acro/devops/ansible-role-virtual-host/tree/master/templates/etc/nginx/sites-available/staging.manual.j2
+server {
+  listen 80;
+  server_name {{ nginx_primal_name }};
+  access_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-access.log;
+  error_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-error.log;
+  include /etc/nginx/includes/letsencrypt-acme-challenge.conf;
+  location / {
+    return {{ redirect_code }} https://{{ nginx_primal_name }}$request_uri;
+  }
+}
+
+server {
+  listen 443 ssl;
+  server_name {{ nginx_primal_name }};
+  {% include 'ssl.letsencrypt.inc.j2' %}
+  access_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-access.log;
+  error_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-error.log;
+  include /etc/nginx/includes/letsencrypt-acme-challenge.conf;
+  {% include 'main.inc.j2' %}
+}
+
+server {
+  listen 80;
+  server_name {{ nginx_canonical_name }} {{ nginx_aliases|join(' ') }};;
+  access_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-access.log;
+  error_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-error.log;
+  location / {
+    return {{ redirect_code }} https://{{ nginx_canonical_name }}$request_uri;
+  }
+}
+
+server {
+  listen 443 ssl;
+  server_name {{ nginx_aliases|join(' ') }};;
+  {% include 'ssl.manual.inc.j2' %}
+  access_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-access.log;
+  error_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-error.log;
+  location / {
+    return {{ redirect_code }} https://{{ nginx_canonical_name }}$request_uri;
+  }
+}
+
+server {
+  listen 443 ssl;
+  server_name {{ nginx_canonical_name }};
+  {% include 'ssl.manual.inc.j2' %}
+  access_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-access.log;
+  error_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-error.log;
+  {% include 'main.inc.j2' %}
+}

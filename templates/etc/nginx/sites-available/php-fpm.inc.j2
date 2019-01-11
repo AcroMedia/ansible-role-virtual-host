@@ -1,0 +1,12 @@
+    ## Properly deal with real 404 errors before we hand control off to php-fpm.
+    ## Otherwise, when someone requests /some-file-that-doesnt-exist.php, fastcgi just gives back a cryptic "No input file specified".
+    ## Only affects request URIs that end with a .php file extension
+    try_files  $uri =404;
+
+    fastcgi_split_path_info ^(.+\.php)(/.+)$;
+    #NOTE: You should have "cgi.fix_pathinfo = 0;" in php.ini
+    include fastcgi_params;
+    fastcgi_param SCRIPT_FILENAME $request_filename;
+    fastcgi_intercept_errors on;
+    fastcgi_pass unix:/var/run/php{{ php_version }}-fpm-{{ linux_owner }}-{{ project }}.sock;
+    fastcgi_read_timeout 600s;

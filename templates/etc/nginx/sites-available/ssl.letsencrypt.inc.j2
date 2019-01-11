@@ -1,0 +1,9 @@
+  ssl_certificate /etc/letsencrypt/live/{{ nginx_primal_name }}/fullchain.pem;
+  ssl_certificate_key /etc/letsencrypt/live/{{ nginx_primal_name }}/privkey.pem;
+  ssl_dhparam /usr/local/ssl/private/dhparams.pem;
+  ssl_protocols {{ ssl_protocols }};
+  ssl_ciphers '{{ ssl_ciphers }}';
+  ssl_prefer_server_ciphers on;
+  ssl_stapling on;
+  ssl_stapling_verify on;
+  ssl_trusted_certificate /etc/letsencrypt/live/{{ nginx_primal_name }}/chain.pem;

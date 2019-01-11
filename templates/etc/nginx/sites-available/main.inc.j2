@@ -1,0 +1,166 @@
+
+  root /home/{{ linux_owner }}/www/{{ project }}/{{ web_root_dir_name }};
+  index {{ default_document }};
+  client_max_body_size {{ client_max_body_size }};
+
+  # Enable compression. This will help if you have, for instance, the advagg module
+  # by serving Gzip versions of the files.
+  gzip_static on;
+
+  # Requests for this just clutters log files.
+  location = /favicon.ico {
+    log_not_found off;
+    access_log off;
+  }
+
+  # Handle requests for robots.txt.
+  # This conf file is symlinked to an environment-specific file, so we can have different behaviour depending on whether this machine is production or staging / development.
+  include /etc/nginx/includes/robots.conf;
+
+  # Very rarely should these ever be accessed outside of your lan
+  location ~* \.(txt|log|sql|zip|gzip|gz|tar)$ {
+    deny all;
+  }
+
+  # Other Drupal files that contain PHP, but shouldn't be served or processed directly
+  location ~* \.(module|install|inc|theme|profile|engine)$ {
+    return 403;
+  }
+
+  # Dont allow requests for PHP files in parent directories
+  location ~ \..*/.*\.php$ {
+    return 403;
+  }
+
+  # Don't allow php to run from inside upload dirs. PHP Execution + Anonymous write = Hacked website.
+  location ~ /sites/.*/files/.*\.php$ {
+    return 403;
+  }
+
+  # Don't serve anything from private diretories. BTW these should really be outside of your web root anyway.
+  location ~ ^/sites/.*/private/ {
+    return 403;
+  }
+
+  # Block access to "hidden" files and directories whose names begin with a
+  # period. This includes directories used by version control systems such
+  # as Subversion or Git to store control files.
+  location ~ (^|/)\. {
+    return 403;
+  }
+
+
+{% if web_application == 'drupal6'  %}
+
+  # This is cool because no php is touched for static content
+  location / {
+    try_files $uri $uri/ @rewrite;
+  }
+
+  # Drupal 6
+  location @rewrite {
+    if (!-e $request_filename) {
+      rewrite ^/(.*)$ {{ rewrite_target }}?q=$1;
+    }
+  }
+  # Image cache doesn't work without this.
+  location ~ {{ image_cache_location }} {
+    try_files $uri @rewrite;
+  }
+
+{% elif web_application == 'wordpress' %}
+
+  # This is cool because no php is touched for static content
+  location / {
+    try_files $uri $uri/ @rewrite;
+  }
+
+  # Wordpress:
+  # Deny access to any files with a .php extension in the uploads directory
+  # Works in sub-directory installs and also in multisite network
+  # Keep logging the requests to parse later (or to pass to firewall utilities such as fail2ban)
+  location ~* /(?:uploads|files)/.*\.php$ {
+    deny all;
+  }
+
+  #  # Wordpress optional:
+  #  # Restrict access sensitive locations by IP address
+  #  location /wp-admin {
+  #    include includes/whitelisted-ip-addresses.conf;
+  #    deny all;
+  #  }
+  #  Wordpress optional:
+  #  location = /wp-login.php {
+  #    include includes/whitelisted-ip-addresses.conf;
+  #    deny all;
+  #    include /etc/nginx/includes/account-project.php-fpm.conf;
+  #  }
+
+  # Wordpress:
+  # Deny all access to specific locations
+  location = /wp-config.php {
+    deny all;
+    {% include 'php-fpm.inc.j2' %}
+  }
+  location = /xmlrpc.php {
+    deny all;
+    {% include 'php-fpm.inc.j2' %}
+  }
+  location /wp-json {
+    deny all;
+    {% include 'php-fpm.inc.j2' %}
+  }
+
+  # Wordpress:
+  # Include the "?$args" part so non-default permalinks doesn't break when using query string
+  location @rewrite {
+    rewrite ^ {{ rewrite_target }}?$args;
+  }
+
+{% elif (web_application == 'drupal7' or web_application == 'drupal8') %}
+
+  # This is cool because no php is touched for static content
+  location / {
+    try_files $uri $uri/ @rewrite;
+  }
+
+  # For D7 and above:
+  # Clean URLs are handled in drupal_environment_initialize().
+  location @rewrite {
+    rewrite ^ {{ rewrite_target }};
+  }
+
+  # Image cache doesn't work without this.
+  location ~ {{ image_cache_location }} {
+    try_files $uri @rewrite;
+  }
+
+
+  {% if  web_application == 'drupal8' %}
+
+  # Drupal 8 update page doesn't work without this.
+  location ~ ^/update.php {
+    {% include 'php-fpm.inc.j2' %}
+  }
+
+  {% endif %}
+
+{% else %} {# Implied: web_application == 'static' #}
+
+  # Static website
+  location / {
+    try_files $uri $uri/ =404;
+  }
+
+{% endif %}
+
+  # Dont spam log files, and cache static content forever.
+  location ~* \.(js|css|png|jpg|jpeg|gif|ico)$ {
+    expires max;
+    log_not_found off;
+  }
+
+  # PHP FPM on a socket
+  location ~ \.php$ {
+    {% include 'php-fpm.inc.j2' %}
+  }
