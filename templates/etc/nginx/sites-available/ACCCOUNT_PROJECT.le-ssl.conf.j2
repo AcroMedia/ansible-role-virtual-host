@@ -87,7 +87,7 @@ server {
   }
 
   # Other Drupal files that contain PHP, but shouldn't be served or processed directly
-  location ~* \.(module|install|inc|theme|profile|engine)$ {
+  location ~* \.(module|install|inc|theme|profile|engine|phar)$ {
     return 403;
   }
 
