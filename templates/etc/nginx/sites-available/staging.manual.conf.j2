@@ -23,7 +23,7 @@ server {
 
 server {
   listen 80;
-  server_name {{ nginx_canonical_name }} {{ nginx_aliases|join(' ') }};;
+  server_name {{ nginx_canonical_name }} {{ nginx_aliases|join(' ') }};
   access_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-access.log;
   error_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-error.log;
   location / {
@@ -33,7 +33,7 @@ server {
 
 server {
   listen 443 ssl;
-  server_name {{ nginx_aliases|join(' ') }};;
+  server_name {{ nginx_aliases|join(' ') }};
   {% include 'ssl.manual.inc.j2' %}
   access_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-access.log;
   error_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-error.log;
