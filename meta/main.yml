@@ -16,4 +16,7 @@ galaxy_info:
       - 6
       - 7
   galaxy_tags: []
-dependencies: []
+dependencies:
+  - name: Install linux cron job for Drupal
+    role: acromedia.drupal-cron
+    server_name: "{{ nginx_canonical_name }}"
