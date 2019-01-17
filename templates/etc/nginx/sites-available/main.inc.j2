@@ -50,9 +50,11 @@
   }
 
 
-{% if web_application == 'drupal6'  %}
+{% if web_application == 'drupal6'
+    or  web_application == 'drupal5'
+    or web_application == 'drupal4'    %}
 
-  # This is cool because no php is touched for static content
+  # Serve static content before trying to get PHP involved.
   location / {
     try_files $uri $uri/ @rewrite;
   }
