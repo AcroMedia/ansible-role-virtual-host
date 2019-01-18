@@ -10,3 +10,6 @@ ssl_protocols: 'TLSv1.2'
 client_max_body_size: '8m'
 default_document: 'index.html index.php'
 web_application: drupal8
+
+# No trailing slash.
+nginx_drupal_uploads_dir_pattern: '/sites/.*/files'

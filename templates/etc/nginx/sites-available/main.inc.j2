@@ -33,7 +33,7 @@
   }
 
   # Don't allow php to run from inside upload dirs. PHP Execution + Anonymous write = Hacked website.
-  location ~ /sites/.*/files/.*\.php$ {
+  location ~ {{ nginx_drupal_uploads_dir_pattern }}/.*\.php$ {
     return 403;
   }
 

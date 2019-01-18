@@ -102,9 +102,9 @@ If web_application doesn't do everything you need, the following tweaks can help
 
 **rewrite_target**: Defaults to `/index.php`. If your site is static, specify `/index.html` or `/index.htm`. If using D6, specify `/index.php?q=$1`. If you have another file you want your pretty urls to be rewritten to, change this to whatever your main index file is.
 
-**image_cache_location**: Defaults to `/sites/.*/files/styles/` which works for >= D7. For D6, specify whatever your image cache dir is (usually `/sites/.*/files/imagecache/` )
+**image_cache_location**: "Location" in the context of Nginx location regex pattern. Defaults to `/sites/.*/files/styles/` which works for >= D7. If using D6, specify whatever your image cache dir is (usually `/sites/.*/files/imagecache/` )
 
-
+**nginx_drupal_uploads_dir_pattern**: Used for preventing PHP execution from within sites/default/files directories. Defaults to `'/sites/.*/files'`. No need to change it unless your site puts files in a weird place, or is a very old version of drupal.
 
 ## Dependencies
 
