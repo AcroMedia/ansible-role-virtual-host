@@ -20,6 +20,10 @@ Basically an ansible wrapper for acro-add-website.sh, geared for sites using Let
 
   are required in order for the role to work. Furthermore, all 3 variables are  *mutually exclusive* of not only each other, but also of the server's canonical hostname (not to mention all of the other virtual host names on the server). *If you try to omit one, or try to make one or more the same as another, your config will break.*
 
+- If using SSL, DNS for your nginx_primal_name must already point at your server before you run this role. The other two (nginx_canonical_name and nginx_aliases) don't need to resolve until after you switch to `production`.
+
+- Don't be tempted to set `deploy_env` to `production` until *after* your site / server has been completely configured and tested and is truly ready for go-live.
+
 ## Role Variables
 
 See also: defaults/main.yml
