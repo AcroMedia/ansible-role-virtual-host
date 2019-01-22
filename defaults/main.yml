@@ -13,3 +13,7 @@ web_application: drupal8
 
 # No trailing slash.
 nginx_drupal_uploads_dir_pattern: '/sites/.*/files'
+
+# Allow standard ports to be overridden
+http_port: 80
+https_port: 443

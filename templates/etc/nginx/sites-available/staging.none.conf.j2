@@ -2,7 +2,7 @@
 # See https://git.acromedia.com/acro/devops/ansible-role-virtual-host/tree/master/templates/etc/nginx/sites-available/staging.none.j2
 
 server {
-  listen 80;
+  listen {{ http_port }};
   server_name {{ nginx_primal_name }};
   access_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-access.log;
   error_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-error.log;
@@ -10,7 +10,7 @@ server {
 }
 
 server {
-  listen 80;
+  listen {{ http_port }};
   server_name {{ nginx_aliases|join(' ') }};
   access_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-access.log;
   error_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-error.log;
@@ -20,7 +20,7 @@ server {
 }
 
 server {
-  listen 80;
+  listen {{ http_port }};
   server_name {{ nginx_canonical_name }};
   access_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-access.log;
   error_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-error.log;

@@ -1,7 +1,7 @@
 # {{ ansible_managed }}
 # See https://git.acromedia.com/acro/devops/ansible-role-virtual-host/tree/master/templates/etc/nginx/sites-available/production.manual.j2
 server {
-  listen 80;
+  listen {{ http_port }};
   server_name {{ nginx_canonical_name }} {{ nginx_aliases|join(' ') }} {{ nginx_primal_name }};
   access_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-access.log;
   error_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-error.log;
@@ -12,7 +12,7 @@ server {
 }
 
 server {
-  listen 443 ssl;
+  listen {{ https_port }} ssl;
   server_name {{ nginx_primal_name }};
   {% include 'ssl.letsencrypt.inc.j2' %}
   access_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-access.log;
@@ -24,7 +24,7 @@ server {
 }
 
 server {
-  listen 443 ssl;
+  listen {{ https_port }} ssl;
   server_name {{ nginx_aliases|join(' ') }};
   {% include 'ssl.manual.inc.j2' %}
   access_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-access.log;
@@ -35,7 +35,7 @@ server {
 }
 
 server {
-  listen 443 ssl;
+  listen {{ https_port }} ssl;
   server_name {{ nginx_canonical_name }};
   {% include 'ssl.manual.inc.j2' %}
   access_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-access.log;

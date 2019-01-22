@@ -1,7 +1,7 @@
 # {{ ansible_managed }}
 # See https://git.acromedia.com/acro/devops/ansible-role-virtual-host/tree/master/templates/etc/nginx/sites-available/ACCOUNT_PROJECT.le-ssl.j2
 server {
-  listen 80;
+  listen {{ http_port }};
   server_name {{ nginx_canonical_name }} {{ nginx_aliases|join(' ') }} {{ nginx_primal_name }};
   access_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-access.log;
   error_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-error.log;
@@ -12,7 +12,7 @@ server {
 }
 
 server {
-  listen 443 ssl;
+  listen {{ https_port }} ssl;
   server_name {{ nginx_aliases|join(' ') }} {{ nginx_primal_name }};
   ssl_certificate /etc/letsencrypt/live/{{ nginx_primal_name }}/fullchain.pem;
   ssl_certificate_key /etc/letsencrypt/live/{{ nginx_primal_name }}/privkey.pem;
@@ -32,7 +32,7 @@ server {
 }
 
 server {
-  listen 443 ssl;
+  listen {{ https_port }} ssl;
   server_name {{ nginx_canonical_name }};
   ssl_certificate /etc/letsencrypt/live/{{ nginx_primal_name }}/fullchain.pem;
   ssl_certificate_key /etc/letsencrypt/live/{{ nginx_primal_name }}/privkey.pem;

@@ -106,6 +106,8 @@ If web_application doesn't do everything you need, the following tweaks can help
 
 **nginx_drupal_uploads_dir_pattern**: Used for preventing PHP execution from within sites/default/files directories. Defaults to `'/sites/.*/files'`. No need to change it unless your site puts files in a weird place, or is a very old version of drupal.
 
+**http_port**, **https_port**: Default to 80 and 443 respectively. Caveat: If you're changing this, you'll likely also need to change the server-wide default port(s), which is not handled by this role. 
+
 ## Dependencies
 
 - [acromedia.drupal-cron](https://github.com/AcroMedia/ansible-role-drupal-cron)
