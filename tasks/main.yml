@@ -20,3 +20,11 @@
     backup: true
   notify:
     - safe reload nginx
+
+- name: Enable (symlink) nginx virtual host configuration for {{ nginx_primal_name }}
+  file:
+    src: "/etc/nginx/sites-available/{{ nginx_primal_name }}"
+    dest: "/etc/nginx/sites-enabled/{{ nginx_primal_name }}"
+    state: link
+  notify:
+    - safe reload nginx
