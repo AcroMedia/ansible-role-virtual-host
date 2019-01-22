@@ -5,9 +5,20 @@ Basically an ansible wrapper for acro-add-website.sh, geared for sites using Let
 ## Requirements
 
 - The acro infrastructure utilities must already be installed on the server
-- Acro-add-website.sh must already be installed AND configured on the server
+
+- Acro-add-website.sh must already be installed and configured on the server
+
 - LetsEncrypt installed, configured, and working
-- **If you're providing your own manually registered SSL certificate, the certificate + key need to be placed on the server BEFORE this role is invoked.**
+
+- If you're providing your own manually registered SSL certificate, the certificate + key need to be placed on the server BEFORE this role is invoked.
+
+- Since this role is designed to support a "normal" virtual host from staging to production using SSL, all 3 of:
+
+  - **nginx_primal_name**,
+  - **nginx_canonical_name**, and
+  - **nginx_aliases**
+
+  are required in order for the role to work. Furthermore, all 3 variables are  *mutually exclusive* of not only each other, but also of the server's canonical hostname (not to mention all of the other virtual host names on the server). *If you try to omit one, or try to make one or more the same as another, your config will break.*
 
 ## Role Variables
 
@@ -15,32 +26,92 @@ See also: defaults/main.yml
 
 #### Required Variables
 
-**linux_owner**: The name of the user account to create
+**linux_owner**:
 
-**project**: The dir name for the project inside the linux owner's home dir. Usually should be the same as linux owner, unless the owner has more than one site or project.
+- The name of the user account to create
 
-**nginx_primal_name**: This is the initial / internal name of the site so it can be staged ... e.g `project.host.example.com`
+**project**:
 
-**nginx_canonical_name**: Once a site is launched, the final destination name for the site. E.g. `www.bigcorp.com`
+- The dir name for the project inside the linux owner's home dir. Usually should be the same as linux owner, unless the owner has more than one site or project.
 
-**nginx_aliases**: Once a site is launched, a list of any other virtual host names (besides the primal name) that the site should respond to, and redirect to the canoncial name.  At the time of this writing, at least one alias is required, or configuration will break. E.g. example.com should redirect to www.example.com, or vice versa.
+**nginx_primal_name**
 
-**php_version**: Major.minor version (e.g. `7.1`). The version you specify  must already be running on the server.
+- Example:
+    ```
+    project.server.acro.website
+    ```
+    or even
+    ```
+    www.client.acro.website
+    ```
+    if there is only one site on a given server.
 
-**web_root_dir_name**: Can be anything - The convention is to use `web` for Drupal >= 8 sites, or `wwwroot` for < D8 or other non drupal sites.
+- Not meant to be pretty or short, this name is meant to be controlled by Acro, and to indicate (for billing and sysadmin purposes) which server a particular project resides on. It also exists so your team (and/or the client) can get be sure everything works (with valid SSL), before the site's real DNS name is pointed at the server.
 
-**web_application**:  Tells the role which nginx configuration to apply. Defaults to `drupal8`. Can be one of `drupal6`, `drupal7`, `drupal8`, `wordpress`, or `static`.
+- Do not change the value of nginx_primal_name after the playbook has run against your server. Your LetsEncrypt SSL certificate config is tied to the name you create, and so is the name of your NGINX config file. If you change it or remove it, you will break your NGINX and/or your LetsEncrypt config.
 
-**deploy_env**: Can be one of `staging` or `production`. If you're using this role in a development environment, just specify `staging`. This variable does not have a default, since having the role guess could have negative consequences.
+- Not optional, and must be unique from the other nginx virtual host names on the server, as well as the server's canonical hostname.
+
+
+
+**nginx_canonical_name**
+
+- Example:
+    ```
+    www.bigcorp.com
+    ```
+
+-  Once a site is launched, the final destination name for the site.
+
+- Not optional, and must be unique from the other nginx virtual host names on the server, as well as the server's canonical hostname.
+
+
+**nginx_aliases** (must be a list; even if there's only one alias):
+
+- Example:
+    ```
+    - bigcorp.com
+    - www.othername.com
+    - othername.com
+    ```
+- Once a site is launched, a list of any other virtual host names (besides the primal name) that the site should respond to, and redirect to the canoncial name.  At the time of this writing, at least one alias is required, or configuration will break. E.g. example.com should redirect to www.example.com, or vice versa.
+
+- Not optional, and must be unique from the other nginx virtual host names on the server, as well as the server's canonical hostname.
+
+
+
+**php_version**:
+
+- Major.minor version (e.g. `7.1`). The version you specify  must already be running on the server.
+
+**web_root_dir_name**:
+
+- Can be any valid directory name - The convention is to use `web` for Drupal >= 8 sites, or `wwwroot` for < D8 or other non drupal sites.
+
+**web_application**:
+
+- Tells the role which nginx configuration to apply. Defaults to `drupal8`. Can be one of `drupal6`, `drupal7`, `drupal8`, `wordpress`, or `static`.
+
+**deploy_env**:
+
+- Can be one of `staging` or `production`. If you're using this role in a development environment, just specify `staging`. This variable does not have a default, since having the role guess could have negative consequences.
+
 - Use `staging-*` before DNS for the site's canoncial domain name points at your server
+
 - Switch to one of the `production-*` modes (and then re-run the playbook) after you've pointed DNS at your server
+
 - When set to `production` and `ssl` is `letsencrypt`, the scripts will attempt to add the site's canonical name and nginx_aliases to the LetsEncrypt SSL certificate.
 `
 **ssl**: Can be one of `letsencrypt`, `manual`, or `none`. This variable does not have a default, since having the role guess could have negative consequences.
+
 - Only specify `none` when it's not possible or practical to use a SSL certificate, such as on a private network or for local development. When `deploy_env` is `production`, trying to use the `none` option will break your configuration. Production without SSL is not supported.
+
 - Specify `letsencrypt` if you don't have a manually registered SSL cert to install
+
 - Specify `manual` when you're providing a manually registered SSL certificate. **This role does not place your SSL certificate on the server; you'll need to do that BEFORE you run this playbook**.
+
 - When `deploy_env` is `staging`, you'll need to adjust your /etc/hosts file in order to see your staging site using the canonical domain name.
+
 - **Warning**: When using `manual`, the certificate you provide must work for all of the `nginx_canonical_name` and `nginx_aliases` you specify. Providing mis-matched names *will* result in SSL errors in browsers, and *may* break NGINX configuraiton, preventing the service from starting.
 
 **How the combination of `deploy_env` + `ssl` affects redirects:**
@@ -106,7 +177,7 @@ If web_application doesn't do everything you need, the following tweaks can help
 
 **nginx_drupal_uploads_dir_pattern**: Used for preventing PHP execution from within sites/default/files directories. Defaults to `'/sites/.*/files'`. No need to change it unless your site puts files in a weird place, or is a very old version of drupal.
 
-**http_port**, **https_port**: Default to 80 and 443 respectively. Caveat: If you're changing this, you'll likely also need to change the server-wide default port(s), which is not handled by this role. 
+**http_port**, **https_port**: Default to 80 and 443 respectively. Caveat: If you're changing this, you'll likely also need to change the server-wide default port(s), which is not handled by this role.
 
 ## Dependencies
 
