@@ -19,3 +19,7 @@ nginx_drupal_uploads_dir_pattern: '/sites/.*/files'
 # Allow standard ports to be overridden
 http_port: 80
 https_port: 443
+
+# For use with mult-server setups
+mysql_allow_from: localhost
+mysql_host_address: localhost

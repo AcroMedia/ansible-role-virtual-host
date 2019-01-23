@@ -174,6 +174,9 @@ These files need to be placed on the server **before** you run the playbook, or 
 
 **drupal_cron_url**: After your site goes live, (or before, if you want it to run during staging), provide this variable to create a linux cron job on the server. The cron job is created by the [acromedia.drupal-cron](https://github.com/AcroMedia/ansible-role-drupal-cron) role. See its readme for more details.
 
+**mysql_allow_from**: Defaults to 'localhost'. You only need to set this when using multi-server setups. In your app node playbook, setting this to `{{ ansible_default_ipv4.address }}` should usually work, assuming both app node(s) and mysql host are both on the same private network. In order for this to work, your app node needs to be able to operate as mysql root, with crentials stored at /root/.my.cnf.
+
+**mysql_host_address**: Defaults to 'localhost'. You only need to set this when using multi-server setups. If your app node(s) and mysql host are both on the same private network (they usually will be), set this to be your mysql host's private / internal IP address. In order for this to work, your app node needs to be able to operate as mysql root, with crentials stored at /root/.my.cnf.
 
 #### Tweaks / overrides
 

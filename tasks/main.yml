@@ -1,7 +1,7 @@
 ---
 - name: Run acro-add-website
   shell: >
-     export TERM=xterm-256color; /usr/bin/timeout 30s /bin/bash /usr/local/sbin/acro-add-website.sh --account {{ linux_owner }} --project {{ project }} --fqdn {{ nginx_primal_name }} --webroot {{ web_root_dir_name }} --php-version {{ php_version }} --responsible-person {{ responsible_person }}
+     export TERM=xterm-256color; /usr/bin/timeout 30s /bin/bash /usr/local/sbin/acro-add-website.sh --account {{ linux_owner }} --project {{ project }} --fqdn {{ nginx_primal_name }} --webroot {{ web_root_dir_name }} --php-version {{ php_version }} --responsible-person {{ responsible_person }} --mysql-allow-from {{ mysql_allow_from }} --mysql-host-address {{ mysql_host_address }}
   args:
     creates: /home/{{ linux_owner }}/.acro-add-website/{{ project }}
 
