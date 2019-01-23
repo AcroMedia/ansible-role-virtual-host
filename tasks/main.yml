@@ -6,8 +6,15 @@
     creates: /home/{{ linux_owner }}/.acro-add-website/{{ project }}
 
 - name: Try and expand the primal name's Certificate to include nginx aliases and canonical name. If DNS is pointing at the machine for these names, the command will work.
-  shell:  >
-    /usr/local/bin/certbot-auto --no-self-upgrade certonly --non-interactive --webroot --agree-tos -w /var/www/letsencrypt  --email webmaster@acromedia.com --cert-name {{ nginx_primal_name }} --keep -d "{{ nginx_canonical_name }},{{ nginx_aliases |join(',') }},{{ nginx_primal_name }}"
+#    /usr/local/bin/certbot-auto --no-self-upgrade certonly --non-interactive --webroot --agree-tos -w /var/www/letsencrypt  --email webmaster@acromedia.com --cert-name {{ nginx_primal_name }} --keep -d "{{ nginx_canonical_name }},{{ nginx_aliases |join(',') }},{{ nginx_primal_name }}"
+  script:  scripts/certbot-wrapper
+  args:
+    executable: /bin/bash
+  environment:
+    INVENTORY_HOSTNAME: "{{ inventory_hostname }}"
+    NGINX_PRIMAL_NAME: "{{ nginx_primal_name }}"
+    NGINX_CANONICAL_NAME: "{{ nginx_canonical_name }}"
+    NGINX_ALIASES: "{{ nginx_aliases |join(',') }}"
   when: deploy_env == 'production'
     and ssl == 'letsencrypt'
   register: letsencrypt_result

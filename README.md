@@ -12,13 +12,7 @@ Basically an ansible wrapper for acro-add-website.sh, geared for sites using Let
 
 - If you're providing your own manually registered SSL certificate, the certificate + key need to be placed on the server BEFORE this role is invoked.
 
-- Since this role is designed to support a "normal" virtual host from staging to production using SSL, all 3 of:
-
-  - **nginx_primal_name**,
-  - **nginx_canonical_name**, and
-  - **nginx_aliases**
-
-  are required in order for the role to work. Furthermore, all 3 variables are  *mutually exclusive* of not only each other, but also of the server's canonical hostname (not to mention all of the other virtual host names on the server). *If you try to omit one, or try to make one or more the same as another, your config will break.*
+- Since this role is designed to support a "normal" virtual host from staging to production using SSL, both **nginx_primal_name**, and **nginx_canonical_name** are required in order for the role to work. Furthermore, both variables are  *mutually exclusive* of not only each other, but also of the server's canonical hostname (not to mention all of the other virtual host names on the server). *If you try to omit one, or try to make one or more the same as another, your config will break.*
 
 - If using SSL, DNS for your nginx_primal_name must already point at your server before you run this role. The other two (nginx_canonical_name and nginx_aliases) don't need to resolve until after you switch to `production`.
 
@@ -44,7 +38,7 @@ See also: defaults/main.yml
     ```
     project.server.acro.website
     ```
-    or even
+    or:
     ```
     www.client.acro.website
     ```
@@ -70,18 +64,28 @@ See also: defaults/main.yml
 - Not optional, and must be unique from the other nginx virtual host names on the server, as well as the server's canonical hostname.
 
 
-**nginx_aliases** (must be a list; even if there's only one alias):
+**nginx_aliases** (must be a list; regardless of how many aliases there are):
 
 - Example:
+    ```yaml
+    nginx_aliases:
+      - bigcorp.com
     ```
-    - bigcorp.com
-    - www.othername.com
-    - othername.com
+  or:
+    ```yaml
+    nginx_aliases:
+      - bigcorp.com
+      - www.othername.com
+      - othername.com
     ```
-- Once a site is launched, a list of any other virtual host names (besides the primal name) that the site should respond to, and redirect to the canoncial name.  At the time of this writing, at least one alias is required, or configuration will break. E.g. example.com should redirect to www.example.com, or vice versa.
+  or:
+  ```yaml
+    # no aliases: empty list.
+    nginx_aliases: []    
+  ```
+  if there are no aliases.
 
-- Not optional, and must be unique from the other nginx virtual host names on the server, as well as the server's canonical hostname.
-
+- Once a site is launched, nginx_aliases is a list of any other virtual host names (besides the primal & canonical names) that the site should respond to, and redirect to the canoncial name.
 
 
 **php_version**:
@@ -197,7 +201,7 @@ If web_application doesn't do everything you need, the following tweaks can help
       vars:
         linux_owner: bigcorp
         project: bigcorp
-        nginx_primal_name: bigcorp.host.example.com
+        nginx_primal_name: www.bigcorp.acro.website
         nginx_canonical_name: www.bigcorp.com
         nginx_aliases:
           - bigcorp.com

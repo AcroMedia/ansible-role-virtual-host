@@ -31,6 +31,7 @@ server {
   }
 }
 
+{% if nginx_aliases|length > 0 %}
 server {
   listen {{ https_port }} ssl;
   server_name {{ nginx_aliases|join(' ') }};
@@ -41,6 +42,7 @@ server {
     return {{ redirect_code }} https://{{ nginx_canonical_name }}$request_uri;
   }
 }
+{% endif %}
 
 server {
   listen {{ https_port }} ssl;

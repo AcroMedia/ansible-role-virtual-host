@@ -9,6 +9,7 @@ server {
   {% include 'main.inc.j2' %}
 }
 
+{% if nginx_aliases|length > 0 %}
 server {
   listen {{ http_port }};
   server_name {{ nginx_aliases|join(' ') }};
@@ -18,6 +19,7 @@ server {
     return {{ redirect_code }} http://{{ nginx_canonical_name }}$request_uri;
   }
 }
+{% endif %}
 
 server {
   listen {{ http_port }};

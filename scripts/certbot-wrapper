@@ -1,0 +1,46 @@
+#!/bin/bash
+set -eu
+set -o pipefail
+
+source /usr/local/lib/acro/bash/functions.sh
+
+## Ansible helper script to support nginx_aliases being optional.
+## This would end up being way too convoluted to try and accomplish inside the playbook.
+
+function main () {
+
+  local GROOMED_DOMAINS_LIST=""
+  GROOMED_DOMAINS_LIST=$(groom_list_of_domains)
+
+  /usr/local/bin/certbot-auto \
+    certonly \
+    --no-self-upgrade \
+    --non-interactive \
+    --webroot \
+    --webroot-path /var/www/letsencrypt \
+    --agree-tos \
+    --email webmaster@acromedia.com \
+    --cert-name "$NGINX_PRIMAL_NAME" \
+    --keep \
+    --domains "${GROOMED_DOMAINS_LIST}"
+}
+
+function groom_list_of_domains () {
+
+  local DOMAINS
+  DOMAINS="${NGINX_PRIMAL_NAME},${NGINX_CANONICAL_NAME},${NGINX_ALIASES}"
+
+  # Remove duplicate names
+  DOMAINS=$(echo "$DOMAINS"|tr ',' '\n'|sort|uniq|tr '\n' ',')
+
+  # Remove duplicated commas
+  DOMAINS=$(echo "$DOMAINS"| tr --squeeze-repeats ',')
+
+  # Remove beginning and ending commas
+  DOMAINS=$(echo "$DOMAINS"| sed 's/^,//')
+  DOMAINS=$(echo "$DOMAINS"| sed 's/,$//')
+
+  echo "${DOMAINS}"
+}
+
+main "$@"
