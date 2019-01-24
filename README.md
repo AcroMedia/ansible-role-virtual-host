@@ -81,7 +81,7 @@ See also: defaults/main.yml
   or:
   ```yaml
     # no aliases: empty list.
-    nginx_aliases: []    
+    nginx_aliases: []
   ```
   if there are no aliases.
 
@@ -193,6 +193,9 @@ If web_application doesn't do everything you need, the following tweaks can help
 ## Dependencies
 
 - [acromedia.drupal-cron](https://github.com/AcroMedia/ansible-role-drupal-cron)
+- [acromedia.postfix](https://github.com/AcroMedia/ansible-role-postfix)
+- [acromedia.mariadb](https://github.com/AcroMedia/ansible-role-mariadb)
+
 
 ## Example Playbook
 
