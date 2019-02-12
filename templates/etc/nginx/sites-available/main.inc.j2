@@ -147,7 +147,7 @@
 
   {% endif %}
 
-{% else %} {# Implied: web_application == 'static' #}
+{% else %} {# Implied: web_application == ('static' or 'php') #}
 
   # Static website
   location / {
@@ -162,7 +162,11 @@
     log_not_found off;
   }
 
+{% if  web_application != 'static' %}
+
   # PHP FPM on a socket
   location ~ \.php$ {
     {% include 'php-fpm.inc.j2' %}
   }
+
+{% endif %}

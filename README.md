@@ -98,7 +98,7 @@ See also: defaults/main.yml
 
 **web_application**:
 
-- Tells the role which nginx configuration to apply. Defaults to `drupal8`. Can be one of `drupal6`, `drupal7`, `drupal8`, `wordpress`, or `static`.
+- Tells the role which nginx configuration to apply. Defaults to `drupal8`. Can be one of `drupal6`, `drupal7`, `drupal8`, `wordpress`, 'php', or `static`.
 
 **deploy_env**:
 
