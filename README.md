@@ -178,6 +178,9 @@ These files need to be placed on the server **before** you run the playbook, or 
 
 **mysql_host_address**: Defaults to 'localhost'. You only need to set this when using multi-server setups. If your app node(s) and mysql host are both on the same private network (they usually will be), set this to be your mysql host's private / internal IP address. In order for this to work, your app node needs to be able to operate as mysql root, with crentials stored at /root/.my.cnf.
 
+**rds** (boolean): Set this to true if you're creating a site backed by an amazon RDS instance.
+
+
 #### Tweaks / overrides
 
 If web_application doesn't do everything you need, the following tweaks can help.

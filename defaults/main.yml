@@ -23,3 +23,7 @@ https_port: 443
 # For use with mult-server setups
 mysql_allow_from: localhost
 mysql_host_address: localhost
+
+skip_ssl_flag: ''
+rds_flag: ''
+rds: false
