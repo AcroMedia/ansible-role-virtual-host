@@ -18,6 +18,8 @@ Basically an ansible wrapper for acro-add-website.sh, geared for sites using Let
 
 - Don't be tempted to set `deploy_env` to `production` until *after* your site / server has been completely configured and tested and is truly ready for go-live.
 
+- If using the role more than once in the same playbook, **YOU MUST SPECIFY ALL VARIABLES USED FOR EVERY ROLE INSTANCE**. Otherwise variables defined for one role will follow through to the next instance of the role, which can cause a lot of problems.
+
 ## Role Variables
 
 See also: defaults/main.yml
@@ -112,7 +114,7 @@ See also: defaults/main.yml
 `
 **ssl**: Can be one of `letsencrypt`, `manual`, or `none`. This variable does not have a default, since having the role guess could have negative consequences.
 
-- Only specify `none` when it's not possible or practical to use a SSL certificate, such as on a private network or for local development. When `deploy_env` is `production`, trying to use the `none` option will break your configuration. Production without SSL is not supported.
+- Only specify `none` when it's not possible or practical to use a SSL certificate, such as on a private network or for local development, or where SSL is prohibited. Production without SSL is not recommended.
 
 - Specify `letsencrypt` if you don't have a manually registered SSL cert to install
 
@@ -128,6 +130,11 @@ See also: defaults/main.yml
     nginx_primal_name:80     -> Serve content.
     nginx_aliases:80         -> Redirect to nginx_canonical_name:80. Assume the user had to adjust /etc/hosts to make requests with this name.
     nginx_canonical_name:80  -> Serve content. Assume the user had to adjust /etc/hosts to make requests with this name.
+
+  production + no ssl:
+      nginx_primal_name:80     -> Redirect to nginx_canonical_name:80.
+      nginx_aliases:80         -> Redirect to nginx_canonical_name:80.
+      nginx_canonical_name:80  -> Serve content.
 
   staging + letsencrypt ssl:
     nginx_primal_name:80     -> Redirect to nginx_primal_name:443. Assume primal name is under our control, so we can always use SSL for this name.
