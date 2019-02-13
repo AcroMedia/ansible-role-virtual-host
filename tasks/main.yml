@@ -20,6 +20,17 @@
   register: letsencrypt_result
   ignore_errors: true
 
+- name: Upload arbitrary customizations for the virtual host
+  template:
+    src: "{{ nginx_include_custom }}"
+    dest: /etc/nginx/includes/{{ nginx_primal_name }}.customizations.conf
+    owner: root
+    group: root
+    mode: 0644
+    backup: true
+  notify: safe reload nginx
+  when: "nginx_include_custom | default('') | trim() != ''"
+
 - name: Update nginx virtual host configuration for {{ nginx_primal_name }}
   template:
     src: "{{ role_path }}/templates/etc/nginx/sites-available/{{ deploy_env }}.{{ ssl }}.conf.j2"

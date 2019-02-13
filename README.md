@@ -190,6 +190,8 @@ If web_application doesn't do everything you need, the following tweaks can help
 
 **http_port**, **https_port**: Default to 80 and 443 respectively. Caveat: If you're changing this, you'll likely also need to change the server-wide default port(s), which is not handled by this role.
 
+**nginx_include_custom**: Optional. Path to a local config file that will be "include"d before the start of the nginx 'location' directives for the virtual host. The include is treated as an ansible template; you may use any variables in your config that are avaialble to the role. It will be placed on the server as '/etc/nginx/includes/$nginx_primal_name.customizations.conf'.
+
 ## Dependencies
 
 - [acromedia.drupal-cron](https://github.com/AcroMedia/ansible-role-drupal-cron)
@@ -217,8 +219,10 @@ If web_application doesn't do everything you need, the following tweaks can help
         ssl: letsencrypt
         redirect_code: 302
         web_application: drupal8
-        # Uncomment and update the next line after golive:
+        ## Uncomment and update the next line after golive:
         # drupal_cron_url: "https://{{ nginx_canonical_name }}/cron/abcdefgh12345678"
+        ## Got extra stuff you need to configure for nginx? Give it to the role to upload for you:
+        # nginx_include_custom: path/to/my_arbitrary_nginx_additions.conf.j2
 ```
 
 ## License

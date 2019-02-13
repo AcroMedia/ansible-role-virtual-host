@@ -7,6 +7,11 @@
   # by serving Gzip versions of the files.
   gzip_static on;
 
+{% if nginx_include_custom | default('') | trim != '' %}
+  # Custom includes provided to the ansible virtual host role
+  include /etc/nginx/includes/{{ nginx_primal_name }}.customizations.conf;
+{% endif %}
+
   # Requests for this just clutters log files.
   location = /favicon.ico {
     log_not_found off;
