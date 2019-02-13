@@ -1,0 +1,32 @@
+# {{ ansible_managed }}
+# See https://git.acromedia.com/acro/devops/ansible-role-virtual-host/tree/master/templates/etc/nginx/sites-available/production.none.j2
+
+server {
+  listen {{ http_port }};
+  server_name {{ nginx_primal_name }};
+  access_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-access.log;
+  error_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-error.log;
+  location / {
+    return {{ redirect_code }} http://{{ nginx_canonical_name }}$request_uri;
+  }
+}
+
+{% if nginx_aliases|length > 0 %}
+server {
+  listen {{ http_port }};
+  server_name {{ nginx_aliases|join(' ') }};
+  access_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-access.log;
+  error_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-error.log;
+  location / {
+    return {{ redirect_code }} http://{{ nginx_canonical_name }}$request_uri;
+  }
+}
+{% endif %}
+
+server {
+  listen {{ http_port }};
+  server_name {{ nginx_canonical_name }};
+  access_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-access.log;
+  error_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-error.log;
+  {% include 'main.inc.j2' %}
+}
