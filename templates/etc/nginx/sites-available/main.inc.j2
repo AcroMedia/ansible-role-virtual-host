@@ -7,7 +7,7 @@
   # by serving Gzip versions of the files.
   gzip_static on;
 
-{% if nginx_include_custom | default('') | trim != '' %}
+{% if nginx_include_custom | trim != '' %}
   # Custom includes provided to the ansible virtual host role
   include /etc/nginx/includes/{{ nginx_primal_name }}.customizations.conf;
 {% endif %}

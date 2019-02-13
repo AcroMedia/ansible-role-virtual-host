@@ -37,7 +37,7 @@
     mode: 0644
     backup: true
   notify: safe reload nginx
-  when: "nginx_include_custom | default('') | trim() != ''"
+  when: "nginx_include_custom | trim() != ''"
 
 - name: Update nginx virtual host configuration for {{ nginx_primal_name }}
   template:

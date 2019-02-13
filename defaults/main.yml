@@ -27,3 +27,5 @@ mysql_host_address: localhost
 skip_ssl_flag: ''
 rds_flag: ''
 rds: false
+
+nginx_include_custom: ''
