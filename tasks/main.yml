@@ -1,11 +1,11 @@
 ---
 - set_fact:
     skip_ssl_flag: '--skip-ssl'
-  when: ssl == 'none'
+  when: "ssl == 'none'"
 
 - set_fact:
     rds_flag: '--rds'
-  when: rds == true
+  when: "rds == true"
 
 - name: Run acro-add-website
   shell: >
