@@ -62,3 +62,36 @@
     state: link
   notify:
     - safe reload nginx
+
+- name: Update PHP {{ php_version }} FPM pool for {{ linux_owner }}/{{ project }}
+  template:
+    src: "{{ role_path }}/templates/etc/php/VERSION/fpm/pool.d/ACCOUNT-PROJECT.conf.j2"
+    dest: /etc/php/{{ php_version }}/fpm/pool.d/{{ linux_owner }}-{{ project }}.conf
+    backup: true
+  notify:
+    - restart php{{ php_version }}-fpm
+
+- name: Construct a list of notifies to use when changing a pool between PHP versions
+  shell: >
+    /usr/bin/dpkg --list|/bin/grep -woE '\bphp.*-fpm\b'|/usr/bin/awk '{print "restart " $1}'
+  register: cmdresult_php_notify_list
+  changed_when: false
+
+- name: Enumerate /etc/php/VERSION/fpm/pool.d directories that are not "{{ php_version }}", used by the 'remove' task below)
+  shell: >
+    /usr/bin/find /etc/php -maxdepth 3 -type d -path '/etc/php/*/fpm/pool.d' | /usr/bin/cut -d'/' -f 4 | grep -v "{{ php_version }}"
+  register: cmdresult_enumerate_php_version_numbers
+  changed_when: false
+
+- debug:
+    var: cmdresult_php_notify_list.stdout_lines
+- debug:
+    var: cmdresult_enumerate_php_version_numbers.stdout_lines
+
+- name: Remove all FPM pools that aren not PHP {{ php_version }} for {{ linux_owner }}/{{ project }}
+  file:
+    path: /etc/php/{{ item }}/fpm/pool.d/{{ linux_owner }}-{{ project }}.conf
+    state: absent
+  with_items:
+    - "{{ cmdresult_enumerate_php_version_numbers.stdout_lines }}"
+  notify: "{{ cmdresult_php_notify_list.stdout_lines }}"

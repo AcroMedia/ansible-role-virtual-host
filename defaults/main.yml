@@ -1,4 +1,6 @@
 ---
+nginx_primal_name: ''
+nginx_canonical_name: ''
 php_version: 7.1
 responsible_person: root
 web_root_dir_name: web
@@ -27,6 +29,7 @@ mysql_host_address: localhost
 skip_ssl_flag: ''
 rds_flag: ''
 rds: false
+force_flag: ''
 
 nginx_include_custom: ''
 
