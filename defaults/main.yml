@@ -29,3 +29,9 @@ rds_flag: ''
 rds: false
 
 nginx_include_custom: ''
+
+# Allow the php user account name to be set by role vars instead of being generated automatically.
+php_service_user: ''
+
+# Throw caution to the wind: Ignore errors and skip safety checks from acro-add-website.sh
+force: false
