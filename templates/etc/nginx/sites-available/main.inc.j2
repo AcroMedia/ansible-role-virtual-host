@@ -37,6 +37,11 @@
     return 403;
   }
 
+  # Dont serve any filename ending with a tilde ... these are almost always backup files
+  location ~* /*~$ {
+    deny all;
+  }
+
   # Don't allow php to run from inside upload dirs. PHP Execution + Anonymous write = Hacked website.
   location ~ {{ nginx_drupal_uploads_dir_pattern }}/.*\.php$ {
     return 403;
