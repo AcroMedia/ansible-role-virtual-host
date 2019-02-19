@@ -202,6 +202,8 @@ If web_application doesn't do everything you need, the following tweaks can help
 
 **nginx_include_custom**: Optional. Path to a local config file that will be "include"d before the start of the nginx 'location' directives for the virtual host. The include is treated as an ansible template; you may use any variables in your config that are avaialble to the role. It will be placed on the server as '/etc/nginx/includes/$nginx_primal_name.customizations.conf'.
 
+**require_http_auth** (boolean): Useful if you want to keep google's prying eyes out of your staging environment. When true, will prompt the user for the values specified by **http_auth_username** and **http_auth_password**. 
+
 ## Dependencies
 
 - [acromedia.drupal-cron](https://github.com/AcroMedia/ansible-role-drupal-cron)
