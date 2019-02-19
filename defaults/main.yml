@@ -34,8 +34,11 @@ php_service_user_flag: ''
 
 nginx_include_custom: ''
 
-# Allow the php user account name to be set by role vars instead of being generated automatically.
-php_service_user: ''
+# Set a default, but allow the php user account name to be set by role vars instead of being generated automatically.
+php_service_user: "{{ project }}-srv"
 
 # Throw caution to the wind: Ignore errors and skip safety checks from acro-add-website.sh
 force: false
+
+# Set a default, but allow role vars to override it.
+fpm_pool_filename: "{{ linux_owner }}-{{ project }}.conf"
