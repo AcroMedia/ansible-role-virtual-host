@@ -30,6 +30,7 @@ skip_ssl_flag: ''
 rds_flag: ''
 rds: false
 force_flag: ''
+php_service_user_flag: ''
 
 nginx_include_custom: ''
 
