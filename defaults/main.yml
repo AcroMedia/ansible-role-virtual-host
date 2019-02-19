@@ -42,3 +42,10 @@ force: false
 
 # Set a default, but allow role vars to override it.
 fpm_pool_filename: "{{ linux_owner }}-{{ project }}.conf"
+
+# Keep staging, or pre-production sites away from google's prying eyes
+require_http_auth: false
+http_auth_username: ''
+http_auth_password: ''
+http_auth_message: 'Protected area'
+path_to_htpasswd_file: "/etc/nginx/includes/deny-anonymous.{{ linux_owner }}-{{ project }}.htpasswd"

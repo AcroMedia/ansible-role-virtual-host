@@ -90,3 +90,22 @@
   with_items:
     - "{{ cmdresult_enumerate_php_version_numbers.stdout_lines|default([]) }}"
   notify: "{{ cmdresult_php_notify_list.stdout_lines|default([]) }}"
+
+- name: Install dependency for htpasswd operations
+  apt:
+    name: python-passlib
+    state: present
+    update_cache: true
+  when: require_http_auth == true
+
+- name: Create htpasswd file for {{ linux_owner }}-{{ project }}
+  htpasswd:
+    path: "{{ path_to_htpasswd_file }}"
+    name: "{{ http_auth_username }}"
+    password: "{{ http_auth_password }}"
+    owner: root
+    group: www-data
+    mode: 0640
+  when: require_http_auth == true
+  notify:
+    - arvh safe reload nginx

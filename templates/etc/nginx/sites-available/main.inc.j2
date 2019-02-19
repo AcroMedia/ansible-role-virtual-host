@@ -1,3 +1,10 @@
+{% if require_http_auth == true
+    and http_auth_username != ''
+    and http_auth_password != ''
+%}
+  auth_basic "{{ http_auth_message }}";
+  auth_basic_user_file {{ path_to_htpasswd_file }};
+{% endif %}
 
   root /home/{{ linux_owner }}/www/{{ project }}/{{ web_root_dir_name }};
   index {{ default_document }};
