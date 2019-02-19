@@ -1,7 +1,8 @@
 ---
-- name: safe reload nginx
+# Our handler name was colliding with other handlers in the parent playbook... rename it here to prevent weird behaviours.
+- name: arvh safe reload nginx
   become: true
-  shell: "test -x /usr/sbin/nginx && /usr/sbin/nginx -tt && test -x /usr/sbin/service && /usr/sbin/service nginx reload"
+  shell: "/usr/sbin/nginx -t && /usr/sbin/service nginx reload"
 
 - name: restart php5-fpm
   service:

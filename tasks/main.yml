@@ -44,7 +44,7 @@
     group: root
     mode: 0644
     backup: true
-  notify: safe reload nginx
+  notify: arvh safe reload nginx
   when: "nginx_include_custom | trim() != ''"
 
 - name: Update nginx virtual host configuration for {{ nginx_primal_name }}
@@ -53,7 +53,7 @@
     dest: /etc/nginx/sites-available/{{ nginx_primal_name }}
     backup: true
   notify:
-    - safe reload nginx
+    - arvh safe reload nginx
 
 - name: Enable (symlink) nginx virtual host configuration for {{ nginx_primal_name }}
   file:
@@ -61,7 +61,7 @@
     dest: "/etc/nginx/sites-enabled/{{ nginx_primal_name }}"
     state: link
   notify:
-    - safe reload nginx
+    - arvh safe reload nginx
 
 - name: Update PHP {{ php_version }} FPM pool for {{ linux_owner }}/{{ project }}
   template:
