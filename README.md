@@ -12,7 +12,7 @@ Basically an ansible wrapper for acro-add-website.sh, geared for sites using Let
 
 - If you're providing your own manually registered SSL certificate, the certificate + key need to be placed on the server BEFORE this role is invoked.
 
-- Since this role is designed to support a "normal" virtual host from staging to production using SSL, both **nginx_primal_name**, and **nginx_canonical_name** are required in order for the role to work. Furthermore, both variables are  *mutually exclusive* of not only each other, but also of the server's canonical hostname (not to mention all of the other virtual host names on the server). *If you try to omit one, or try to make one or more the same as another, your config will break.*
+- Since this role is designed to support a "normal" virtual host from staging to production using SSL, both **nginx_primal_name**, and **nginx_canonical_name** are required in order for the role to work.
 
 - If using SSL, DNS for your nginx_primal_name must already point at your server before you run this role. The other two (nginx_canonical_name and nginx_aliases) don't need to resolve until after you switch to `production`.
 
@@ -48,9 +48,9 @@ See also: defaults/main.yml
 
 - Not meant to be pretty or short, this name is meant to be controlled by Acro, and to indicate (for billing and sysadmin purposes) which server a particular project resides on. It also exists so your team (and/or the client) can get be sure everything works (with valid SSL), before the site's real DNS name is pointed at the server.
 
-- Do not change the value of nginx_primal_name after the playbook has run against your server. Your LetsEncrypt SSL certificate config is tied to the name you create, and so is the name of your NGINX config file. If you change it or remove it, you will break your NGINX and/or your LetsEncrypt config.
+- **Do not change the value of `nginx_primal_name` after the playbook has run against your server**. File names created by the role are tied to the name you create, and so is the name of your NGINX config file. If you change it or remove this name, you will break most of your NGINX and/or your LetsEncrypt config, and will be left with a nasty mess to clean up.
 
-- Not optional, and must be unique from the other nginx virtual host names on the server, as well as the server's canonical hostname.
+- Not optional, and must be unique from the other nginx virtual host names on the server. 
 
 
 
@@ -63,31 +63,27 @@ See also: defaults/main.yml
 
 -  Once a site is launched, the final destination name for the site.
 
-- Not optional, and must be unique from the other nginx virtual host names on the server, as well as the server's canonical hostname.
+- Not optional, and must be unique from the other nginx virtual host names on the server.
 
 
 **nginx_aliases** (must be a list; regardless of how many aliases there are):
 
-- Example:
+- A list of any other virtual host names (besides the primal & canonical names) that the site should respond to, and redirect to the canoncial name.  Examples:
     ```yaml
+    # Single non-www alias:
     nginx_aliases:
       - bigcorp.com
-    ```
-  or:
-    ```yaml
+
+    # Non-www plus a second domain name:
     nginx_aliases:
       - bigcorp.com
       - www.othername.com
       - othername.com
-    ```
-  or:
-  ```yaml
-    # no aliases: empty list.
+
+    # N aliases: specify an empty list:
     nginx_aliases: []
   ```
-  if there are no aliases.
 
-- Once a site is launched, nginx_aliases is a list of any other virtual host names (besides the primal & canonical names) that the site should respond to, and redirect to the canoncial name.
 
 
 **php_version**:
@@ -202,7 +198,7 @@ If web_application doesn't do everything you need, the following tweaks can help
 
 **nginx_include_custom**: Optional. Path to a local config file that will be "include"d before the start of the nginx 'location' directives for the virtual host. The include is treated as an ansible template; you may use any variables in your config that are avaialble to the role. It will be placed on the server as '/etc/nginx/includes/$nginx_primal_name.customizations.conf'.
 
-**require_http_auth** (boolean): Useful if you want to keep google's prying eyes out of your staging environment. When true, will prompt the user for the values specified by **http_auth_username** and **http_auth_password**. 
+**require_http_auth** (boolean): Useful if you want to keep google's prying eyes out of your staging environment. When true, will prompt the user for the values specified by **http_auth_username** and **http_auth_password**.
 
 ## Dependencies
 

@@ -1,6 +1,7 @@
 # {{ ansible_managed }}
 # See https://git.acromedia.com/acro/devops/ansible-role-virtual-host/tree/master/templates/etc/nginx/sites-available/production.none.j2
 
+{% if (nginx_primal_name != nginx_canonical_name) %}
 server {
   listen {{ http_port }};
   server_name {{ nginx_primal_name }};
@@ -10,6 +11,7 @@ server {
     return {{ redirect_code }} http://{{ nginx_canonical_name }}$request_uri;
   }
 }
+{% endif %}
 
 {% if nginx_aliases|length > 0 %}
 server {

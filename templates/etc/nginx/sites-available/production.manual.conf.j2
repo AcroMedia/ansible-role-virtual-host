@@ -11,6 +11,7 @@ server {
   }
 }
 
+{% if (nginx_primal_name != nginx_canonical_name) %}
 server {
   listen {{ https_port }} ssl;
   server_name {{ nginx_primal_name }};
@@ -22,6 +23,7 @@ server {
     return {{ redirect_code }} https://{{ nginx_canonical_name }}$request_uri;
   }
 }
+{% endif %}
 
 {% if nginx_aliases|length > 0 %}
 server {
