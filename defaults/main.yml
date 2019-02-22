@@ -49,3 +49,7 @@ http_auth_username: ''
 http_auth_password: ''
 http_auth_message: 'Protected area'
 path_to_htpasswd_file: "/etc/nginx/includes/deny-anonymous.{{ linux_owner }}-{{ project }}.htpasswd"
+
+# Let certain locations only be accessed by specific IPs or networks
+nginx_ip_restricted_locations: []
+nginx_allowed_ips: []

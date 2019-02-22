@@ -66,6 +66,21 @@
     return 403;
   }
 
+{% if nginx_ip_restricted_locations|length > 0  %}
+{% for restricted_location in nginx_ip_restricted_locations %}
+  location {{ restricted_location }} {
+    {% for allowed_ip in nginx_allowed_ips %}
+    allow {{ allowed_ip }};
+    {% endfor %}
+    deny all;
+    {% if restricted_location.endswith('.php')  %}
+    {% include 'php-fpm.inc.j2' %}
+    {% else %}
+    try_files $uri $uri/ @rewrite;
+    {% endif %}
+  }
+{% endfor %}
+{% endif %}
 
 {% if web_application == 'drupal6'
     or  web_application == 'drupal5'
@@ -102,32 +117,16 @@
     deny all;
   }
 
-  #  # Wordpress optional:
-  #  # Restrict access sensitive locations by IP address
-  #  location /wp-admin {
-  #    include includes/whitelisted-ip-addresses.conf;
-  #    deny all;
-  #  }
-  #  Wordpress optional:
-  #  location = /wp-login.php {
-  #    include includes/whitelisted-ip-addresses.conf;
-  #    deny all;
-  #    include /etc/nginx/includes/account-project.php-fpm.conf;
-  #  }
-
   # Wordpress:
   # Deny all access to specific locations
   location = /wp-config.php {
-    deny all;
-    {% include 'php-fpm.inc.j2' %}
+    return 403;
   }
   location = /xmlrpc.php {
-    deny all;
-    {% include 'php-fpm.inc.j2' %}
+    return 403;
   }
   location /wp-json {
-    deny all;
-    {% include 'php-fpm.inc.j2' %}
+    return 403;
   }
 
   # Wordpress:

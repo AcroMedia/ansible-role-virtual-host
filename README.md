@@ -50,7 +50,7 @@ See also: defaults/main.yml
 
 - **Do not change the value of `nginx_primal_name` after the playbook has run against your server**. File names created by the role are tied to the name you create, and so is the name of your NGINX config file. If you change it or remove this name, you will break most of your NGINX and/or your LetsEncrypt config, and will be left with a nasty mess to clean up.
 
-- Not optional, and must be unique from the other nginx virtual host names on the server. 
+- Not optional, and must be unique from the other nginx virtual host names on the server.
 
 
 
@@ -182,6 +182,17 @@ These files need to be placed on the server **before** you run the playbook, or 
 **mysql_host_address**: Defaults to 'localhost'. You only need to set this when using multi-server setups. If your app node(s) and mysql host are both on the same private network (they usually will be), set this to be your mysql host's private / internal IP address. In order for this to work, your app node needs to be able to operate as mysql root, with crentials stored at /root/.my.cnf.
 
 **rds** (boolean): Set this to true if you're creating a site backed by an amazon RDS instance.
+
+**nginx_ip_restricted_locations** + **nginx_allowed_ips** (lists): Make sure to TEST your restrictions after you put them in place. Nginx locations can be slippery creatures.
+```yaml
+# Example 1: Lock down administrative locations to specific networks
+nginx_ip_restricted_locations:
+  - /admin
+  - '= /login.php'
+nginx_allowed_ips:
+  - 1.2.3.4
+  - 4.3.2.0/27
+```
 
 
 #### Tweaks / overrides
