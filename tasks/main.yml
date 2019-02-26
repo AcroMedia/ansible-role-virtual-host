@@ -8,6 +8,26 @@
   when: "rds == true"
 
 - set_fact:
+    fpm_pool_filename: "{{ project }}.conf"
+  when: "fpm_pool_filename == ''
+    and project == linux_owner"
+
+- set_fact:
+    fpm_pool_filename: "{{ linux_owner }}-{{ project }}.conf"
+  when: "fpm_pool_filename == ''
+    and project != linux_owner"
+
+- set_fact:
+    php_service_user: "{{ project }}-srv"
+  when: "php_service_user == ''
+    and project == linux_owner"
+
+- set_fact:
+    php_service_user: "{{ linux_owner }}-{{ project }}-srv"
+  when: "php_service_user == ''
+    and project != linux_owner"
+
+- set_fact:
     php_service_user_flag: '--service-account {{ php_service_user }}'
   when: "php_service_user != ''"
 
