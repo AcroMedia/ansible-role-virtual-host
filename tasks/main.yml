@@ -1,4 +1,15 @@
 ---
+
+- name: Prevent AAW from strpping characters out of account or project file names.
+  fail:
+    msg: The combination of linunx_owner + project name cannot exceed 16 characters.
+  when: "(linux_owner|length + project|length) >= 16"
+
+- name: Prevent AAW from clipping php service user account names
+  fail:
+    msg: The length of 'linunx_owner' cannot exceed 12 characters.
+  when: "php_service_user == '' and ((linux_owner|length + project|length) >= 16)"
+
 - set_fact:
     skip_ssl_flag: '--skip-ssl'
   when: "ssl == 'none'"
