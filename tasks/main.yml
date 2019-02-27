@@ -8,7 +8,7 @@
 - name: Prevent AAW from clipping php service user account names
   fail:
     msg: The length of 'linunx_owner' cannot exceed 12 characters.
-  when: "php_service_user == '' and (linux_owner|length) > 12)"
+  when: "php_service_user == '' and (linux_owner|length > 12)"
 
 - set_fact:
     skip_ssl_flag: '--skip-ssl'
