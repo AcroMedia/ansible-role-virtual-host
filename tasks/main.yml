@@ -110,11 +110,11 @@
 
 - name: Enumerate /etc/php/VERSION/fpm/pool.d directories that are not "{{ php_version }}", used by the 'remove' task below)
   shell: >
-    /usr/bin/find /etc/php -maxdepth 3 -type d -path '/etc/php/*/fpm/pool.d' | /usr/bin/cut -d'/' -f 4 | grep -v "{{ php_version }}"
+    /usr/bin/find /etc/php -maxdepth 3 -type d -path '/etc/php/*/fpm/pool.d' | /usr/bin/cut -d'/' -f 4 | (grep -v "{{ php_version }}" || true)
   register: cmdresult_enumerate_php_version_numbers
   changed_when: false
 
-- name: Remove all FPM pools that aren not PHP {{ php_version }} for {{ linux_owner }}/{{ project }}
+- name: Remove all FPM pools that are not PHP {{ php_version }} for {{ linux_owner }}/{{ project }}
   file:
     path: /etc/php/{{ item }}/fpm/pool.d/{{ linux_owner }}-{{ project }}.conf
     state: absent
