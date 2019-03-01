@@ -83,7 +83,7 @@
 {% endif %}
 
 {% if web_application == 'drupal6'
-    or  web_application == 'drupal5'
+    or web_application == 'drupal5'
     or web_application == 'drupal4'    %}
 
   # Serve static content before trying to get PHP involved.
@@ -135,33 +135,44 @@
     rewrite ^ {{ rewrite_target }}?$args;
   }
 
-{% elif (web_application == 'drupal7' or web_application == 'drupal8') %}
+{% elif web_application == 'drupal7' %}
 
-  # This is cool because no php is touched for static content
+  # Drupal 7: Serve static content before getting PHP involved.
   location / {
     try_files $uri $uri/ @rewrite;
   }
 
-  # For D7 and above:
-  # Clean URLs are handled in drupal_environment_initialize().
+  # Drupal 7: Clean URLs are handled in drupal_environment_initialize().
   location @rewrite {
     rewrite ^ {{ rewrite_target }};
   }
 
-  # Image cache doesn't work without this.
+  # Drupal 7: Image cache doesn't work without this.
   location ~ {{ image_cache_location }} {
     try_files $uri @rewrite;
   }
 
+{% elif web_application == 'drupal8' %}
 
-  {% if  web_application == 'drupal8' %}
+  # Drupal 8: Serve static content before getting PHP involved.
+  location / {
+    try_files $uri $uri/ @rewrite;
+  }
 
-  # Drupal 8 update page doesn't work without this.
+  # Drupal 8: Clean URLs are handled in drupal_environment_initialize().
+  location @rewrite {
+    rewrite ^ {{ rewrite_target }};
+  }
+
+  # Drupal 8: Image cache doesn't work without this.
+  location ~ {{ image_cache_location }} {
+    try_files $uri @rewrite;
+  }
+
+  # Drupal 8: Update page doesn't work without this.
   location ~ ^/update.php {
     {% include 'php-fpm.inc.j2' %}
   }
-
-  {% endif %}
 
 {% else %} {# Implied: web_application == ('static' or 'php') #}
 
