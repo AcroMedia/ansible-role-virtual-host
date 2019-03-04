@@ -26,22 +26,17 @@ https_port: 443
 mysql_allow_from: localhost
 mysql_host_address: localhost
 
-skip_ssl_flag: ''
-rds_flag: ''
 rds: false
-force_flag: ''
-php_service_user_flag: ''
 
 nginx_include_custom: ''
 
-# Set an empty default here. If the playbook doesn't set a value for it, we'll use set_fact in tasks to create a sane default.
+# Set empty defaults here. If the playbook doesn't set a value for them, we'll use set_fact in tasks to create sane defaults.
 php_service_user: ''
+fpm_pool_filename: ''
 
 # Throw caution to the wind: Ignore errors and skip safety checks from acro-add-website.sh
 force: false
 
-# Set an empty default here. If the playbook doesn't set a value for it, we'll use set_fact in tasks to create a sane default.
-fpm_pool_filename: ''
 
 # Keep staging, or pre-production sites away from google's prying eyes
 require_http_auth: false

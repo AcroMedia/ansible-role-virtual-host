@@ -10,6 +10,20 @@
     msg: The length of 'linunx_owner' cannot exceed 12 characters.
   when: "php_service_user == '' and (linux_owner|length > 12)"
 
+# We need to set facts here using internal names, as opposed to the ones we told the role consumer about, because:
+# 1: This role is meant to be used multiple times in the same playbook,
+# 2: Ansible is basically scopeless; everything is global
+# 3: Once we set a fact in a role, it overrides the role's "defaults" the next time the role is used.
+# 4: We need to provide a way for the consumer to override defaults, without imposing variable bleed across multiple uses
+- name: (Re)set some runtime variables for the role's internal use
+  set_fact:
+    skip_ssl_flag: ''
+    rds_flag: ''
+    force_flag: ''
+    service_account_flag: ''
+    x__php_service_user: ''
+    x__fpm_pool_filename: ''
+
 - set_fact:
     skip_ssl_flag: '--skip-ssl'
   when: "ssl == 'none'"
@@ -19,28 +33,28 @@
   when: "rds == true"
 
 - set_fact:
-    fpm_pool_filename: "{{ project }}.conf"
+    x__fpm_pool_filename: "{{ project }}.conf"
   when: "fpm_pool_filename == ''
     and project == linux_owner"
 
 - set_fact:
-    fpm_pool_filename: "{{ linux_owner }}-{{ project }}.conf"
+    x__fpm_pool_filename: "{{ linux_owner }}-{{ project }}.conf"
   when: "fpm_pool_filename == ''
     and project != linux_owner"
 
 - set_fact:
-    php_service_user: "{{ project }}-srv"
+    x__php_service_user: "{{ project }}-srv"
   when: "php_service_user == ''
     and project == linux_owner"
 
 - set_fact:
-    php_service_user: "{{ linux_owner }}-{{ project }}-srv"
+    x__php_service_user: "{{ linux_owner }}-{{ project }}-srv"
   when: "php_service_user == ''
     and project != linux_owner"
 
 - set_fact:
-    php_service_user_flag: '--service-account {{ php_service_user }}'
-  when: "php_service_user != ''"
+    service_account_flag: '--service-account {{ x__php_service_user }}'
+  when: "x__php_service_user != ''"
 
 - set_fact:
     force_flag: '--force'
@@ -48,7 +62,7 @@
 
 - name: Run acro-add-website
   shell: >
-     export TERM=xterm-256color; /usr/bin/timeout 30s /bin/bash /usr/local/sbin/acro-add-website.sh --account {{ linux_owner }} --project {{ project }} --fqdn {{ nginx_primal_name }} --webroot {{ web_root_dir_name }} --php-version {{ php_version }} --responsible-person {{ responsible_person }} --mysql-allow-from {{ mysql_allow_from }} --mysql-host-address {{ mysql_host_address }} {{ skip_ssl_flag }} {{ rds_flag }} {{ php_service_user_flag }} {{ force_flag}}
+     export TERM=xterm-256color; /usr/bin/timeout 30s /bin/bash /usr/local/sbin/acro-add-website.sh --account {{ linux_owner }} --project {{ project }} --fqdn {{ nginx_primal_name }} --webroot {{ web_root_dir_name }} --php-version {{ php_version }} --responsible-person {{ responsible_person }} --mysql-allow-from {{ mysql_allow_from }} --mysql-host-address {{ mysql_host_address }} {{ skip_ssl_flag }} {{ rds_flag }} {{ service_account_flag }} {{ force_flag}}
   args:
     creates: /home/{{ linux_owner }}/.acro-add-website/{{ project }}
 
@@ -97,7 +111,7 @@
 - name: Update PHP {{ php_version }} FPM pool for {{ linux_owner }}/{{ project }}
   template:
     src: "{{ role_path }}/templates/etc/php/VERSION/fpm/pool.d/ACCOUNT-PROJECT.conf.j2"
-    dest: /etc/php/{{ php_version }}/fpm/pool.d/{{ fpm_pool_filename }}
+    dest: /etc/php/{{ php_version }}/fpm/pool.d/{{ x__fpm_pool_filename }}
     backup: true
   notify:
     - restart php{{ php_version }}-fpm

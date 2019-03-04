@@ -96,7 +96,7 @@ See also: defaults/main.yml
 
 **web_application**:
 
-- Tells the role which nginx configuration to apply. Defaults to `drupal8`. Can be one of `drupal6`, `drupal7`, `drupal8`, `wordpress`, 'php', or `static`.
+- Tells the role which nginx configuration to apply. Defaults to `drupal8`. Can be one of `drupal6`, `drupal7`, `drupal8`, `wordpress`, 'php', `static`, or `proxy_pass`.
 
 **deploy_env**:
 
@@ -168,6 +168,11 @@ These files need to be placed on the server **before** you run the playbook, or 
 
 **ssl_intermediates_path**: E.g: `/usr/local/ssl/certs/mydomain.com.intermediates.pem`
 
+#### When web_application == 'proxy_pass'
+
+**nginx_proxy_pass_blob**: This gets placed as is, directly into to the nginx default `location / {}` directive.
+
+When using proxy_pass, all other diretives except those related to secruity (ie those that immediately return a 403) get disabled, as they are expected to be handled by your upstream / proxied application.
 
 #### Optional variables
 

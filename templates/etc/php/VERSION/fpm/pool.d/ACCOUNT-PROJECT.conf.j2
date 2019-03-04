@@ -1,6 +1,7 @@
 [{{ linux_owner }}-{{ project }}]
-user = {{ php_service_user }}
-group = {{ php_service_user }}
+{#  See tasks/main.yml to find the value determined for x__php_service_user #}
+user = {{ x__php_service_user }}
+group = {{ x__php_service_user }}
 listen = /var/run/php{{ php_version }}-fpm-{{ linux_owner }}-{{ project }}.sock
 listen.owner = www-data
 listen.group = www-data

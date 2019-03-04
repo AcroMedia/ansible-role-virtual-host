@@ -10,24 +10,30 @@
   index {{ default_document }};
   client_max_body_size {{ client_max_body_size }};
 
+{% if web_application != 'proxy_pass' %}
   # Enable compression. This will help if you have, for instance, the advagg module
   # by serving Gzip versions of the files.
   gzip_static on;
+{% endif %}
 
 {% if nginx_include_custom | trim != '' %}
   # Custom includes provided to the ansible virtual host role
   include /etc/nginx/includes/{{ nginx_primal_name }}.customizations.conf;
 {% endif %}
 
+{% if web_application != 'proxy_pass' %}
   # Requests for this just clutters log files.
   location = /favicon.ico {
     log_not_found off;
     access_log off;
   }
+{% endif %}
 
+{% if web_application != 'proxy_pass' %}
   # Handle requests for robots.txt.
   # This conf file is symlinked to an environment-specific file, so we can have different behaviour depending on whether this machine is production or staging / development.
   include /etc/nginx/includes/robots.conf;
+{% endif %}
 
   # Very rarely should these ever be accessed outside of your lan
   location ~* \.(txt|log|sql|zip|gzip|gz|tar)$ {
@@ -46,7 +52,7 @@
 
   # Dont serve any filename ending with a tilde ... these are almost always backup files
   location ~* /*~$ {
-    deny all;
+    return 403;
   }
 
   # Don't allow php to run from inside upload dirs. PHP Execution + Anonymous write = Hacked website.
@@ -66,6 +72,7 @@
     return 403;
   }
 
+{% if web_application != 'proxy_pass' %}
 {% if nginx_ip_restricted_locations|length > 0  %}
 {% for restricted_location in nginx_ip_restricted_locations %}
   location {{ restricted_location }} {
@@ -79,8 +86,10 @@
     try_files $uri $uri/ @rewrite;
     {% endif %}
   }
-{% endfor %}
-{% endif %}
+{% endfor %}{# /nginx_ip_restricted_locations|length > 0 #}
+{% endif %}{# /restricted_location in nginx_ip_restricted_locations #}
+{% endif %}{# /web_application != 'proxy_pass' #}
+
 
 {% if web_application == 'drupal6'
     or web_application == 'drupal5'
@@ -174,6 +183,13 @@
     {% include 'php-fpm.inc.j2' %}
   }
 
+{% elif web_application == 'proxy_pass' %}
+
+  # Proxy pass
+  location / {
+    {{ nginx_proxy_pass_blob }}
+  }
+
 {% else %} {# Implied: web_application == ('static' or 'php') #}
 
   # Static website
@@ -183,13 +199,15 @@
 
 {% endif %}
 
+{% if web_application != 'proxy_pass' %}
   # Dont spam log files, and cache static content forever.
   location ~* \.(js|css|png|jpg|jpeg|gif|ico)$ {
     expires max;
     log_not_found off;
   }
+{% endif %}
 
-{% if  web_application != 'static' %}
+{% if web_application != 'static' and web_application != 'proxy_pass' %}
 
   # PHP FPM on a socket
   location ~ \.php$ {
