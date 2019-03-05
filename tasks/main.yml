@@ -53,6 +53,10 @@
     and project != linux_owner"
 
 - set_fact:
+    x__php_service_user: "{{ php_service_user }}"
+    when: "php_service_user != ''"
+
+- set_fact:
     service_account_flag: '--service-account {{ x__php_service_user }}'
   when: "x__php_service_user != ''"
 
@@ -91,6 +95,14 @@
     backup: true
   notify: arvh safe reload nginx
   when: "nginx_include_custom | trim() != ''"
+
+- name: Update PHP FPM nginx include for {{ nginx_primal_name }}
+  template:
+    src: "{{ role_path }}/templates/etc/nginx/includes/ACCOUNT-PROJECT.php-fpm.conf.j2"
+    dest: "{{ path_to_nginx_php_fpm_include }}"
+    backup: true
+  notify:
+    - arvh safe reload nginx
 
 - name: Update nginx virtual host configuration for {{ nginx_primal_name }}
   template:
