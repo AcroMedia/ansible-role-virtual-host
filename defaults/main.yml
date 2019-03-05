@@ -48,3 +48,5 @@ path_to_htpasswd_file: "/etc/nginx/includes/deny-anonymous.{{ linux_owner }}-{{ 
 # Let certain locations only be accessed by specific IPs or networks
 nginx_ip_restricted_locations: []
 nginx_allowed_ips: []
+
+path_to_nginx_php_fpm_include: "/etc/nginx/includes/{{ linux_owner }}-{{ project }}.php-fpm.conf"

@@ -81,7 +81,7 @@
     {% endfor %}
     deny all;
     {% if restricted_location.endswith('.php')  %}
-    {% include 'php-fpm.inc.j2' %}
+    include {{ path_to_nginx_php_fpm_include }};
     {% else %}
     try_files $uri $uri/ @rewrite;
     {% endif %}
@@ -123,7 +123,7 @@
   # Works in sub-directory installs and also in multisite network
   # Keep logging the requests to parse later (or to pass to firewall utilities such as fail2ban)
   location ~* /(?:uploads|files)/.*\.php$ {
-    deny all;
+    return 403;
   }
 
   # Wordpress:
@@ -190,7 +190,7 @@
 
   # Drupal 8: Update page doesn't work without this.
   location ~ ^/update.php {
-    {% include 'php-fpm.inc.j2' %}
+    include {{ path_to_nginx_php_fpm_include }};
   }
 
 {% elif web_application == 'proxy_pass' %}
@@ -221,7 +221,7 @@
 
   # PHP FPM on a socket
   location ~ \.php$ {
-    {% include 'php-fpm.inc.j2' %}
+    include {{ path_to_nginx_php_fpm_include }};
   }
 
 {% endif %}
