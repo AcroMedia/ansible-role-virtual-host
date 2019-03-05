@@ -161,6 +161,11 @@
     try_files $uri @rewrite;
   }
 
+  # Drupal 7: Allow drupal to act as a broker for files served from the private dir
+  location ~* /system/files/ {
+    try_files $uri @rewrite;
+  }
+
 {% elif web_application == 'drupal8' %}
 
   # Drupal 8: Serve static content before getting PHP involved.
@@ -175,6 +180,11 @@
 
   # Drupal 8: Image cache doesn't work without this.
   location ~ {{ image_cache_location }} {
+    try_files $uri @rewrite;
+  }
+
+  # Drupal 8: Allow drupal to act as a broker for files served from the private dir
+  location ~* /system/files/ {
     try_files $uri @rewrite;
   }
 
