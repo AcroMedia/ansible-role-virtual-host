@@ -54,7 +54,7 @@
 
 - set_fact:
     x__php_service_user: "{{ php_service_user }}"
-    when: "php_service_user != ''"
+  when: "php_service_user != ''"
 
 - set_fact:
     service_account_flag: '--service-account {{ x__php_service_user }}'
