@@ -9,7 +9,6 @@ rewrite_target: '/index.php'
 image_cache_location: '/sites/.*/files/styles/'
 ssl_ciphers: 'ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256'
 ssl_protocols: 'TLSv1.2'
-client_max_body_size: '8m'
 default_document: 'index.html index.php'
 web_application: drupal8
 
@@ -50,3 +49,15 @@ nginx_ip_restricted_locations: []
 nginx_allowed_ips: []
 
 path_to_nginx_php_fpm_include: "/etc/nginx/includes/{{ linux_owner }}-{{ project }}.php-fpm.conf"
+
+# File upload limits
+max_upload_size_mb: 8
+php_upload_max_filesize: "{{ max_upload_size_mb }}M"
+php_post_max_size: "{{ max_upload_size_mb }}M"
+client_max_body_size: "{{ max_upload_size_mb }}m"
+
+# Process timeout limits
+max_execution_time_seconds: 300
+fastcgi_read_timeout: "{{ max_execution_time_seconds }}s"
+php_max_execution_time: "{{ max_execution_time_seconds }}"
+php_default_socket_timeout: "{{ max_execution_time_seconds }}"

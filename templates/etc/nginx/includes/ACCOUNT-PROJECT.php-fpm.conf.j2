@@ -9,4 +9,4 @@
     fastcgi_param SCRIPT_FILENAME $request_filename;
     fastcgi_intercept_errors on;
     fastcgi_pass unix:/var/run/php{{ php_version }}-fpm-{{ linux_owner }}-{{ project }}.sock;
-    fastcgi_read_timeout 600s;
+    fastcgi_read_timeout {{ fastcgi_read_timeout }};

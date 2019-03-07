@@ -216,6 +216,10 @@ If web_application doesn't do everything you need, the following tweaks can help
 
 **require_http_auth** (boolean): Useful if you want to keep google's prying eyes out of your staging environment. When true, will prompt the user for the values specified by **http_auth_username** and **http_auth_password**.
 
+**max_execution_time_seconds**: Defaults to 300. This meta variable controls 3 individual PHP and NGINX config values. See defaults/main.yml for the individual variable names if you need more fine grained control.
+
+**max_upload_size_mb**: Defaults to 8. This meta variable controls 3 individual PHP and NGINX config values. See defaults/main.yml for the individual variable names if you need more fine grained control.
+
 ## Dependencies
 
 - [acromedia.drupal-cron](https://github.com/AcroMedia/ansible-role-drupal-cron)
