@@ -107,8 +107,10 @@ See also: defaults/main.yml
 - Switch to `production` (and then re-run the playbook) after you've pointed DNS for your nginx_canonical_name (and aliases) at your server
 
 - When set to `production` and `ssl` is set to `letsencrypt`, the scripts will attempt to add the nginx_canonical_name and nginx_aliases to the LetsEncrypt SSL certificate.
-`
-**ssl**: Can be one of `letsencrypt`, `manual`, or `none`. This variable does not have a default, since having the role guess could have negative consequences.
+
+**ssl**:
+
+- Can be one of `letsencrypt`, `manual`, or `none`. This variable does not have a default, since having the role guess could have negative consequences.
 
 - Specify `letsencrypt` when you don't have a manually registered SSL cert to install.
 
