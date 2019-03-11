@@ -102,21 +102,21 @@ See also: defaults/main.yml
 
 - Can be one of `staging` or `production`. If you're using this role in a development environment, just specify `staging`. This variable does not have a default, since having the role guess could have negative consequences.
 
-- Use `staging-*` before DNS for the site's canoncial domain name points at your server
+- Use `staging` before DNS for the site's canoncial domain name points at your server
 
-- Switch to one of the `production-*` modes (and then re-run the playbook) after you've pointed DNS at your server
+- Switch to `production` (and then re-run the playbook) after you've pointed DNS for your nginx_canonical_name (and aliases) at your server
 
-- When set to `production` and `ssl` is `letsencrypt`, the scripts will attempt to add the site's canonical name and nginx_aliases to the LetsEncrypt SSL certificate.
+- When set to `production` and `ssl` is set to `letsencrypt`, the scripts will attempt to add the nginx_canonical_name and nginx_aliases to the LetsEncrypt SSL certificate.
 `
 **ssl**: Can be one of `letsencrypt`, `manual`, or `none`. This variable does not have a default, since having the role guess could have negative consequences.
 
-- Only specify `none` when it's not possible or practical to use a SSL certificate, such as on a private network or for local development, or where SSL is prohibited. Production without SSL is not recommended.
+- Specify `letsencrypt` when you don't have a manually registered SSL cert to install.
 
-- Specify `letsencrypt` if you don't have a manually registered SSL cert to install
+- Specify `none` when it's not possible or practical to use a SSL certificate, such as on a private network, for local development, or when using proxy_pass behind varnish or a load balanacer. Production without SSL is not recommended, so if you're specifying 'none', it's expected that you're taking care of SSL in some other way.
 
 - Specify `manual` when you're providing a manually registered SSL certificate. **This role does not place your SSL certificate on the server; you'll need to do that BEFORE you run this playbook**.
 
-- When `deploy_env` is `staging`, you'll need to adjust your /etc/hosts file in order to see your staging site using the canonical domain name.
+- When `deploy_env` is `staging`, you'll need to adjust your own local /etc/hosts file in order to see your staging site using the canonical domain name, if DNS is not pointing at the server.
 
 - **Warning**: When using `manual`, the certificate you provide must work for all of the `nginx_canonical_name` and `nginx_aliases` you specify. Providing mis-matched names *will* result in SSL errors in browsers, and *may* break NGINX configuraiton, preventing the service from starting.
 
