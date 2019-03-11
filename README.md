@@ -129,11 +129,6 @@ See also: defaults/main.yml
     nginx_aliases:80         -> Redirect to nginx_canonical_name:80. Assume the user had to adjust /etc/hosts to make requests with this name.
     nginx_canonical_name:80  -> Serve content. Assume the user had to adjust /etc/hosts to make requests with this name.
 
-  production + no ssl:
-      nginx_primal_name:80     -> Redirect to nginx_canonical_name:80.
-      nginx_aliases:80         -> Redirect to nginx_canonical_name:80.
-      nginx_canonical_name:80  -> Serve content.
-
   staging + letsencrypt ssl:
     nginx_primal_name:80     -> Redirect to nginx_primal_name:443. Assume primal name is under our control, so we can always use SSL for this name.
     nginx_aliases:80         -> Redirect to nginx_canonical_name:80 (http instead of https), since going to https would produce SSL warnings.
@@ -150,7 +145,12 @@ See also: defaults/main.yml
     nginx_aliases:443        -> Redirect to nginx_canonical_name:443. Assume the user had to adjust /etc/hosts to make requests with this name.
     nginx_canonical_name:443 -> Serve content. Assume the user had to adjust /etc/hosts to make requests with this name.
 
-  production + <any value for ssl>:
+  production + no ssl:
+    nginx_primal_name:80     -> Redirect to nginx_canonical_name:80.
+    nginx_aliases:80         -> Redirect to nginx_canonical_name:80.
+    nginx_canonical_name:80  -> Serve content.
+
+  production + (manual or letsencrypt) ssl:
     nginx_primal_name:80      -> Redirect to nginx_canonical_name:443
     nginx_aliases:80          -> Redirect to nginx_canonical_name:443
     nginx_canonical_name:80   -> Redirect to nginx_canonical_name:443
