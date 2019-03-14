@@ -65,6 +65,11 @@
     return 403;
   }
 
+  # Deny access to drupal tmp dir ... Won't normally be here anyway, except on a multi-node system.
+  location ~ ^/sites/.*/tmp/ {
+    return 403;
+  }
+
   # Block access to "hidden" files and directories whose names begin with a
   # period. This includes directories used by version control systems such
   # as Subversion or Git to store control files.
