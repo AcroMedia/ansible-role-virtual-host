@@ -1,17 +1,23 @@
 ---
+- name: See if a site has already been created with AAW
+  stat:
+    path: /home/{{ linux_owner }}/.acro-add-website/{{ project }}
+  register: aaw_hints_result
 
 - name: Prevent AAW from strpping characters out of account or project file names.
   fail:
     msg: The combination of linunx_owner + project name cannot exceed 16 characters.
-  when: "((linux_owner|length + project|length) > 16)
-    and (force == false)"
+  when: "(linux_owner != project and (linux_owner|length + project|length) > 16)
+    and (aaw_hints_result is defined and aaw_hints_result.stat.exists == false)
+    "
 
 - name: Prevent AAW from clipping php service user account names
   fail:
-    msg: The length of 'linunx_owner' cannot exceed 12 characters.
+    msg: The system can't reliably auto-generate a php service user name if the length of 'linunx_owner' exceeds 12 characters. You will need to manually specify the value for 'php_service_user' in your role variables (e.g. 'php_service_user: foo-srv').
   when: "(php_service_user == '')
     and (linux_owner|length > 12)
-    and (force == false)"
+    and (aaw_hints_result is defined and aaw_hints_result.stat.exists == false)
+    "
 
 # We need to set facts here using internal names, as opposed to the ones we told the role consumer about, because:
 # 1: This role is meant to be used multiple times in the same playbook,
