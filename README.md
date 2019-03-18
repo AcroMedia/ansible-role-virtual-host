@@ -24,17 +24,17 @@ Basically an ansible wrapper for acro-add-website.sh, geared for sites using Let
 
 See also: defaults/main.yml
 
-#### Required Variables
+### Required Variables
 
-**linux_owner**:
+#### linux_owner
 
 - The name of the user account to create
 
-**project**:
+#### project
 
 - The dir name for the project inside the linux owner's home dir. Usually should be the same as linux owner, unless the owner has more than one site or project.
 
-**nginx_primal_name**
+#### nginx_primal_name
 
 - Example:
     ```
@@ -46,7 +46,7 @@ See also: defaults/main.yml
     ```
     if there is only one site on a given server.
 
-- Not meant to be pretty or short, this name is meant to be controlled by Acro, and to indicate (for billing and sysadmin purposes) which server a particular project resides on. It also exists so your team (and/or the client) can get be sure everything works (with valid SSL), before the site's real DNS name is pointed at the server.
+- Not meant to be pretty or short, the DNS record for this name is expected to be controlled by Acro, and to indicate (for billing and sysadmin purposes) which server a particular project resides on. It also exists so your team (and/or the client) can get be sure everything works (with valid SSL), before the site's real DNS name is pointed at the server.
 
 - **Do not change the value of `nginx_primal_name` after the playbook has run against your server**. File names created by the role are tied to the name you create, and so is the name of your NGINX config file. If you change it or remove this name, you will break most of your NGINX and/or your LetsEncrypt config, and will be left with a nasty mess to clean up.
 
@@ -54,7 +54,7 @@ See also: defaults/main.yml
 
 
 
-**nginx_canonical_name**
+#### nginx_canonical_name
 
 - Example:
     ```
@@ -66,7 +66,7 @@ See also: defaults/main.yml
 - Not optional, and must be unique from the other nginx virtual host names on the server.
 
 
-**nginx_aliases** (must be a list; regardless of how many aliases there are):
+#### nginx_aliases
 
 - A list of any other virtual host names (besides the primal & canonical names) that the site should respond to, and redirect to the canoncial name.  Examples:
     ```yaml
@@ -83,22 +83,22 @@ See also: defaults/main.yml
     # N aliases: specify an empty list:
     nginx_aliases: []
   ```
+- Must be a list; regardless of how many aliases there are.
 
 
-
-**php_version**:
+#### php_version
 
 - Major.minor version (e.g. `7.1`). The version you specify  must already be running on the server.
 
-**web_root_dir_name**:
+#### web_root_dir_name
 
 - Can be any valid directory name - The convention is to use `web` for Drupal >= 8 sites, or `wwwroot` for < D8 or other non drupal sites.
 
-**web_application**:
+#### web_application
 
 - Tells the role which nginx configuration to apply. Defaults to `drupal8`. Can be one of `drupal6`, `drupal7`, `drupal8`, `wordpress`, 'php', `static`, or `proxy_pass`.
 
-**deploy_env**:
+#### deploy_env
 
 - Can be one of `staging` or `production`. If you're using this role in a development environment, just specify `staging`. This variable does not have a default, since having the role guess could have negative consequences.
 
@@ -108,7 +108,7 @@ See also: defaults/main.yml
 
 - When set to `production` and `ssl` is set to `letsencrypt`, the scripts will attempt to add the nginx_canonical_name and nginx_aliases to the LetsEncrypt SSL certificate.
 
-**ssl**:
+#### ssl
 
 - Can be one of `letsencrypt`, `manual`, or `none`. This variable does not have a default, since having the role guess could have negative consequences.
 
@@ -122,7 +122,7 @@ See also: defaults/main.yml
 
 - **Warning**: When using `manual`, the certificate you provide must work for all of the `nginx_canonical_name` and `nginx_aliases` you specify. Providing mis-matched names *will* result in SSL errors in browsers, and *may* break NGINX configuraiton, preventing the service from starting.
 
-**How the combination of `deploy_env` + `ssl` affects redirects:**
+#### How the combination of `deploy_env` + `ssl` affects redirects
   ```
   staging + no ssl:
     nginx_primal_name:80     -> Serve content.
@@ -176,7 +176,7 @@ These files need to be placed on the server **before** you run the playbook, or 
 
 When using proxy_pass, all other diretives except those related to secruity (ie those that immediately return a 403) get disabled, as they are expected to be handled by your upstream / proxied application.
 
-#### Optional variables
+### Optional variables
 
 **redirect_code**: Defaults to `302` (temporary redirect). After your site has launched and working without any issues, change this to `301` and run your playbook again to make redirects [to the canoncial name] permanent.
 

@@ -13,7 +13,7 @@
 
 - name: Prevent AAW from clipping php service user account names
   fail:
-    msg: The system can't reliably auto-generate a php service user name if the length of 'linunx_owner' exceeds 12 characters. You will need to manually specify the value for 'php_service_user' in your role variables (e.g. 'php_service_user: foo-srv').
+    msg: "The system can't reliably auto-generate a php service user name if the length of 'linunx_owner' exceeds 12 characters. You will need to manually specify the value for 'php_service_user' in your role variables (e.g. 'php_service_user: foo-srv')."
   when: "(php_service_user == '')
     and (linux_owner|length > 12)
     and (aaw_hints_result is defined and aaw_hints_result.stat.exists == false)
