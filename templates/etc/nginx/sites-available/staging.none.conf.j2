@@ -7,7 +7,7 @@ server {
   server_name {{ nginx_primal_name }};
   access_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-access.log;
   error_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-error.log;
-  {% include 'main.inc.j2' %}
+  include /etc/nginx/includes/{{ linux_owner }}-{{ project }}.core.conf;
 }
 {% endif %}
 
@@ -28,5 +28,5 @@ server {
   server_name {{ nginx_canonical_name }};
   access_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-access.log;
   error_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-error.log;
-  {% include 'main.inc.j2' %}
+  include /etc/nginx/includes/{{ linux_owner }}-{{ project }}.core.conf;
 }

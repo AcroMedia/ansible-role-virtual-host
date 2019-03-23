@@ -113,6 +113,14 @@
   notify:
     - arvh safe reload nginx
 
+- name: Update nginx core conf include for {{ nginx_primal_name }}
+  template:
+    src: "{{ role_path }}/templates/etc/nginx/includes/ACCOUNT-PROJECT.core.conf.j2"
+    dest: "/etc/nginx/includes/{{ linux_owner }}-{{ project }}.core.conf"
+    backup: true
+  notify:
+    - arvh safe reload nginx
+
 - name: Update nginx virtual host configuration for {{ nginx_primal_name }}
   template:
     src: "{{ role_path }}/templates/etc/nginx/sites-available/{{ deploy_env }}.{{ ssl }}.conf.j2"
