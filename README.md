@@ -22,7 +22,7 @@ Basically an ansible wrapper for acro-add-website.sh, geared for sites using Let
 
 ## Role Variables
 
-See also: defaults/main.yml
+**See defaults/main.yml** - there are quite a few variables in there that are straightforward, and don't require documentation.
 
 ### Required Variables
 

@@ -10,13 +10,13 @@ listen.group = www-data
 
 ;pm.dynamic: ready for action but uses way more memory -- use for high traffic sites
 ;pm.ondemand: only runs when needed -- use for dev, staging, low traffic sites
-pm = ondemand
+pm = {{ php_fpm_mode }}
 
-pm.max_children = 5
-pm.start_servers = 2
-pm.min_spare_servers = 1
-pm.max_spare_servers = 3
-pm.max_requests = 5000
+pm.max_children = {{ php_fpm_max_children }}
+pm.start_servers = {{ php_fpm_start_servers }}
+pm.min_spare_servers = {{ php_fpm_min_spare_servers }}
+pm.max_spare_servers = {{ php_fpm_max_spare_servers }}
+pm.max_requests = {{ php_fpm_max_requests }}
 ;request_terminate_timeout = 0
 catch_workers_output = no
 chdir = /
@@ -30,3 +30,4 @@ php_value[newrelic.appname] = "{{ nginx_canonical_name }} ({{ linux_owner }}/{{ 
 php_flag[expose_php] = off
 php_admin_value[upload_max_filesize] = {{ php_upload_max_filesize }}
 php_admin_value[post_max_size] = {{ php_post_max_size }}
+php_admin_value[memory_limit] = {{ php_memory_limit }}

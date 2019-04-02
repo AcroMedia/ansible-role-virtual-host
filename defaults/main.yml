@@ -50,14 +50,23 @@ nginx_allowed_ips: []
 
 path_to_nginx_php_fpm_include: "/etc/nginx/includes/{{ linux_owner }}-{{ project }}.php-fpm.conf"
 
-# File upload limits
+# PHP File upload limits
 max_upload_size_mb: 8
 php_upload_max_filesize: "{{ max_upload_size_mb }}M"
 php_post_max_size: "{{ max_upload_size_mb }}M"
 client_max_body_size: "{{ max_upload_size_mb }}m"
 
-# Process timeout limits
+# PHP Process timeout limits
 max_execution_time_seconds: 300
 fastcgi_read_timeout: "{{ max_execution_time_seconds }}s"
 php_max_execution_time: "{{ max_execution_time_seconds }}"
 php_default_socket_timeout: "{{ max_execution_time_seconds }}"
+
+# PHP performance limits
+php_fpm_mode: ondemand
+php_fpm_max_children: 5
+php_fpm_start_servers: 2
+php_fpm_min_spare_servers: 1
+php_fpm_max_spare_servers: 3
+php_fpm_max_requests: 5000
+php_memory_limit: 128M
