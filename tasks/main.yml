@@ -147,7 +147,7 @@
 
 - name: Construct a list of notifies to use when changing a pool between PHP versions
   shell: >
-    /usr/bin/dpkg --list|/bin/grep -woE '\bphp.*-fpm\b'|/usr/bin/awk '{print "restart " $1}'
+    /usr/bin/dpkg --list|/bin/grep -woE '\bphp.*-fpm\b'|/bin/grep -v dbgsym|/usr/bin/awk '{print "restart " $1}'
   register: cmdresult_php_notify_list
   changed_when: false
 
