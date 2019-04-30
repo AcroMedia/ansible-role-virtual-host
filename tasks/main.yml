@@ -130,8 +130,8 @@
 
 - name: Enable (symlink) nginx virtual host configuration for {{ linux_owner }}/{{ project }}
   file:
-    src: "/etc/nginx/sites-available/{{ linux_owner }}-{{ project }}.conf
-    dest: "/etc/nginx/sites-enabled/{{ linux_owner }}-{{ project }}.conf
+    src: "/etc/nginx/sites-available/{{ linux_owner }}-{{ project }}.conf"
+    dest: "/etc/nginx/sites-enabled/{{ linux_owner }}-{{ project }}.conf"
     state: link
   notify:
     - arvh safe reload nginx
