@@ -80,7 +80,6 @@
     creates: /home/{{ linux_owner }}/.acro-add-website/{{ project }}
 
 - name: Try and expand the primal name's Certificate to include nginx aliases and canonical name. If DNS is pointing at the machine for these names, the command will work.
-#    /usr/local/bin/certbot-auto --no-self-upgrade certonly --non-interactive --webroot --agree-tos -w /var/www/letsencrypt  --email webmaster@acromedia.com --cert-name {{ nginx_primal_name }} --keep -d "{{ nginx_canonical_name }},{{ nginx_aliases |join(',') }},{{ nginx_primal_name }}"
   script:  scripts/certbot-wrapper
   args:
     executable: /bin/bash
@@ -97,7 +96,7 @@
 - name: Upload arbitrary customizations for the virtual host
   template:
     src: "{{ nginx_include_custom }}"
-    dest: /etc/nginx/includes/{{ nginx_primal_name }}.customizations.conf
+    dest: "{{ path_to_nginx_vhost_custom }}"
     owner: root
     group: root
     mode: 0644
@@ -105,7 +104,7 @@
   notify: arvh safe reload nginx
   when: "nginx_include_custom | trim() != ''"
 
-- name: Update PHP FPM nginx include for {{ nginx_primal_name }}
+- name: Update PHP FPM nginx include for {{ linux_owner }}/{{ project }}
   template:
     src: "{{ role_path }}/templates/etc/nginx/includes/ACCOUNT-PROJECT.php-fpm.conf.j2"
     dest: "{{ path_to_nginx_php_fpm_include }}"
@@ -113,7 +112,7 @@
   notify:
     - arvh safe reload nginx
 
-- name: Update nginx core conf include for {{ nginx_primal_name }}
+- name: Update nginx core conf include for {{ linux_owner }}/{{ project }}
   template:
     src: "{{ role_path }}/templates/etc/nginx/includes/ACCOUNT-PROJECT.core.conf.j2"
     dest: "/etc/nginx/includes/{{ linux_owner }}-{{ project }}.core.conf"
@@ -121,19 +120,29 @@
   notify:
     - arvh safe reload nginx
 
-- name: Update nginx virtual host configuration for {{ nginx_primal_name }}
+- name: Update nginx virtual host configuration for {{ linux_owner }}/{{ project }}
   template:
     src: "{{ role_path }}/templates/etc/nginx/sites-available/{{ deploy_env }}.{{ ssl }}.conf.j2"
-    dest: /etc/nginx/sites-available/{{ nginx_primal_name }}
+    dest: /etc/nginx/sites-available/{{ linux_owner }}-{{ project }}.conf
     backup: true
   notify:
     - arvh safe reload nginx
 
-- name: Enable (symlink) nginx virtual host configuration for {{ nginx_primal_name }}
+- name: Enable (symlink) nginx virtual host configuration for {{ linux_owner }}/{{ project }}
   file:
-    src: "/etc/nginx/sites-available/{{ nginx_primal_name }}"
-    dest: "/etc/nginx/sites-enabled/{{ nginx_primal_name }}"
+    src: "/etc/nginx/sites-available/{{ linux_owner }}-{{ project }}.conf
+    dest: "/etc/nginx/sites-enabled/{{ linux_owner }}-{{ project }}.conf
     state: link
+  notify:
+    - arvh safe reload nginx
+
+- name: Remove vhost files that used the old naming convention
+  file:
+    state: absent
+    path: "{{ item }}"
+  loop:
+    - /etc/nginx/sites-available/{{ nginx_primal_name }}
+    - /etc/nginx/sites-enabled/{{ nginx_primal_name }}
   notify:
     - arvh safe reload nginx
 

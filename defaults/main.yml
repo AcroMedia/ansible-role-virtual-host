@@ -49,6 +49,7 @@ nginx_ip_restricted_locations: []
 nginx_allowed_ips: []
 
 path_to_nginx_php_fpm_include: "/etc/nginx/includes/{{ linux_owner }}-{{ project }}.php-fpm.conf"
+path_to_nginx_vhost_custom: "/etc/nginx/includes/{{ linux_owner }}-{{ project }}.custom.conf"
 
 # PHP File upload limits
 max_upload_size_mb: 8

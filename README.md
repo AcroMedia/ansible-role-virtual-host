@@ -1,24 +1,26 @@
 # Ansible role: Virtual Host
 
-Basically an ansible wrapper for acro-add-website.sh, geared for sites using LetsEncrypt certificates.
+Manage a NGINX virtual host (including PHP version and SSL certificates) over its life cycle from staging to production.
 
 ## Requirements
 
 - The acro infrastructure utilities must already be installed on the server
 
-- Acro-add-website.sh must already be installed and configured on the server
+- Acro-add-website.sh must already be installed (and configured) on the server
 
 - LetsEncrypt installed, configured, and working
 
-- If you're providing your own manually registered SSL certificate, the certificate + key need to be placed on the server BEFORE this role is invoked.
+- If you're providing your own manually registered SSL certificate, the certificate + key need to be placed on the server **before** this role is invoked.
 
 - Since this role is designed to support a "normal" virtual host from staging to production using SSL, both **nginx_primal_name**, and **nginx_canonical_name** are required in order for the role to work.
+
+- If using letsencrypt for SSL, **nginx_primal_name** should **not** be changed, once the original certificate has been registered, since this name refers to the physical directory of the SSL cert files in the /etc/letsencrypt live directory.
 
 - If using SSL, DNS for your nginx_primal_name must already point at your server before you run this role. The other two (nginx_canonical_name and nginx_aliases) don't need to resolve until after you switch to `production`.
 
 - Don't be tempted to set `deploy_env` to `production` until *after* your site / server has been completely configured and tested and is truly ready for go-live.
 
-- If using the role more than once in the same playbook, **YOU MUST SPECIFY ALL VARIABLES USED FOR EVERY ROLE INSTANCE**. Otherwise variables defined for one role will follow through to the next instance of the role, which can cause a lot of problems.
+- If using the role more than once in the same playbook, you will need to re-specify **all** role variables that were defined in your playbook. Otherwise, role variables in subsequent uses will retain the values they had from the previous invocation of the role (aka variable "bleed"). Obviously, this can cause a lot of problems.
 
 ## Role Variables
 
@@ -46,9 +48,9 @@ Basically an ansible wrapper for acro-add-website.sh, geared for sites using Let
     ```
     if there is only one site on a given server.
 
-- Not meant to be pretty or short, the DNS record for this name is expected to be controlled by Acro, and to indicate (for billing and sysadmin purposes) which server a particular project resides on. It also exists so your team (and/or the client) can get be sure everything works (with valid SSL), before the site's real DNS name is pointed at the server.
+- Its purpose is to be a DNS name that can be used to access the virtual host before (and after) the site's canonical DNS name points to the virtual host, so your team (and/or the client) can get be sure everything works (with valid SSL), before the site's real DNS name is pointed at the server.
 
-- **Do not change the value of `nginx_primal_name` after the playbook has run against your server**. File names created by the role are tied to the name you create, and so is the name of your NGINX config file. If you change it or remove this name, you will break most of your NGINX and/or your LetsEncrypt config, and will be left with a nasty mess to clean up.
+- When using letsencrypt, **do not** change or remove the value of `nginx_primal_name` after the playbook has run against your server**. SSL directory names created by the role are tied to the name you create. If you change it or remove this name, you will break your NGINX and LetsEncrypt config, and will be left with a nasty mess to clean up.
 
 - Not optional, and must be unique from the other nginx virtual host names on the server.
 
@@ -64,6 +66,8 @@ Basically an ansible wrapper for acro-add-website.sh, geared for sites using Let
 -  Once a site is launched, the final destination name for the site.
 
 - Not optional, and must be unique from the other nginx virtual host names on the server.
+
+- When using LetsEncrypt, the nginx_canonical_name will be appended to the SSL certificate (that was registered using the nginx_primal_name) after you set deploy_env to 'production'.
 
 
 #### nginx_aliases
@@ -84,6 +88,10 @@ Basically an ansible wrapper for acro-add-website.sh, geared for sites using Let
     nginx_aliases: []
   ```
 - Must be a list; regardless of how many aliases there are.
+
+- nginx_aliases always redirect to nginx_canonical_name.
+
+- When using LetsEncrypt , all nginx_aliases will be appended to the SSL certificate (that was registered using the nginx_primal_name) after you set deploy_env to 'production'.
 
 
 #### php_version
@@ -214,7 +222,7 @@ If web_application doesn't do everything you need, the following tweaks can help
 
 **http_port**, **https_port**: Default to 80 and 443 respectively. Caveat: If you're changing this, you'll likely also need to change the server-wide default port(s), which is not handled by this role.
 
-**nginx_include_custom**: Optional. Path to a local config file that will be "include"d before the start of the nginx 'location' directives for the virtual host. The include is treated as an ansible template; you may use any variables in your config that are avaialble to the role. It will be placed on the server as '/etc/nginx/includes/$nginx_primal_name.customizations.conf'.
+**nginx_include_custom**: Optional. Path to a local config file that will be "include"d before the start of the nginx 'location' directives for the virtual host. The include is treated as an ansible template; you may use any variables in your config that are avaialble to the role. It will be placed on the server as '/etc/nginx/includes/$linux_owner-$project.custom.conf'.
 
 **require_http_auth** (boolean): Useful if you want to keep google's prying eyes out of your staging environment. When true, will prompt the user for the values specified by **http_auth_username** and **http_auth_password**.
 

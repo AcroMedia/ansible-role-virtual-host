@@ -17,8 +17,8 @@
 {% endif %}
 
 {% if nginx_include_custom | trim != '' %}
-  # Custom includes provided to the ansible virtual host role
-  include /etc/nginx/includes/{{ nginx_primal_name }}.customizations.conf;
+  # Custom includes that were given to the virtual host role by the calling playbook
+  include "{{ path_to_nginx_vhost_custom }}";
 {% endif %}
 
 {% if web_application != 'proxy_pass' %}
