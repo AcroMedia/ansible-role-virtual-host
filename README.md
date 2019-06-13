@@ -20,7 +20,68 @@ Manage a NGINX virtual host (including PHP version and SSL certificates) over it
 
 - Don't be tempted to set `deploy_env` to `production` until *after* your site / server has been completely configured and tested and is truly ready for go-live.
 
-- If using the role more than once in the same playbook, you will need to re-specify **all** role variables that were defined in your playbook. Otherwise, role variables in subsequent uses will retain the values they had from the previous invocation of the role (aka variable "bleed"). Obviously, this can cause a lot of problems.
+## Beware of Variable Bleed
+
+It's common to require using this role multiple times in the same playbook. Becaue of [Ansible Variable Scope](https://docs.ansible.com/ansible/latest/user_guide/playbooks_variables.html#scoping-variables), multiple uses of any role in the same playbook requires extra care.
+
+The best way to prevent variable bleeed is to split up multiple uses of the role into indvidual plays. As long as you're not gathering facts in each play, this doesn't add any extra time to the playbook's run time. It also lets you keep things more organized, especially when your virtual host has a lot of customization. For example:
+```yaml
+---
+# Best practice: Split multiple uses of the same role
+# into their own plays to prevent variable bleed.
+- name: Gather facts in a separate play before we do any work
+  hosts: app-nodes
+  become: true
+  gather_facts: true
+  tags:
+    - always
+  roles: []
+  tasks: []  
+
+- name: Configure virtual host A
+  hosts: app-nodes
+  become: true
+  gather_facts: false
+  roles:
+    role: acromedia.virtual-host
+    vars: ...
+
+- name: Configure virtual host B
+  hosts: app-nodes
+  become: true
+  gather_facts: false
+  roles:
+    role: acromedia.virtual-host
+    vars: ...
+
+```
+
+If using the role more than once **in the same play**, you must re-specify **all** role variables that were used for each instance of the role. Role defaults are not re-set between role uses from the same play. Every variable, including role defaults, "stick" to the value they were set to between role instances. A variable that was defined in the first instance retains its value for the next instance, so if you don't re-specify it, even if it has no bearing on your second role instance, mayhem can ensue:
+
+```yaml
+---
+# Avoid this situation.
+- hosts: app-nodes
+  become: true
+  gather_facts: true
+  roles:
+    - name: Configure vhost A
+      role: acromedia.virtual-host
+      vars:
+        php_version: 5.6
+        web_application: drupal6
+        ...
+    - name: Configure vhost B
+      role: acromedia.virtual-host
+      vars:
+        web_application: drupal8
+        # Missing the specification for "php_version" here
+        # makes this instance of the role inherit the last
+        # isntance's value of "5.6", which breaks
+        # this virtual host.
+        ...
+```
+
 
 ## Role Variables
 
