@@ -22,6 +22,18 @@
 {% endif %}
 
 {% if web_application != 'proxy_pass' %}
+{% if nginx_location_extras|length > 0  %}
+{% for extra_location in nginx_location_extras %}
+  # {{ extra_location.name|default('') }}
+  location {{ extra_location.location }} {
+    {{ extra_location.config }}
+  }
+
+{% endfor %}
+{% endif %}{# /nginx_location_extras #}
+{% endif %}{# /web_application #}
+
+{% if web_application != 'proxy_pass' %}
   # Requests for this just clutters log files.
   location = /favicon.ico {
     log_not_found off;

@@ -208,7 +208,18 @@ nginx_allowed_ips:
   - 1.2.3.4
   - 4.3.2.0/27
 ```
-
+**nginx_location_extras[{name,location,config}]**: Allows you to specify extra `location` directives without having to supply an additional file. Exmaple:
+```yaml
+nginx_location_extras:
+  - name: Don't allow php to run from this folder
+    location: ~ /foo/bar/.*\.php$
+    config: return 403;
+  - name: Don't log requests for this folder
+    location: /baz/buz
+    config: |
+      log_not_found off;
+      access_log off;
+```
 
 #### Tweaks / overrides
 
