@@ -72,6 +72,9 @@ php_fpm_max_spare_servers: 3
 php_fpm_max_requests: 5000
 php_memory_limit: 128M
 
+# Allow arbitrary location blocks from the role (without an include file). See readme.
+nginx_location_extras: []
+
 # Paranoid-by-default wordpress config.
 # nginx_allow_xmlrpc==false gives 403 for requests to /xmlrpc.php. XMLRPC is only needed if you are publishing from remote locations.
 nginx_allow_wp_xmlrpc: false
