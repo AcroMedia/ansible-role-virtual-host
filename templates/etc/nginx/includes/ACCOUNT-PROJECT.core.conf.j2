@@ -149,10 +149,18 @@
     return 403;
   }
   location = /xmlrpc.php {
+    {% if nginx_allow_wp_xmlrpc %}
+    include {{ path_to_nginx_php_fpm_include }};
+    {% else %}
     return 403;
+    {% endif %}
   }
   location /wp-json {
+    {% if nginx_allow_wp_json %}
+    try_files $uri $uri/ @rewrite;
+    {% else %}
     return 403;
+    {% endif %}
   }
 
   # Wordpress:
