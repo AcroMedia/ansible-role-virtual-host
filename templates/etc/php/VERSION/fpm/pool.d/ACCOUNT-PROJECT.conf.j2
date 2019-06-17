@@ -31,3 +31,6 @@ php_flag[expose_php] = off
 php_admin_value[upload_max_filesize] = {{ php_upload_max_filesize }}
 php_admin_value[post_max_size] = {{ php_post_max_size }}
 php_admin_value[memory_limit] = {{ php_memory_limit }}
+{% if php_sendmail_path is defined %}
+php_admin_value[sendmail_path] = '{{ php_sendmail_path }}'
+{% endif %}
