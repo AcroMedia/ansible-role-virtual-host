@@ -34,3 +34,4 @@ php_admin_value[memory_limit] = {{ php_memory_limit }}
 {% if php_sendmail_path is defined %}
 php_admin_value[sendmail_path] = '{{ php_sendmail_path }}'
 {% endif %}
+php_admin_value[max_input_vars] = {{ php_max_input_vars }}

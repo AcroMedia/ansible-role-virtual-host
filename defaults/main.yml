@@ -71,6 +71,7 @@ php_fpm_min_spare_servers: 1
 php_fpm_max_spare_servers: 3
 php_fpm_max_requests: 5000
 php_memory_limit: 128M
+php_max_input_vars: 3001
 
 # Allow arbitrary location blocks from the role (without an include file). See readme.
 nginx_location_extras: []
