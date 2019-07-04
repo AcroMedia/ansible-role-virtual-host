@@ -147,6 +147,14 @@
   notify:
     - arvh safe reload nginx
 
+- name: Remove old duplicate /etc/php/{{ php_version }}/fpm/pool.d/{{ linux_owner }}-{{ project }}.conf
+  file:
+    path: /etc/php/{{ php_version }}/fpm/pool.d/{{ linux_owner }}-{{ project }}.conf
+    state: absent
+  when: linux_owner == project
+  notify:
+    - restart php{{ php_version }}-fpm
+
 - name: Update PHP {{ php_version }} FPM pool for {{ linux_owner }}/{{ project }}
   template:
     src: "{{ role_path }}/templates/etc/php/VERSION/fpm/pool.d/ACCOUNT-PROJECT.conf.j2"
@@ -167,10 +175,19 @@
   register: cmdresult_enumerate_php_version_numbers
   changed_when: false
 
-- name: Remove all FPM pools that are not PHP {{ php_version }} for {{ linux_owner }}/{{ project }}
+- name: Remove all FPM pools that are not PHP {{ php_version }} for {{ linux_owner }}/{{ project }} - 1 of 2
   file:
     path: /etc/php/{{ item }}/fpm/pool.d/{{ linux_owner }}-{{ project }}.conf
     state: absent
+  with_items:
+    - "{{ cmdresult_enumerate_php_version_numbers.stdout_lines|default([]) }}"
+  notify: "{{ cmdresult_php_notify_list.stdout_lines|default([]) }}"
+
+- name: Remove all FPM pools that are not PHP {{ php_version }} for {{ linux_owner }}/{{ project }} - 2 of 2
+  file:
+    path: /etc/php/{{ item }}/fpm/pool.d/{{ project }}.conf
+    state: absent
+  when: linux_owner == project
   with_items:
     - "{{ cmdresult_enumerate_php_version_numbers.stdout_lines|default([]) }}"
   notify: "{{ cmdresult_php_notify_list.stdout_lines|default([]) }}"
