@@ -2,7 +2,7 @@
 # See https://git.acromedia.com/acro/devops/ansible-role-virtual-host/tree/master/templates/etc/nginx/sites-available/production.letsencrypt.j2
 server {
   listen {{ http_port }};
-  server_name {{ nginx_canonical_name }} {{ nginx_aliases|join(' ') }} {{ nginx_primal_name }};
+  server_name {{ nginx_canonical_name }} {{ nginx_aliases|join(' ') }};
   access_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-access.log;
   error_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-error.log;
   include /etc/nginx/includes/letsencrypt-acme-challenge.conf;
@@ -10,6 +10,18 @@ server {
     return {{ redirect_code }} https://{{ nginx_canonical_name }}$request_uri;
   }
 }
+{% if (nginx_primal_name != nginx_canonical_name) %}
+server {
+  listen {{ http_port }};
+  server_name {{ nginx_primal_name }};
+  access_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-access.log;
+  error_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-error.log;
+  include /etc/nginx/includes/letsencrypt-acme-challenge.conf;
+  location / {
+    return {{ redirect_code }} https://{{ nginx_canonical_name }}$request_uri;
+  }
+}
+{% endif %}
 
 {% if (nginx_primal_name != nginx_canonical_name) or (nginx_aliases|length > 0) %}
 server {
