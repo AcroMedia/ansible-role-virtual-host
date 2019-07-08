@@ -82,3 +82,6 @@ nginx_allow_wp_xmlrpc: false
 # nginx_allow_wp_json==false gives 403 for requests to urls that begin with /wp-json
 # Without this, you'll need the classic editor enabled in wp >= 5.0
 nginx_allow_wp_json: false
+
+# In some cases, you may need drupal to handle requests for otherwise static gif / jpg / js files
+nginx_rewrite_static_content: false
