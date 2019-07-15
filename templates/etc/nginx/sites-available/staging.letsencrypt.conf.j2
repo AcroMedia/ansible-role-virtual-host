@@ -4,7 +4,7 @@
 server {
   listen {{ http_port }};
   server_name {{ nginx_primal_name }};
-  access_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-access.log;
+  access_log {{ nginx_access_log_conf }};
   error_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-error.log;
   include /etc/nginx/includes/letsencrypt-acme-challenge.conf;
   location / {
@@ -20,7 +20,7 @@ server {
 
 {% include 'ssl.letsencrypt.inc.j2' %}
 
-  access_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-access.log;
+  access_log {{ nginx_access_log_conf }};
   error_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-error.log;
   include /etc/nginx/includes/letsencrypt-acme-challenge.conf;
   include /etc/nginx/includes/{{ linux_owner }}-{{ project }}.core.conf;
@@ -31,7 +31,7 @@ server {
 server {
   listen {{ http_port }};
   server_name {{ nginx_aliases|join(' ') }};
-  access_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-access.log;
+  access_log {{ nginx_access_log_conf }};
   error_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-error.log;
   include /etc/nginx/includes/letsencrypt-acme-challenge.conf;
   location / {
@@ -43,7 +43,7 @@ server {
 server {
   listen {{ http_port }};
   server_name {{ nginx_canonical_name }};
-  access_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-access.log;
+  access_log {{ nginx_access_log_conf }};
   error_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-error.log;
   include /etc/nginx/includes/letsencrypt-acme-challenge.conf;
   include /etc/nginx/includes/{{ linux_owner }}-{{ project }}.core.conf;
@@ -55,7 +55,7 @@ server {
   listen {{ https_port }} ssl;
   server_name {{ nginx_aliases|join(' ') }};
 {% include 'ssl.letsencrypt.inc.j2' %}
-  access_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-access.log;
+  access_log {{ nginx_access_log_conf }};
   error_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-error.log;
   include /etc/nginx/includes/letsencrypt-acme-challenge.conf;
   location / {
@@ -71,7 +71,7 @@ server {
 
 {% include 'ssl.letsencrypt.inc.j2' %}
 
-  access_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-access.log;
+  access_log {{ nginx_access_log_conf }};
   error_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-error.log;
   include /etc/nginx/includes/{{ linux_owner }}-{{ project }}.core.conf;
 }

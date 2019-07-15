@@ -3,7 +3,7 @@
 server {
   listen {{ http_port }};
   server_name {{ nginx_canonical_name }} {{ nginx_aliases|join(' ') }};
-  access_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-access.log;
+  access_log {{ nginx_access_log_conf }};
   error_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-error.log;
   include /etc/nginx/includes/letsencrypt-acme-challenge.conf;
   location / {
@@ -15,7 +15,7 @@ server {
 server {
   listen {{ http_port }};
   server_name {{ nginx_primal_name }};
-  access_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-access.log;
+  access_log {{ nginx_access_log_conf }};
   error_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-error.log;
   include /etc/nginx/includes/letsencrypt-acme-challenge.conf;
   location / {
@@ -29,7 +29,7 @@ server {
   listen {{ https_port }} ssl;
   server_name {{ nginx_primal_name }};
   {% include 'ssl.letsencrypt.inc.j2' %}
-  access_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-access.log;
+  access_log {{ nginx_access_log_conf }};
   error_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-error.log;
   include /etc/nginx/includes/letsencrypt-acme-challenge.conf;
   location / {
@@ -43,7 +43,7 @@ server {
   listen {{ https_port }} ssl;
   server_name {{ nginx_aliases|join(' ') }};
   {% include 'ssl.manual.inc.j2' %}
-  access_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-access.log;
+  access_log {{ nginx_access_log_conf }};
   error_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-error.log;
   location / {
     return {{ redirect_code }} https://{{ nginx_canonical_name }}$request_uri;
@@ -55,7 +55,7 @@ server {
   listen {{ https_port }} ssl;
   server_name {{ nginx_canonical_name }};
   {% include 'ssl.manual.inc.j2' %}
-  access_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-access.log;
+  access_log {{ nginx_access_log_conf }};
   error_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-error.log;
   include /etc/nginx/includes/{{ linux_owner }}-{{ project }}.core.conf;
 }

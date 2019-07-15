@@ -85,3 +85,10 @@ nginx_allow_wp_json: false
 
 # In some cases, you may need drupal to handle requests for otherwise static gif / jpg / js files
 nginx_rewrite_static_content: false
+
+# Allow use of a custom log format, which must already exist / be defined on the server.
+# The default format is nginx's internal "custom" format, which doesn't need to be specified
+# See http://nginx.org/en/docs/http/ngx_http_log_module.html#log_format
+nginx_access_log_format: ''
+nginx_access_log_path: "/var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-access.log"
+nginx_access_log_conf: "{{ [nginx_access_log_path, nginx_access_log_format] | join (' ') }}"
