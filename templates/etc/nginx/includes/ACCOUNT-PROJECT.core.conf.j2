@@ -90,21 +90,23 @@
   }
 
 {% if web_application != 'proxy_pass' %}
-{% if nginx_ip_restricted_locations|length > 0  %}
-{% for restricted_location in nginx_ip_restricted_locations %}
-  location {{ restricted_location }} {
-    {% for allowed_ip in nginx_allowed_ips %}
-    allow {{ allowed_ip }};
-    {% endfor %}
-    deny all;
-    {% if restricted_location.endswith('.php')  %}
-    include {{ path_to_nginx_php_fpm_include }};
-    {% else %}
-    try_files $uri $uri/ @rewrite;
-    {% endif %}
-  }
-{% endfor %}{# /nginx_ip_restricted_locations|length > 0 #}
-{% endif %}{# /restricted_location in nginx_ip_restricted_locations #}
+  {% if nginx_ip_restricted_locations|length > 0  %}
+    {% for restricted_location in nginx_ip_restricted_locations %}
+      location {{ restricted_location }} {
+        {% for allowed_ip in nginx_allowed_ips %}
+          allow {{ allowed_ip }};
+        {% endfor %}
+        deny all;
+        {% if restricted_location.endswith('.php')  %}
+          {% if php_version != 'none' %}
+            include {{ path_to_nginx_php_fpm_include }};
+          {% endif %}
+        {% else %}
+          try_files $uri $uri/ @rewrite;
+        {% endif %}
+      }
+    {% endfor %}{# /nginx_ip_restricted_locations|length > 0 #}
+  {% endif %}{# /restricted_location in nginx_ip_restricted_locations #}
 {% endif %}{# /web_application != 'proxy_pass' #}
 
 
@@ -149,19 +151,17 @@
     return 403;
   }
   location = /xmlrpc.php {
-    {% if nginx_allow_wp_xmlrpc %}
-    include {{ path_to_nginx_php_fpm_include }};
+    {% if nginx_allow_wp_xmlrpc and php_version != 'none' %}
+      include {{ path_to_nginx_php_fpm_include }};
     {% else %}
-    return 403;
+      return 403;
     {% endif %}
   }
+  {% if not nginx_allow_wp_json %}
   location /wp-json {
-    {% if nginx_allow_wp_json %}
-    try_files $uri $uri/ @rewrite;
-    {% else %}
     return 403;
-    {% endif %}
   }
+  {% endif %}
 
   # Wordpress:
   # Include the "?$args" part so non-default permalinks doesn't break when using query string
@@ -215,7 +215,9 @@
 
   # Drupal 8: Update page doesn't work without this.
   location ~ ^/update.php {
+    {% if php_version != 'none' %}
     include {{ path_to_nginx_php_fpm_include }};
+    {% endif %}
   }
 
 {% elif web_application == 'proxy_pass' %}
@@ -245,7 +247,7 @@
   }
 {% endif %}
 
-{% if web_application != 'static' and web_application != 'proxy_pass' %}
+{% if web_application != 'static' and web_application != 'proxy_pass' and php_version != 'none' %}
 
   # PHP FPM on a socket
   location ~ \.php$ {

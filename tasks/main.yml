@@ -117,6 +117,7 @@
     backup: true
   notify:
     - arvh safe reload nginx
+  when: php_version != 'none'
 
 - name: Update nginx core conf include for {{ linux_owner }}/{{ project }}
   template:
@@ -167,18 +168,21 @@
     backup: true
   notify:
     - restart php{{ php_version }}-fpm
+  when: php_version != 'none'
 
 - name: Construct a list of notifies to use when changing a pool between PHP versions
   shell: >
     /usr/bin/dpkg --list|/bin/grep -woE '\bphp.*-fpm\b'|/bin/grep -v dbgsym|/usr/bin/awk '{print "restart " $1}'
   register: cmdresult_php_notify_list
   changed_when: false
+  when: php_version != 'none'
 
 - name: Enumerate /etc/php/VERSION/fpm/pool.d directories that are not "{{ php_version }}", used by the 'remove' task below)
   shell: >
     /usr/bin/find /etc/php -maxdepth 3 -type d -path '/etc/php/*/fpm/pool.d' | /usr/bin/cut -d'/' -f 4 | (grep -v "{{ php_version }}" || true)
   register: cmdresult_enumerate_php_version_numbers
   changed_when: false
+  when: php_version != 'none'
 
 - name: Remove all FPM pools that are not PHP {{ php_version }} for {{ linux_owner }}/{{ project }} - 1 of 2
   file:
@@ -187,15 +191,17 @@
   with_items:
     - "{{ cmdresult_enumerate_php_version_numbers.stdout_lines|default([]) }}"
   notify: "{{ cmdresult_php_notify_list.stdout_lines|default([]) }}"
+  when: php_version != 'none'
 
 - name: Remove all FPM pools that are not PHP {{ php_version }} for {{ linux_owner }}/{{ project }} - 2 of 2
   file:
     path: /etc/php/{{ item }}/fpm/pool.d/{{ project }}.conf
     state: absent
-  when: linux_owner == project
   with_items:
     - "{{ cmdresult_enumerate_php_version_numbers.stdout_lines|default([]) }}"
   notify: "{{ cmdresult_php_notify_list.stdout_lines|default([]) }}"
+  when: linux_owner == project
+    and php_version != 'none'
 
 - name: Install dependency for htpasswd operations
   apt:
