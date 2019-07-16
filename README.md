@@ -157,7 +157,7 @@ If using the role more than once **in the same play**, you must re-specify **all
 
 #### php_version
 
-- Major.minor version (e.g. `7.1`). The version you specify  must already be running on the server.
+- Major.minor version (e.g. `7.1`). The version you specify must already be running on the server. If PHP isn't on the server at all, you must specify `php_version: none`.
 
 #### web_root_dir_name
 
@@ -306,6 +306,8 @@ If web_application doesn't do everything you need, the following tweaks can help
 ```yaml
 php_sendmail_path: '/usr/sbin/sendmail -t -i -f foo@example.com'
 ```
+
+**skip_mysql**: Lets the role be used when MySQL isn't available at all. See also: `php_version: none`.
 
 ## Dependencies
 
