@@ -92,3 +92,6 @@ nginx_rewrite_static_content: false
 nginx_access_log_format: ''
 nginx_access_log_path: "/var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-access.log"
 nginx_access_log_conf: "{{ [nginx_access_log_path, nginx_access_log_format] | join (' ') }}"
+
+# This isn't really used by us (yet); we just pass it to acro-add-website
+skip_mysql: false

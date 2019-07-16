@@ -27,6 +27,7 @@
 - name: (Re)set some runtime variables for the role's internal use
   set_fact:
     skip_ssl_flag: ''
+    skip_mysql_flag: ''
     rds_flag: ''
     force_flag: ''
     service_account_flag: ''
@@ -74,9 +75,13 @@
     force_flag: '--force'
   when: "force == true"
 
+- set_fact:
+    skip_mysql_flag: '--skip-mysql'
+  when: skip_mysql == true
+
 - name: Run acro-add-website
   shell: >
-     export TERM=xterm-256color; /usr/bin/timeout 30s /bin/bash /usr/local/sbin/acro-add-website.sh --account {{ linux_owner }} --project {{ project }} --fqdn {{ nginx_primal_name }} --webroot {{ web_root_dir_name }} --php-version {{ php_version }} --responsible-person {{ responsible_person }} --mysql-allow-from {{ mysql_allow_from }} --mysql-host-address {{ mysql_host_address }} {{ skip_ssl_flag }} {{ rds_flag }} {{ service_account_flag }} {{ force_flag}}
+     export TERM=xterm-256color; /usr/bin/timeout 30s /bin/bash /usr/local/sbin/acro-add-website.sh --account {{ linux_owner }} --project {{ project }} --fqdn {{ nginx_primal_name }} --webroot {{ web_root_dir_name }} --php-version {{ php_version }} --responsible-person {{ responsible_person }} --mysql-allow-from {{ mysql_allow_from }} --mysql-host-address {{ mysql_host_address }} {{ skip_ssl_flag }} {{ rds_flag }} {{ service_account_flag }} {{ force_flag}} {{ skip_mysql_flag }}
   args:
     creates: /home/{{ linux_owner }}/.acro-add-website/{{ project }}
 
