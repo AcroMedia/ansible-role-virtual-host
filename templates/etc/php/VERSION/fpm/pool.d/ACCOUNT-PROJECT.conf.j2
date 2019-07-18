@@ -18,7 +18,7 @@ pm.min_spare_servers = {{ php_fpm_min_spare_servers }}
 pm.max_spare_servers = {{ php_fpm_max_spare_servers }}
 pm.max_requests = {{ php_fpm_max_requests }}
 {% if php_fpm_status_path != '' %}
-pm.status_path: {{ php_fpm_status_path }}
+pm.status_path = {{ php_fpm_status_path }}
 {% endif %}
 ;request_terminate_timeout = 0
 catch_workers_output = no
