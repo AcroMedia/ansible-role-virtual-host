@@ -36,7 +36,7 @@ The best way to prevent variable bleeed is to split up multiple uses of the role
   tags:
     - always
   roles: []
-  tasks: []  
+  tasks: []
 
 - name: Configure virtual host A
   hosts: app-nodes
@@ -192,42 +192,120 @@ If using the role more than once **in the same play**, you must re-specify **all
 - **Warning**: When using `manual`, the certificate you provide must work for all of the `nginx_canonical_name` and `nginx_aliases` you specify. Providing mis-matched names *will* result in SSL errors in browsers, and *may* break NGINX configuraiton, preventing the service from starting.
 
 #### How the combination of `deploy_env` + `ssl` affects redirects
-  ```
-  staging + no ssl:
-    nginx_primal_name:80     -> Serve content.
-    nginx_aliases:80         -> Redirect to nginx_canonical_name:80. Assume the user had to adjust /etc/hosts to make requests with this name.
-    nginx_canonical_name:80  -> Serve content. Assume the user had to adjust /etc/hosts to make requests with this name.
 
-  staging + letsencrypt ssl:
-    nginx_primal_name:80     -> Redirect to nginx_primal_name:443. Assume primal name is under our control, so we can always use SSL for this name.
-    nginx_aliases:80         -> Redirect to nginx_canonical_name:80 (http instead of https), since going to https would produce SSL warnings.
-    nginx_canonical_name:80  -> Serve content instead of redirecting to https, since the cert won't be valid until production mode is enabled. This particular case has the convenient side effect of serving older sites immediately as soon as DNS switches, instead of pushing them to https where SSL won't be valid yet.
-    nginx_primal_name:443    -> Serve content instead of redirecting to canonical name. Canonical name can't be used since DNS doesn't point here yet.
-    nginx_aliases:443        -> Redirect to nginx_canonical_name:443. Assume the user had to adjust /etc/hosts to make requests with this name.
-    nginx_canonical_name:443 -> Serve content with an invalid certificate. Assume the user had to adjust /etc/hosts to make requests with this name.
-
-  staging + manual ssl:
-    nginx_primal_name:80     -> Redirect to nginx_primal_name:443. Assume primal name is under our control, so we can always use SSL for this name.
-    nginx_aliases:80         -> Redirect to nginx_canonical_name:443. Assume the user had to adjust /etc/hosts to make requests with this name.
-    nginx_canonical_name:80  -> Redirect to nginx_canonical_name:443. Assume the user had to adjust /etc/hosts to make requests with this name.
-    nginx_primal_name:443    -> Serve content instead of redirecting to canonical name. Canonical name can't be used since DNS doesn't point here yet.
-    nginx_aliases:443        -> Redirect to nginx_canonical_name:443. Assume the user had to adjust /etc/hosts to make requests with this name.
-    nginx_canonical_name:443 -> Serve content. Assume the user had to adjust /etc/hosts to make requests with this name.
-
-  production + no ssl:
-    nginx_primal_name:80     -> Redirect to nginx_canonical_name:80.
-    nginx_aliases:80         -> Redirect to nginx_canonical_name:80.
-    nginx_canonical_name:80  -> Serve content.
-
-  production + (manual or letsencrypt) ssl:
-    nginx_primal_name:80      -> Redirect to nginx_canonical_name:443
-    nginx_aliases:80          -> Redirect to nginx_canonical_name:443
-    nginx_canonical_name:80   -> Redirect to nginx_canonical_name:443
-    nginx_primal_name:443     -> Redirect to nginx_canonical_name:443
-    nginx_aliases:443         -> Redirect to nginx_canonical_name:443
-    nginx_canonical_name:443  -> Serve content. This is the final destination for all names.
-  ```
 In `staging` modes, the `nginx_primal_name` never redirects to the canonical name, because it's expected that DNS is not pointing at the server yet.
+
+##### staging + no ssl
+
+  - **nginx_primal_name:80**:
+
+    Serve content.
+
+  - **nginx_aliases:80**:
+
+    Redirect to nginx_canonical_name:80. Assume the user had to adjust /etc/hosts to make requests with this name.
+
+  - **nginx_canonical_name:80**:
+
+    Serve content. Assume the user had to adjust /etc/hosts to make requests with this name.
+
+
+##### staging + letsencrypt ssl:
+
+  -  **nginx_primal_name:80**
+
+    Redirect to nginx_primal_name:443. Assume primal name is under our control, so we can always use SSL for this name.
+
+  -  **nginx_aliases:80**
+
+    If aliases are present, redirect to nginx_canonical_name:80 if nginx_canonical_name and nginx_primal_name are not the same, otherwise redirect to nginx_primal_name:443. We redirect to http for canonical instead of https, since going to https with the canonical would produce SSL warnings.
+
+  - **nginx_canonical_name:80**
+
+    Only used if nginx_canonical_name is different than nginx_primal_name. Serve content instead of redirecting to https, since the cert won't be valid until production mode is enabled. This particular case  has the convenient side effect of serving older sites immediately as soon as DNS switches, instead of pushing them to https where SSL won't be valid yet.
+
+  - **nginx_primal_name:443**
+
+    Serve content instead of redirecting to canonical name. It wouldn't make sense to direct to the Canonical, since DNS doesn't point at the server yet, and trying to use the canonical name would produce invalid SSL errors.
+
+  - **nginx_aliases:443**
+
+    If aliases exist, redirect them to nginx_canonical_name:443. Assume the user had to adjust /etc/hosts to make requests with this name. Expect to see Invalid SSL errors for all aliases, since they won't be part of the LetsEncrypt certificate deploy_env is switched to production.
+
+  - **nginx_canonical_name:443**
+
+    Only used if nginx_canonical_name != nginx_primal_name. Serve content with an invalid certificate. Assume the user had to adjust /etc/hosts to make requests with this name.
+
+
+##### staging + manual ssl:
+
+  -  **nginx_primal_name:80**
+
+    Redirect to nginx_primal_name:443. Assume primal name is under our control, so we can always use SSL for this name.
+
+  - **nginx_aliases:80**
+
+    Redirect to nginx_canonical_name:443. Assume the user had to adjust /etc/hosts to make requests with this name.
+
+  - **nginx_canonical_name:80**
+
+    Redirect to nginx_canonical_name:443. Assume the user had to adjust /etc/hosts to make requests with this name.
+
+  - **nginx_primal_name:443**
+
+    Serve content instead of redirecting to canonical name. Canonical name can't be used since DNS doesn't point here yet.
+
+  -  **nginx_aliases:443**
+
+    Redirect to nginx_canonical_name:443. Assume the user had to adjust /etc/hosts to make requests with this name.
+
+  - **nginx_canonical_name:443**
+
+    Serve content. Assume the user had to adjust /etc/hosts to make requests with this name.
+
+
+##### production + no ssl:
+
+  - **nginx_primal_name:80**
+
+    Redirect to nginx_canonical_name:80.
+
+  - **nginx_aliases:80**
+
+    Redirect to nginx_canonical_name:80.
+
+  - **nginx_canonical_name:80**
+
+    Serve content.
+
+
+#####  production + (manual or letsencrypt) ssl:
+
+  - **nginx_primal_name:80**
+
+    Redirect to nginx_canonical_name:443
+
+  - **nginx_aliases:80**
+
+    Redirect to nginx_canonical_name:443
+
+  - **nginx_canonical_name:80**
+
+    Redirect to nginx_canonical_name:443
+
+  - **nginx_primal_name:443**
+
+    Redirect to nginx_canonical_name:443
+
+  - **nginx_aliases:443**
+
+    Redirect to nginx_canonical_name:443
+
+  - **nginx_canonical_name:443**
+
+    Serve content. This is the final destination for all names.
+
+
 
 #### When providing manually registered / paid SSL certificates
 
