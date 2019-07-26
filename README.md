@@ -380,6 +380,8 @@ If web_application doesn't do everything you need, the following tweaks can help
 
 **max_upload_size_mb**: Defaults to 8. This meta variable controls 3 individual PHP and NGINX config values. See defaults/main.yml for the individual variable names if you need more fine grained control.
 
+**php_memory_limit**: Defaults to `128M`. Accepts whatever you would normally place in php.ini. Don't forget the "M" at the end.
+
 **php_sendmail_path**: In some rare cases, you may need to force the "from" address on all outgoing mail. PHP also has a setting for `sendmail_from`, but it seems to have no effect. Be careful to test after setting this. Example:
 ```yaml
 php_sendmail_path: '/usr/sbin/sendmail -t -i -f foo@example.com'
