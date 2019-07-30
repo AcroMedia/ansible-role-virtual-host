@@ -99,16 +99,16 @@
   register: letsencrypt_result
   ignore_errors: true
 
-- name: Upload arbitrary customizations for the virtual host
+- name: Upload arbitrary customizations from the playbook through the role to the remote host
   template:
     src: "{{ nginx_include_custom }}"
-    dest: "{{ path_to_nginx_vhost_custom }}"
+    dest: "{{ nginx_include_custom_dest }}"
     owner: root
     group: root
     mode: 0644
     backup: true
   notify: arvh safe reload nginx
-  when: "nginx_include_custom | trim() != ''"
+  when: nginx_include_custom != ''
 
 - name: Update PHP FPM nginx include for {{ linux_owner }}/{{ project }}
   template:

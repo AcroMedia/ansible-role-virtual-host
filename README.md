@@ -83,11 +83,7 @@ If using the role more than once **in the same play**, you must re-specify **all
 ```
 
 
-## Role Variables
-
-**See defaults/main.yml** - there are quite a few variables in there that are straightforward, and don't require documentation.
-
-### Required Variables
+## Required Role Variables
 
 #### linux_owner
 
@@ -191,7 +187,7 @@ If using the role more than once **in the same play**, you must re-specify **all
 
 - **Warning**: When using `manual`, the certificate you provide must work for all of the `nginx_canonical_name` and `nginx_aliases` you specify. Providing mis-matched names *will* result in SSL errors in browsers, and *may* break NGINX configuraiton, preventing the service from starting.
 
-#### How the combination of `deploy_env` + `ssl` affects redirects
+## How the combination of `deploy_env` + `ssl` affects redirects
 
 In `staging` modes, the `nginx_primal_name` never redirects to the canonical name, because it's expected that DNS is not pointing at the server yet.
 
@@ -323,7 +319,9 @@ These files need to be placed on the server **before** you run the playbook, or 
 
 When using proxy_pass, all other diretives except those related to secruity (ie those that immediately return a 403) get disabled, as they are expected to be handled by your upstream / proxied application.
 
-### Optional variables
+### Optional Role Variables
+
+**See defaults/main.yml** - there are quite a few variables in there that are straightforward, and don't require documentation.
 
 **redirect_code**: Defaults to `302` (temporary redirect). After your site has launched and working without any issues, change this to `301` and run your playbook again to make redirects [to the canoncial name] permanent.
 
@@ -360,10 +358,6 @@ nginx_location_extras:
       access_log off;
 ```
 
-#### Tweaks / overrides
-
-If web_application doesn't do everything you need, the following tweaks can help.
-
 **rewrite_target**: Defaults to `/index.php`. If your site is static, specify `/index.html` or `/index.htm`. If using D6, specify `/index.php?q=$1`. If you have another file you want your pretty urls to be rewritten to, change this to whatever your main index file is.
 
 **image_cache_location**: "Location" in the context of Nginx location regex pattern. Defaults to `/sites/.*/files/styles/` which works for >= D7. If using D6, specify whatever your image cache dir is (usually `/sites/.*/files/imagecache/` )
@@ -372,7 +366,9 @@ If web_application doesn't do everything you need, the following tweaks can help
 
 **http_port**, **https_port**: Default to 80 and 443 respectively. Caveat: If you're changing this, you'll likely also need to change the server-wide default port(s), which is not handled by this role.
 
-**nginx_include_custom**: Optional. Path to a local config file that will be "include"d before the start of the nginx 'location' directives for the virtual host. The include is treated as an ansible template; you may use any variables in your config that are avaialble to the role. It will be placed on the server as '/etc/nginx/includes/$linux_owner-$project.custom.conf'.
+**nginx_include_custom**: Path to a template file in your playbook that will be uploaded to the server, and then `include`d before the start of the nginx 'location' directives for the virtual host. You may use any variables in your template that are avaialble to the role. Your template will be processed and uploaded to the server as `/etc/nginx/includes/{{ linux_owner }}-{{ project }}.custom.conf`.
+
+**nginx_include_resident**: Absolute path to a file that already resides on the server (for example, one that was deployed by your Drupal project's code repository inside your web root), to be `include`d before the location directives in the virtual host. **Caveats:**  **(1)** The path you specify *MUST* already exist on the server, or your nginx config will break. **(2)** Future changes to your included file will not be automatically applied, since the role has no way of knowing when this file changed, and no means to intelligently trigger a reload. It will be up to you to manually reload nginx when needed.
 
 **require_http_auth** (boolean): Useful if you want to keep google's prying eyes out of your staging environment. When true, will prompt the user for the values specified by **http_auth_username** and **http_auth_password**.
 
@@ -388,6 +384,7 @@ php_sendmail_path: '/usr/sbin/sendmail -t -i -f foo@example.com'
 ```
 
 **skip_mysql**: Lets the role be used when MySQL isn't available at all. See also: `php_version: none`.
+
 
 ## Dependencies
 

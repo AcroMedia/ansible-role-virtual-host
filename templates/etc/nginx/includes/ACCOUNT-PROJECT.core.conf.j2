@@ -16,9 +16,14 @@
   gzip_static on;
 {% endif %}
 
-{% if nginx_include_custom | trim != '' %}
-  # Custom includes that were given to the virtual host role by the calling playbook
-  include "{{ path_to_nginx_vhost_custom }}";
+{% if nginx_include_custom != '' %}
+  # Uploaded by acromedia/ansible-role-virtual-host
+  # See: {{ nginx_include_custom }}
+  include "{{ nginx_include_custom_dest }}";
+{% endif %}
+
+{% if nginx_include_resident != '' %}
+  include "{{ nginx_include_resident }}";
 {% endif %}
 
 {% if web_application != 'proxy_pass' %}

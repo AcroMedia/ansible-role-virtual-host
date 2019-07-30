@@ -27,7 +27,13 @@ mysql_host_address: localhost
 
 rds: false
 
+# Path to the template file in the playbook that the role should upload.
 nginx_include_custom: ''
+# Path to the template file after it's been uploaded to the server.
+nginx_include_custom_dest: "/etc/nginx/includes/{{ linux_owner }}-{{ project }}.custom.conf"
+
+# Instead of uploading, just refer to a file that already exists.
+nginx_include_resident: ''
 
 # Set empty defaults here. If the playbook doesn't set a value for them, we'll use set_fact in tasks to create sane defaults.
 php_service_user: ''
@@ -49,7 +55,6 @@ nginx_ip_restricted_locations: []
 nginx_allowed_ips: []
 
 path_to_nginx_php_fpm_include: "/etc/nginx/includes/{{ linux_owner }}-{{ project }}.php-fpm.conf"
-path_to_nginx_vhost_custom: "/etc/nginx/includes/{{ linux_owner }}-{{ project }}.custom.conf"
 
 # PHP File upload limits
 max_upload_size_mb: 8
