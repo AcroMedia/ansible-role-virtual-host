@@ -385,6 +385,10 @@ php_sendmail_path: '/usr/sbin/sendmail -t -i -f foo@example.com'
 
 **skip_mysql**: Lets the role be used when MySQL isn't available at all. See also: `php_version: none`.
 
+**disable_http_auth** (boolean): Defaults to false. On staging/dev servers, the global nginx config may be imposing password authentication. Let it be disabled per-virtual host.
+
+**disable_environment_indicator** (boolean): Defaults to false. On staging/dev servers, the global nginx config may be imposing password authentication. Let it be disabled per-virtual host.
+
 
 ## Dependencies
 

@@ -43,7 +43,7 @@ fpm_pool_filename: ''
 force: false
 
 
-# Keep staging, or pre-production sites away from google's prying eyes
+# Keep staging, or pre-production sites away from google's prying eyes. This is created at the virtaul host level. See also "disable_http_auth".
 require_http_auth: false
 http_auth_username: ''
 http_auth_password: ''
@@ -101,3 +101,9 @@ nginx_access_log_conf: "{{ [nginx_access_log_path, nginx_access_log_format] | jo
 
 # This isn't really used by us (yet); we just pass it to acro-add-website
 skip_mysql: false
+
+# On staging/dev servers, the global nginx config may be imposing password authentication. Let it be disabled per-virtual host.
+disable_http_auth: false
+
+# On staging/dev servers, the global nginx config may be imposing password authentication. Let it be disabled per-virtual host.
+disable_environment_indicator: false

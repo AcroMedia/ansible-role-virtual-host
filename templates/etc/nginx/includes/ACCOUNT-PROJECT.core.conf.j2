@@ -1,9 +1,18 @@
-{% if require_http_auth == true
+{% if disable_http_auth == true %}
+  auth_basic off;
+
+{% elif require_http_auth == true
     and http_auth_username != ''
     and http_auth_password != ''
 %}
   auth_basic "{{ http_auth_message }}";
   auth_basic_user_file {{ path_to_htpasswd_file }};
+
+{% endif %}
+
+{% if disable_environment_indicator %}
+  sub_filter "Disable_environment_indicator_for_{{ linux_owner }}_{{ project }}" "";
+
 {% endif %}
 
   root /home/{{ linux_owner }}/www/{{ project }}/{{ web_root_dir_name }};
