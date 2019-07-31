@@ -140,6 +140,7 @@
     src: "/etc/nginx/sites-available/{{ linux_owner }}-{{ project }}.conf"
     dest: "/etc/nginx/sites-enabled/{{ linux_owner }}-{{ project }}.conf"
     state: link
+  when: not ansible_check_mode
   notify:
     - arvh safe reload nginx
 
