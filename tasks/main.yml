@@ -79,7 +79,7 @@
     skip_mysql_flag: '--skip-mysql'
   when: skip_mysql == true
 
-- name: Run acro-add-website
+- name: Run acro-add-website - SSL registration can take up to a minute or more
   shell: >
      export TERM=xterm-256color; /usr/bin/timeout 30s /bin/bash /usr/local/sbin/acro-add-website.sh --account {{ linux_owner }} --project {{ project }} --fqdn {{ nginx_primal_name }} --webroot {{ web_root_dir_name }} --php-version {{ php_version }} --responsible-person {{ responsible_person }} --mysql-allow-from {{ mysql_allow_from }} --mysql-host-address {{ mysql_host_address }} {{ skip_ssl_flag }} {{ rds_flag }} {{ service_account_flag }} {{ force_flag}} {{ skip_mysql_flag }}
   args:
