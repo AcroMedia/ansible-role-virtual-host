@@ -83,6 +83,7 @@ server {
   {% include 'ssl.letsencrypt.inc.j2' %}
   access_log {{ nginx_access_log_conf }};
   error_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-error.log;
+  include /etc/nginx/includes/letsencrypt-acme-challenge.conf;
   include /etc/nginx/includes/{{ linux_owner }}-{{ project }}.core.conf;
 }
 {% endif %}
