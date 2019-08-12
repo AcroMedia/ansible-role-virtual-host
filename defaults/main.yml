@@ -79,6 +79,9 @@ php_memory_limit: 128M
 php_max_input_vars: 3001
 php_fpm_status_path: ''
 
+# PHP other
+php_short_open_tag: 'Off'
+
 # Allow arbitrary location blocks from the role (without an include file). See readme.
 nginx_location_extras: []
 
