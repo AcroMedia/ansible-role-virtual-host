@@ -161,7 +161,7 @@ If using the role more than once **in the same play**, you must re-specify **all
 
 #### web_application
 
-- Tells the role which nginx configuration to apply. Defaults to `drupal8`. Can be one of `drupal6`, `drupal7`, `drupal8`, `wordpress`, 'php', `static`, or `proxy_pass`.
+- Tells the role which nginx configuration to apply. Defaults to `drupal8`. Can be one of `drupal4`, `drupal5`, `drupal6`, `drupal7`, `drupal8`, `wordpress`, 'php', `static`, `proxy_pass`, or `redirect`.
 
 #### deploy_env
 

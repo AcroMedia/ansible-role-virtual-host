@@ -124,9 +124,15 @@
 {% endif %}{# /web_application != 'proxy_pass' #}
 
 
-{% if web_application == 'drupal6'
+{% if web_application == 'redirect' and redirect_to != '' %}
+  location / {
+    return {{ redirect_code }} {{ redirect_to }};
+  }
+
+
+{% elif (web_application == 'drupal6'
     or web_application == 'drupal5'
-    or web_application == 'drupal4'    %}
+    or web_application == 'drupal4')    %}
 
   # Serve static content before trying to get PHP involved.
   location / {
@@ -241,7 +247,14 @@
     {{ nginx_proxy_pass_blob }}
   }
 
-{% else %} {# Implied: web_application == ('static' or 'php') #}
+{% elif web_application == 'php' %}
+
+  # Generic PHP website
+  location / {
+    try_files $uri $uri/ =404;
+  }
+
+{% else %}{# implied: web_application == 'static' #}
 
   # Static website
   location / {
