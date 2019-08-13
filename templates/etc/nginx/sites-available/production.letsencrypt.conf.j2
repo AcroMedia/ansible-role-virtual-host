@@ -25,7 +25,7 @@ server {
 
 {% if (nginx_primal_name != nginx_canonical_name) or (nginx_aliases|length > 0) %}
 server {
-  listen {{ https_port }} ssl;
+  listen {{ https_port }} {{ 'ssl http2' if nginx_http2 else 'ssl' }};
   server_name {{ nginx_primal_name }} {{ nginx_aliases|join(' ') }};
   {% include 'ssl.letsencrypt.inc.j2' %}
   access_log {{ nginx_access_log_conf }};
@@ -38,7 +38,7 @@ server {
 {% endif %}
 
 server {
-  listen {{ https_port }} ssl;
+  listen {{ https_port }} {{ 'ssl http2' if nginx_http2 else 'ssl' }};
   server_name {{ nginx_canonical_name }};
   {% include 'ssl.letsencrypt.inc.j2' %}
   access_log {{ nginx_access_log_conf }};

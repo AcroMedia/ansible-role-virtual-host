@@ -110,3 +110,6 @@ disable_http_auth: false
 
 # On staging/dev servers, the global nginx config may be imposing password authentication. Let it be disabled per-virtual host.
 disable_environment_indicator: false
+
+# In most cases you want HTTP2 enabled. The role only enables HTTP2 for HTTPS connections.
+nginx_http2: true
