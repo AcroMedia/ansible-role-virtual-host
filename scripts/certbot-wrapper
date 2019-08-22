@@ -12,17 +12,19 @@ function main () {
   local GROOMED_DOMAINS_LIST=""
   GROOMED_DOMAINS_LIST=$(groom_list_of_domains)
 
-  /usr/local/bin/certbot-auto \
-    certonly \
-    --no-self-upgrade \
-    --non-interactive \
-    --webroot \
-    --webroot-path /var/www/letsencrypt \
-    --agree-tos \
-    --email webmaster@acromedia.com \
-    --cert-name "$NGINX_PRIMAL_NAME" \
-    --keep \
-    --domains "${GROOMED_DOMAINS_LIST}"
+  CMD="/usr/local/bin/certbot-auto"
+  CMD="$CMD certonly"
+  CMD="$CMD --no-self-upgrade"
+  CMD="$CMD --non-interactive"
+  CMD="$CMD --webroot"
+  CMD="$CMD --webroot-path /var/www/letsencrypt"
+  CMD="$CMD --agree-tos"
+  CMD="$CMD --email webmaster@acromedia.com"
+  CMD="$CMD --cert-name $NGINX_PRIMAL_NAME"
+  CMD="$CMD --keep"
+  CMD="$CMD --domains ${GROOMED_DOMAINS_LIST}"
+  (set -x && $CMD --dry-run && $CMD)
+
 }
 
 function groom_list_of_domains () {
