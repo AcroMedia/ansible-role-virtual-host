@@ -45,6 +45,7 @@ server {
   {% include 'ssl.manual.inc.j2' %}
   access_log {{ nginx_access_log_conf }};
   error_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-error.log;
+  include /etc/nginx/includes/letsencrypt-acme-challenge.conf;
   location / {
     return {{ redirect_code }} https://{{ nginx_canonical_name }}$request_uri;
   }
@@ -57,5 +58,6 @@ server {
   {% include 'ssl.manual.inc.j2' %}
   access_log {{ nginx_access_log_conf }};
   error_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-error.log;
+  include /etc/nginx/includes/letsencrypt-acme-challenge.conf;
   include /etc/nginx/includes/{{ linux_owner }}-{{ project }}.core.conf;
 }

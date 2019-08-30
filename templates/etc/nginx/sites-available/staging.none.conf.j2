@@ -7,6 +7,7 @@ server {
   server_name {{ nginx_primal_name }};
   access_log {{ nginx_access_log_conf }};
   error_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-error.log;
+  include /etc/nginx/includes/letsencrypt-acme-challenge.conf;
   include /etc/nginx/includes/{{ linux_owner }}-{{ project }}.core.conf;
 }
 {% endif %}
@@ -17,6 +18,7 @@ server {
   server_name {{ nginx_aliases|join(' ') }};
   access_log {{ nginx_access_log_conf }};
   error_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-error.log;
+  include /etc/nginx/includes/letsencrypt-acme-challenge.conf;
   location / {
     return {{ redirect_code }} http://{{ nginx_canonical_name }}$request_uri;
   }
@@ -28,5 +30,6 @@ server {
   server_name {{ nginx_canonical_name }};
   access_log {{ nginx_access_log_conf }};
   error_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-error.log;
+  include /etc/nginx/includes/letsencrypt-acme-challenge.conf;
   include /etc/nginx/includes/{{ linux_owner }}-{{ project }}.core.conf;
 }
