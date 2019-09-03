@@ -35,6 +35,11 @@
   include "{{ nginx_include_resident }}";
 {% endif %}
 
+{% if nginx_inline_custom != '' %}
+  {{ nginx_inline_custom }}
+{% endif %}
+
+
 {% if web_application != 'proxy_pass' %}
 {% if nginx_location_extras|length > 0  %}
 {% for extra_location in nginx_location_extras %}

@@ -1,0 +1,3 @@
+---
+path_to_service_binary: /sbin/service
+nginx_process_owner: nginx

@@ -1,4 +1,6 @@
 ---
+- include_vars: "vars/{{ ansible_os_family }}.yml"
+
 - name: See if a site has already been created with AAW
   stat:
     path: /home/{{ linux_owner }}/.acro-add-website/{{ project }}
@@ -52,6 +54,11 @@
     x__fpm_pool_filename: "{{ linux_owner }}-{{ project }}.conf"
   when: "fpm_pool_filename == ''
     and project != linux_owner"
+
+- set_fact:
+    x__fpm_pool_filename: "{{ fpm_pool_filename }}"
+  when: "x__fpm_pool_filename == ''
+    and fpm_pool_filename != '' "
 
 - set_fact:
     x__php_service_user: "{{ project }}-srv"
@@ -130,7 +137,7 @@
 - name: Update nginx virtual host configuration for {{ linux_owner }}/{{ project }}
   template:
     src: "{{ role_path }}/templates/etc/nginx/sites-available/{{ deploy_env }}.{{ ssl }}.conf.j2"
-    dest: /etc/nginx/sites-available/{{ linux_owner }}-{{ project }}.conf
+    dest: "{{ nginx_vhost_conf_dir }}/{{ linux_owner }}-{{ project }}.conf"
     backup: true
   notify:
     - arvh safe reload nginx
@@ -140,7 +147,8 @@
     src: "/etc/nginx/sites-available/{{ linux_owner }}-{{ project }}.conf"
     dest: "/etc/nginx/sites-enabled/{{ linux_owner }}-{{ project }}.conf"
     state: link
-  when: not ansible_check_mode
+  when: ansible_os_family == 'Debian'
+    and not ansible_check_mode
   notify:
     - arvh safe reload nginx
 
@@ -151,24 +159,25 @@
   loop:
     - /etc/nginx/sites-available/{{ nginx_primal_name }}
     - /etc/nginx/sites-enabled/{{ nginx_primal_name }}
+  when: ansible_os_family == 'Debian'
   notify:
     - arvh safe reload nginx
 
-- name: Remove old duplicate /etc/php/{{ php_version }}/fpm/pool.d/{{ linux_owner }}-{{ project }}.conf
+- name: Remove old duplicate {{ php_fpm_pool_dir }}/{{ linux_owner }}-{{ project }}.conf
   file:
-    path: /etc/php/{{ php_version }}/fpm/pool.d/{{ linux_owner }}-{{ project }}.conf
+    path: "{{ php_fpm_pool_dir }}/{{ linux_owner }}-{{ project }}.conf"
     state: absent
   when: linux_owner == project
   notify:
-    - restart php{{ php_version }}-fpm
+    - restart {{ php_service_name }}
 
 - name: Update PHP {{ php_version }} FPM pool for {{ linux_owner }}/{{ project }}
   template:
     src: "{{ role_path }}/templates/etc/php/VERSION/fpm/pool.d/ACCOUNT-PROJECT.conf.j2"
-    dest: /etc/php/{{ php_version }}/fpm/pool.d/{{ x__fpm_pool_filename }}
+    dest: "{{ php_fpm_pool_dir }}/{{ x__fpm_pool_filename }}"
     backup: true
   notify:
-    - restart php{{ php_version }}-fpm
+    - restart {{ php_service_name }}
   when: php_version != 'none'
 
 - name: Construct a list of notifies to use when changing a pool between PHP versions
@@ -177,6 +186,7 @@
   register: cmdresult_php_notify_list
   changed_when: false
   when: php_version != 'none'
+    and ansible_os_family == 'Debian'
 
 - name: Enumerate /etc/php/VERSION/fpm/pool.d directories that are not "{{ php_version }}", used by the 'remove' task below)
   shell: >
@@ -184,6 +194,7 @@
   register: cmdresult_enumerate_php_version_numbers
   changed_when: false
   when: php_version != 'none'
+    and ansible_os_family == 'Debian'
 
 - name: Remove all FPM pools that are not PHP {{ php_version }} for {{ linux_owner }}/{{ project }} - 1 of 2
   file:
@@ -193,6 +204,7 @@
     - "{{ cmdresult_enumerate_php_version_numbers.stdout_lines|default([]) }}"
   notify: "{{ cmdresult_php_notify_list.stdout_lines|default([]) }}"
   when: php_version != 'none'
+    and ansible_os_family == 'Debian'
 
 - name: Remove all FPM pools that are not PHP {{ php_version }} for {{ linux_owner }}/{{ project }} - 2 of 2
   file:
@@ -203,6 +215,7 @@
   notify: "{{ cmdresult_php_notify_list.stdout_lines|default([]) }}"
   when: linux_owner == project
     and php_version != 'none'
+    and ansible_os_family == 'Debian'
 
 - name: Install dependency for htpasswd operations
   apt:
@@ -210,6 +223,7 @@
     state: present
     update_cache: true
   when: require_http_auth == true
+    and ansible_os_family == 'Debian'
 
 - name: Create htpasswd file for {{ linux_owner }}-{{ project }}
   htpasswd:

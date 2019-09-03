@@ -370,6 +370,8 @@ nginx_location_extras:
 
 **nginx_include_resident**: Absolute path to a file that already resides on the server (for example, one that was deployed by your Drupal project's code repository inside your web root), to be `include`d before the location directives in the virtual host. **Caveats:**  **(1)** The path you specify *MUST* already exist on the server, or your nginx config will break. **(2)** Future changes to your included file will not be automatically applied, since the role has no way of knowing when this file changed, and no means to intelligently trigger a reload. It will be up to you to manually reload nginx when needed.
 
+**nginx_inline_custom**: Whatever you specify is placed as-is, inside the virtual host's main `server` block, before any location directives.
+
 **require_http_auth** (boolean): Useful if you want to keep google's prying eyes out of your staging environment. When true, will prompt the user for the values specified by **http_auth_username** and **http_auth_password**.
 
 **max_execution_time_seconds**: Defaults to 300. This meta variable controls 3 individual PHP and NGINX config values. See defaults/main.yml for the individual variable names if you need more fine grained control.

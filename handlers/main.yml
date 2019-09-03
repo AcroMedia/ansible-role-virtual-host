@@ -2,7 +2,7 @@
 # Our handler name was colliding with other handlers in the parent playbook... rename it here to prevent weird behaviours.
 - name: arvh safe reload nginx
   become: true
-  shell: "/usr/sbin/nginx -t && /usr/sbin/service nginx reload"
+  shell: "/usr/sbin/nginx -t && {{ path_to_service_binary }} nginx reload"
 
 - name: restart php5-fpm
   service:
@@ -37,4 +37,9 @@
 - name: restart php7.4-fpm
   service:
     name: php7.4-fpm
+    state: restarted
+
+- name: restart php-fpm
+  service:
+    name: php-fpm
     state: restarted
