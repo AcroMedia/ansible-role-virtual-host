@@ -26,17 +26,22 @@
 {% endif %}
 
 {% if nginx_include_custom != '' %}
+  # nginx_include_custom
   # Uploaded by acromedia/ansible-role-virtual-host
   # See: {{ nginx_include_custom }}
   include "{{ nginx_include_custom_dest }}";
 {% endif %}
 
 {% if nginx_include_resident != '' %}
+  # nginx_include_resident
   include "{{ nginx_include_resident }}";
 {% endif %}
 
 {% if nginx_inline_custom != '' %}
-  {{ nginx_inline_custom }}
+# <nginx_inline_custom>
+{{ nginx_inline_custom }}
+
+# </nginx_inline_custom>
 {% endif %}
 
 

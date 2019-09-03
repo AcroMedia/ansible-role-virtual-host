@@ -35,6 +35,9 @@ nginx_include_custom_dest: "/etc/nginx/includes/{{ linux_owner }}-{{ project }}.
 # Instead of uploading, just refer to a file that already exists.
 nginx_include_resident: ''
 
+# Make a big mess out of your playbook, but don't worry about any external files.
+nginx_inline_custom: ''
+
 # Set empty defaults here. If the playbook doesn't set a value for them, we'll use set_fact in tasks to create sane defaults.
 php_service_user: ''
 fpm_pool_filename: ''
