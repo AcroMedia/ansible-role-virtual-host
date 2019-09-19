@@ -71,8 +71,27 @@
   include /etc/nginx/includes/robots.conf;
 {% endif %}
 
+{% if 'drupal' in web_application  %}
+  # Drupal (all versions):
+  # Deny access to install/update scripts except from "nginx_trusted_cidrs"
+  # Install is never used as we never give PHP write access to setting.php, and drush should be used for updates.
+  # If something ever goes wrong with settings.php, this keeps the install script from being exposed to anonymous users, regardless of whether it can be used or not.
+  location ~ ^/(install|update)\.php {
+    {% for allowed_cidr in nginx_trusted_cidrs %}
+    allow {{ allowed_cidr }};
+    {% endfor %}
+    deny all;
+    {% if php_version != 'none' %}
+    include {{ path_to_nginx_php_fpm_include }};
+    {% endif %}
+  }
+{% endif %}
+
   # Very rarely should these ever be accessed outside of your lan
   location ~* \.(txt|log|sql|zip|gzip|gz|tar)$ {
+    {% for allowed_cidr in nginx_trusted_cidrs %}
+    allow {{ allowed_cidr }};
+    {% endfor %}
     deny all;
   }
 
@@ -241,13 +260,6 @@
   # Drupal 8: Allow drupal to act as a broker for files served from the private dir
   location ~* /system/files/ {
     try_files $uri @rewrite;
-  }
-
-  # Drupal 8: Update page doesn't work without this.
-  location ~ ^/update.php {
-    {% if php_version != 'none' %}
-    include {{ path_to_nginx_php_fpm_include }};
-    {% endif %}
   }
 
 {% elif web_application == 'proxy_pass' %}

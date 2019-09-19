@@ -329,7 +329,7 @@ When using proxy_pass, all other diretives except those related to secruity (ie 
 
 **drupal_cron_url**: After your site goes live, (or before, if you want it to run during staging), provide this variable to create a linux cron job on the server. The cron job is created by the [acromedia.drupal-cron](https://github.com/AcroMedia/ansible-role-drupal-cron) role. See its readme for more details.
 
-**mysql_allow_from**: Defaults to 'localhost'. You only need to set this when using multi-server setups. In your app node playbook, setting this to `{{ ansible_default_ipv4.address }}` should usually work, assuming both app node(s) and mysql host are both on the same private network. In order for this to work, your app node needs to be able to operate as mysql root, with crentials stored at /root/.my.cnf.
+**mysql_allow_from**: This should really be renamed to: `mysql_allow_root_from`. Defaults to 'localhost'. You only need to set this when using multi-server setups. In your app node playbook, setting this to `{{ ansible_default_ipv4.address }}` should usually work, assuming both app node(s) and mysql host are both on the same private network. In order for this to work, your app node needs to be able to operate as mysql root, with crentials stored at /root/.my.cnf.
 
 **mysql_host_address**: Defaults to 'localhost'. You only need to set this when using multi-server setups. If your app node(s) and mysql host are both on the same private network (they usually will be), set this to be your mysql host's private / internal IP address. In order for this to work, your app node needs to be able to operate as mysql root, with crentials stored at /root/.my.cnf.
 
@@ -345,6 +345,14 @@ nginx_allowed_ips:
   - 1.2.3.4
   - 4.3.2.0/27
 ```
+
+**nginx_trusted_cidrs** (list): When `web_application` == `*drupal*`, access to `update.php`, `install.php`, or other sensitive files is denied. If you want a client to be allowed to talk to these locations, specify the IP address or network(s) that can do that:
+```yaml
+nginx_trusted_cidrs:
+  - 8.8.8.8  #  A single IP address
+  - 192.168.0.0/16 # I can do this if I'm coming from my private intranet.
+```
+
 **nginx_location_extras[{name,location,config}]**: Allows you to specify extra `location` directives without having to supply an additional file. Exmaple:
 ```yaml
 nginx_location_extras:
