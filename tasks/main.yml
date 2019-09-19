@@ -1,6 +1,21 @@
 ---
 - include_vars: "vars/{{ ansible_os_family }}.yml"
 
+- name: Validate 'web_application' variable value
+  assert:
+    that:
+      - web_application == 'php'
+          or web_application == 'drupal8'
+          or web_application == 'drupal7'
+          or web_application == 'drupal6'
+          or web_application == 'drupal5'
+          or web_application == 'drupal4'
+          or web_application == 'proxy_pass'
+          or web_application == 'redirect'
+          or web_application == 'static'
+          or web_application == 'wordpress'
+    fail_msg: "Value for web_application is not supported: {{ web_application }}"
+
 - name: See if a site has already been created with AAW
   stat:
     path: /home/{{ linux_owner }}/.acro-add-website/{{ project }}
