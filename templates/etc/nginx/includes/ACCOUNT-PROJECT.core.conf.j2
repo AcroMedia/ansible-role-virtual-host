@@ -1,3 +1,7 @@
+# {{ ansible_managed }}
+# See https://git.acromedia.com/acro/devops/ansible-role-virtual-host
+# -> /templates/etc/nginx/includes/ACCOUNT-PROJECT.core.conf.j2
+
 {% if disable_http_auth == true %}
   auth_basic off;
 
@@ -261,7 +265,7 @@
     try_files $uri @rewrite;
   }
 
-{% elif web_application == 'mediawiki' %}  
+{% elif web_application == 'mediawiki' %}
   location / {
     try_files $uri $uri/ @rewrite;
   }

@@ -141,6 +141,18 @@
   notify: arvh safe reload nginx
   when: nginx_include_custom != ''
 
+- name: Configure nginx rate limit memory zone to protect PHP FPM on {{ linux_owner }}/{{ project }}
+  template:
+    src: "{{ role_path }}/templates/etc/nginx/conf.d/limit_req_zone.ACCOUNT-PROJECT.conf.j2"
+    dest: "{{ nginx_limit_req_zone_file }}"
+    backup: true
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - arvh safe reload nginx
+  when: php_version != 'none'
+
 - name: Update PHP FPM nginx include for {{ linux_owner }}/{{ project }}
   template:
     src: "{{ role_path }}/templates/etc/nginx/includes/ACCOUNT-PROJECT.php-fpm.conf.j2"

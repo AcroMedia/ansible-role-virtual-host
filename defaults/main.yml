@@ -132,3 +132,15 @@ php_service_name: "php{{ php_version }}-fpm"
 
 # Specify a list of IP addresses or networks that can talk to install.php / update.php.
 nginx_trusted_cidrs: []
+
+# Apply NGINX Leaky Bucket rate limiting to PHP requests to keep Drupal from being swamped by bad actors.
+php_rate_limit_max_requests_per_second: 10   # Set a fairly permissive default. Individual sites can clamp down if they want.
+php_rate_limit_burst_limit: 100  # Set a fairly permissive default. Individual sites can clamp down if they want.
+php_rate_limit_return_code: 429  # What HTTP status code gets returned if a user hits the rate limit (nginx defaults to 503)
+nginx_limit_req_zone_name: "{{ linux_owner }}-{{ project }}"
+nginx_limit_req_zone_key: 'binary_remote_addr'  # If running behind a load balancer or proxy, use "http_x_forwarded_for" instead. DONT INCLUDE THE DOLLAR SIGN, we glue it in ourselves.
+nginx_limit_req_zone_size: '16m'
+nginx_limit_req_zone_rate: '{{ php_rate_limit_max_requests_per_second }}r/s'
+nginx_limit_req_zone_value: "${{ nginx_limit_req_zone_key }} zone={{ nginx_limit_req_zone_name }}:{{ nginx_limit_req_zone_size }} rate={{ nginx_limit_req_zone_rate }}"
+nginx_limit_req_zone_file: /etc/nginx/conf.d/limit_req_zone.{{ nginx_limit_req_zone_name }}.conf
+php_rate_limit_nginx_conf: "zone={{ nginx_limit_req_zone_name }} burst={{ php_rate_limit_burst_limit }} nodelay"

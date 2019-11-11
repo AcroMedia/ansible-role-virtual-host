@@ -1,3 +1,11 @@
+# {{ ansible_managed }}
+# See https://git.acromedia.com/acro/devops/ansible-role-virtual-host
+# -> /templates/etc/nginx/includes/ACCOUNT-PROJECT.php-fpm.conf.j2
+
+    # Apply rate limiting defined at {{ nginx_limit_req_zone_file }}
+    limit_req {{ php_rate_limit_nginx_conf }};
+    limit_req_status {{ php_rate_limit_return_code }};
+
     ## Properly deal with real 404 errors before we hand control off to php-fpm.
     ## Otherwise, when someone requests /some-file-that-doesnt-exist.php, fastcgi just gives back a cryptic "No input file specified".
     ## Only affects request URIs that end with a .php file extension

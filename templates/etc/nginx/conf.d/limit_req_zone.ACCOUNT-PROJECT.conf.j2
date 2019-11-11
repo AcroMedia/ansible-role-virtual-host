@@ -1,0 +1,8 @@
+# {{ ansible_managed }}
+# See https://git.acromedia.com/acro/devops/ansible-role-virtual-host
+# -> templates/etc/nginx/conf.d/limit_req_zone.ACCOUNT-PROJECT.conf.j2
+
+# Create a rate limit memory zone for PHP FPM on {{ linux_owner }}/{{ project }}:
+# Keep track of how many requests a given ip address makes to PHP FPM over time so we can throttle it if necessary.
+
+limit_req_zone {{ nginx_limit_req_zone_value }};
