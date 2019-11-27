@@ -266,6 +266,12 @@
   }
 
 {% elif web_application == 'mediawiki' %}
+
+  # Don't let PHP run where it has write permission. Write + Execute == Hijacked.
+  location ~ /images/.*\.php$ {
+    return 403;
+  }
+
   location / {
     try_files $uri $uri/ @rewrite;
   }
