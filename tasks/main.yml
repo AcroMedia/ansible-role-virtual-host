@@ -14,6 +14,7 @@
           or web_application == 'redirect'
           or web_application == 'static'
           or web_application == 'wordpress'
+          or web_application == 'mediawiki'
     fail_msg: "Value for web_application is not supported: {{ web_application }}"
 
 - name: See if a site has already been created with AAW
