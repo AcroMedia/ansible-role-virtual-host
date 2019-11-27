@@ -65,6 +65,9 @@ php_upload_max_filesize: "{{ max_upload_size_mb }}M"
 php_post_max_size: "{{ max_upload_size_mb }}M"
 client_max_body_size: "{{ max_upload_size_mb }}m"
 
+# Keeps PHP from arbitrarily snooping the file system
+php_open_basedir: "/home/{{ linux_owner }}/www/{{ project }}/:/tmp/"
+
 # PHP Process timeout limits
 max_execution_time_seconds: 300
 fastcgi_read_timeout: "{{ max_execution_time_seconds }}s"
