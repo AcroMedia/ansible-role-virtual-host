@@ -77,9 +77,10 @@
 {% if 'drupal' in web_application  %}
   # Drupal (all versions):
   # Deny access to install/update scripts except from "nginx_trusted_cidrs"
-  # Install is never used as we never give PHP write access to setting.php, and drush should be used for updates.
+  # - install.php is not needed since we don't allow PHP to modify settings.php.
+  # - update.php is not needed, since we used drush for updates.
   # If something ever goes wrong with settings.php, this keeps the install script from being exposed to anonymous users, regardless of whether it can be used or not.
-  location ~ ^/(install|update)\.php {
+  location ~ ^(/core)?/(install|update)\.php {
     {% for allowed_cidr in nginx_trusted_cidrs %}
     allow {{ allowed_cidr }};
     {% endfor %}
