@@ -153,7 +153,7 @@ If using the role more than once **in the same play**, you must re-specify **all
 
 #### php_version
 
-- Major.minor version (e.g. `7.1`). The version you specify must already be running on the server. If PHP isn't on the server at all, you must specify `php_version: none`.
+- Major.minor version (e.g. `7.3`). The version you specify must already be running on the server. If PHP isn't on the server at all, you must specify `php_version: none`.
 
 #### web_root_dir_name
 
@@ -161,7 +161,7 @@ If using the role more than once **in the same play**, you must re-specify **all
 
 #### web_application
 
-- Tells the role which nginx configuration to apply. Defaults to `undefined`. Can be one of `drupal4`, `drupal5`, `drupal6`, `drupal7`, `drupal8`, `wordpress`, 'php', `static`, `proxy_pass`, or `redirect`.
+- Tells the role which nginx configuration to apply. Defaults to `undefined`. Can be one of `drupal4`, `drupal5`, `drupal6`, `drupal7`, `drupal8`, `wordpress`, `php`, `static`, `proxy_pass`, or `redirect`.
 
 #### deploy_env
 
