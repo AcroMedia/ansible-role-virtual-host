@@ -15,7 +15,15 @@
           or web_application == 'static'
           or web_application == 'wordpress'
           or web_application == 'mediawiki'
-    fail_msg: "Value for web_application is not supported: {{ web_application }}"
+    fail_msg: "ERROR: Value for web_application is not supported: {{ web_application }}"
+
+- name: Make sure linux_owner is not the same as php_service_user
+  assert:
+    that:
+      - linux_owner != php_service_user
+    fail_msg: "ERROR: The PHP user (php_service_user) cannot be the same account as the web account owner (linux_owner).\n
+      If they are, the account will be marked as a 'service' account, SSH will not work for it, and you will\n
+      not be able create a working CI deploy job."
 
 - name: See if a site has already been created with AAW
   stat:
