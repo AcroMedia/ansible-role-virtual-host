@@ -59,6 +59,9 @@
     service_account_flag: ''
     x__php_service_user: ''
     x__fpm_pool_filename: ''
+    env_mysql_db_name: ''
+    env_mysql_db_user: ''
+    env_mysql_db_pass: ''
 
 - set_fact:
     skip_ssl_flag: '--skip-ssl'
@@ -110,6 +113,19 @@
     skip_mysql_flag: '--skip-mysql'
   when: skip_mysql == true
 
+- set_fact:
+    env_mysql_db_name: 'DBNAME="{{ mysql_db_name }}"'
+  when: (mysql_db_name|trim) != ''
+
+- set_fact:
+    env_mysql_db_user: 'DBUSER="{{ mysql_db_user }}"'
+  when: (mysql_db_user|trim) != ''
+
+- set_fact:
+    env_mysql_db_pass: 'DBPASS="{{ mysql_db_pass }}"'
+  when: (mysql_db_pass|trim) != ''
+
+
 - name: Make sure the Acme Challenge include file exists, even if LetsEncrypt is not installed on the system. Otherwise we will end up with nginx fatal config errors.
   copy:
     dest: /etc/nginx/includes/letsencrypt-acme-challenge.conf
@@ -121,7 +137,7 @@
 
 - name: Run acro-add-website - SSL registration can take up to a minute or more
   shell: >
-     export TERM=xterm-256color; /usr/bin/timeout 30s /bin/bash /usr/local/sbin/acro-add-website.sh --account {{ linux_owner }} --project {{ project }} --fqdn {{ nginx_primal_name }} --webroot {{ web_root_dir_name }} --php-version {{ php_version }} --responsible-person {{ responsible_person }} --mysql-allow-from {{ mysql_allow_from }} --mysql-host-address {{ mysql_host_address }} {{ skip_ssl_flag }} {{ rds_flag }} {{ service_account_flag }} {{ force_flag}} {{ skip_mysql_flag }}
+     export TERM=xterm-256color {{ env_mysql_db_name }} {{ env_mysql_db_user }} {{ env_mysql_db_pass }}; /usr/bin/timeout 30s /bin/bash /usr/local/sbin/acro-add-website.sh --account {{ linux_owner }} --project {{ project }} --fqdn {{ nginx_primal_name }} --webroot {{ web_root_dir_name }} --php-version {{ php_version }} --responsible-person {{ responsible_person }} --mysql-allow-from {{ mysql_allow_from }} --mysql-host-address {{ mysql_host_address }} {{ skip_ssl_flag }} {{ rds_flag }} {{ service_account_flag }} {{ force_flag}} {{ skip_mysql_flag }}
   args:
     creates: /home/{{ linux_owner }}/.acro-add-website/{{ project }}
 

@@ -27,6 +27,11 @@ mysql_host_address: localhost
 
 rds: false
 
+# If these are provided, acro-add-website.sh will accept and use them as-is for DB + user creation, instead of auto-generating them.
+mysql_db_name: ''
+mysql_db_user: ''
+mysql_db_pass: ''
+
 # Path to the template file in the playbook that the role should upload.
 nginx_include_custom: ''
 # Path to the template file after it's been uploaded to the server.
