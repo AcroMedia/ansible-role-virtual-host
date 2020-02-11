@@ -37,6 +37,18 @@
       If they are, the account will be marked as a 'service' account, SSH will not work for it, and you will\n
       not be able create a working CI deploy job."
 
+- name: Make sure primal_name isn't duplicated in aliases
+  assert:
+    that:
+      - nginx_primal_name not in nginx_aliases
+    fail_msg: The value for nginx_primal_name appears to be duplicated in the nginx_aliases list 
+
+- name: Make sure canonical name isn't duplicated in aliases
+  assert:
+    that:
+      - nginx_canonical_name not in nginx_aliases
+    fail_msg: The value for nginx_canonical_name appears to be duplicated in the nginx_aliases list
+
 - name: See if a site has already been created with AAW
   stat:
     path: /home/{{ linux_owner }}/.acro-add-website/{{ project }}
