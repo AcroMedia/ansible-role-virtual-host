@@ -1,6 +1,18 @@
 ---
 - include_vars: "vars/{{ ansible_os_family }}.yml"
 
+- name: Make sure nginx_primal_name is not zero length
+  assert:
+    that:
+      - nginx_primal_name|trim != ''
+    fail_msg: nginx_primal_name cannot be empty.
+
+- name: Make sure nginx_canonical_name is not zero length
+  assert:
+    that:
+      - nginx_canonical_name|trim != ''
+    fail_msg: nginx_canonical_name cannot be empty.
+
 - name: Validate 'web_application' variable value
   assert:
     that:
