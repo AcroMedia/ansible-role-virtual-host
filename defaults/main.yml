@@ -152,3 +152,6 @@ nginx_limit_req_zone_rate: '{{ php_rate_limit_max_requests_per_second }}r/s'
 nginx_limit_req_zone_value: "${{ nginx_limit_req_zone_key }} zone={{ nginx_limit_req_zone_name }}:{{ nginx_limit_req_zone_size }} rate={{ nginx_limit_req_zone_rate }}"
 nginx_limit_req_zone_file: /etc/nginx/conf.d/limit_req_zone.{{ nginx_limit_req_zone_name }}.conf
 php_rate_limit_nginx_conf: "zone={{ nginx_limit_req_zone_name }} burst={{ php_rate_limit_burst_limit }} nodelay"
+
+# When serving from a proxied / load balanced node, set this to true, so redirects send people right to https instead of possibly boucning them to http on a different name, and then bouncing them again to https
+always_redirect_to_https: false

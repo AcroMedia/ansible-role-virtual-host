@@ -9,7 +9,7 @@ server {
   error_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-error.log;
   include /etc/nginx/includes/letsencrypt-acme-challenge.conf;
   location / {
-    return {{ redirect_code }} http://{{ nginx_canonical_name }}$request_uri;
+    return {{ redirect_code }} {{ always_redirect_to_https | ternary('https', 'http') }}://{{ nginx_canonical_name }}$request_uri;
   }
 }
 {% endif %}
@@ -22,7 +22,7 @@ server {
   error_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-error.log;
   include /etc/nginx/includes/letsencrypt-acme-challenge.conf;
   location / {
-    return {{ redirect_code }} http://{{ nginx_canonical_name }}$request_uri;
+    return {{ redirect_code }} {{ always_redirect_to_https | ternary('https', 'http') }}://{{ nginx_canonical_name }}$request_uri;
   }
 }
 {% endif %}

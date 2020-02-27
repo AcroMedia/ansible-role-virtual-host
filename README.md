@@ -193,13 +193,17 @@ In `staging` modes, the `nginx_primal_name` never redirects to the canonical nam
 
 ##### staging + no ssl
 
+See also: **always_redirect_to_https**.
+
+target_port = {{ ternary(always_redirect_to_https, 'https', 'http') }}
+
   - **nginx_primal_name:80**:
 
     Serve content.
 
   - **nginx_aliases:80**:
 
-    Redirect to nginx_canonical_name:80. Assume the user had to adjust /etc/hosts to make requests with this name.
+    Redirect to nginx_canonical_name:target_port. Assume the user had to adjust /etc/hosts to make requests with this name.
 
   - **nginx_canonical_name:80**:
 
@@ -262,13 +266,17 @@ In `staging` modes, the `nginx_primal_name` never redirects to the canonical nam
 
 ##### production + no ssl:
 
+See also: **always_redirect_to_https**.
+
+target_port = {{ ternary(always_redirect_to_https, 'https', 'http') }}
+
   - **nginx_primal_name:80**
 
-    Redirect to nginx_canonical_name:80.
+    Redirect to nginx_canonical_name:target_port.
 
   - **nginx_aliases:80**
 
-    Redirect to nginx_canonical_name:80.
+    Redirect to nginx_canonical_name:target_port.
 
   - **nginx_canonical_name:80**
 
@@ -318,6 +326,11 @@ These files need to be placed on the server **before** you run the playbook, or 
 **nginx_proxy_pass_blob**: This gets placed as is, directly into to the nginx default `location / {}` directive.
 
 When using proxy_pass, all other diretives except those related to secruity (ie those that immediately return a 403) get disabled, as they are expected to be handled by your upstream / proxied application.
+
+#### When running nginx behind SSL terminated load balancer (ssl: 'none')
+
+**always_redirect_to_https**: Default == false. Set this to true if nginx serves on port 80, but SSL is being terminated in front of it. That way, a redirect can hit the right name and port immediately, instead of having to bounce to the right name on http, and then bounce again to the right name on https.
+
 
 ### Optional Role Variables
 
