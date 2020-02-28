@@ -107,7 +107,7 @@ nginx_allow_wp_json: false
 nginx_rewrite_static_content: false
 
 # Allow use of a custom log format, which must already exist / be defined on the server.
-# The default format is nginx's internal "custom" format, which doesn't need to be specified
+# The default format is nginx's internal "combined" format, which doesn't need to be specified
 # See http://nginx.org/en/docs/http/ngx_http_log_module.html#log_format
 nginx_access_log_format: ''
 nginx_access_log_path: "/var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-access.log"
