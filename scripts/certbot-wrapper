@@ -9,9 +9,6 @@ source /usr/local/lib/acro/bash/functions.sh
 
 function main () {
 
-  local GROOMED_DOMAINS_LIST=""
-  GROOMED_DOMAINS_LIST=$(groom_list_of_domains)
-
   CMD="/usr/local/bin/certbot-auto"
   CMD="$CMD certonly"
   CMD="$CMD --no-self-upgrade"
@@ -20,29 +17,11 @@ function main () {
   CMD="$CMD --webroot-path /var/www/letsencrypt"
   CMD="$CMD --agree-tos"
   CMD="$CMD --email webmaster@acromedia.com"
-  CMD="$CMD --cert-name $NGINX_PRIMAL_NAME"
+  CMD="$CMD --cert-name ${NGINX_PRIMAL_NAME}"
   CMD="$CMD --keep"
-  CMD="$CMD --domains ${GROOMED_DOMAINS_LIST}"
+  CMD="$CMD --domains ${DOMAINS_LIST}"
   (set -x && $CMD --dry-run && $CMD)
 
-}
-
-function groom_list_of_domains () {
-
-  local DOMAINS
-  DOMAINS="${NGINX_PRIMAL_NAME},${NGINX_CANONICAL_NAME},${NGINX_ALIASES}"
-
-  # Remove duplicate names
-  DOMAINS=$(echo "$DOMAINS"|tr ',' '\n'|sort|uniq|tr '\n' ',')
-
-  # Remove duplicated commas
-  DOMAINS=$(echo "$DOMAINS"| tr --squeeze-repeats ',')
-
-  # Remove beginning and ending commas
-  DOMAINS=$(echo "$DOMAINS"| sed 's/^,//')
-  DOMAINS=$(echo "$DOMAINS"| sed 's/,$//')
-
-  echo "${DOMAINS}"
 }
 
 main "$@"

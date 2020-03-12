@@ -5,22 +5,24 @@
 # For 'staging' sites, primal takes precedence over canonical, since DNS for canonical doesn't point to this machine.
 # If primal and canonical are both the same, only primal will be used.
 
-# Insecure primal: Redirect to secure primal.
+{% for SRV in nginx_server_names %}
+{% if SRV.type == 'primal' %}
+
+# Insecure primal (staging): Redirect to secure primal.
 server {
   listen {{ http_port }};
-  server_name {{ nginx_primal_name }};
+  server_name {{ SRV.name }}{% for ALIAS in SRV.aliases | default([]) %}{{ ' ' + ALIAS.name }}{% endfor %};
   access_log {{ nginx_access_log_conf }};
   error_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-error.log;
   include /etc/nginx/includes/letsencrypt-acme-challenge.conf;
   location / {
-    return {{ redirect_code }} https://{{ nginx_primal_name }}$request_uri;
+    return {{ redirect_code }} https://$host$request_uri;
   }
 }
-
-# Secure primal: Serve.
+# Secure primal (staging): Serve.
 server {
   listen {{ https_port }} {{ 'ssl http2' if nginx_http2 else 'ssl' }};
-  server_name {{ nginx_primal_name }};
+  server_name {{ SRV.name }}{% for ALIAS in SRV.aliases | default([]) %}{{ ' ' + ALIAS.name }}{% endfor %};
   {% include 'ssl.letsencrypt.inc.j2' %}
   access_log {{ nginx_access_log_conf }};
   error_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-error.log;
@@ -28,62 +30,71 @@ server {
   include /etc/nginx/includes/{{ linux_owner }}-{{ project }}.core.conf;
 }
 
-{% if nginx_aliases|length > 0 %}
-# Insecure aliases: Redirect to insecure canoncial if canonical != primal, otherwise redirect to secure primal.
+{% elif SRV.type == 'redirect' %}
+
+# Insecure redirect: Send the user to the specified destination over plain http, unless force_https is true.
+# Keeping the browser on plain http prevents cert name errors during launches / migrations.
+# Force_https cuts down on redirects when the site's behind a load balancer.
 server {
   listen {{ http_port }};
-  server_name {{ nginx_aliases|join(' ') }};
+  server_name {{ SRV.name }}{% for ALIAS in SRV.aliases | default([]) %}{{ ' ' + ALIAS.name }}{% endfor %};
   access_log {{ nginx_access_log_conf }};
   error_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-error.log;
   include /etc/nginx/includes/letsencrypt-acme-challenge.conf;
   location / {
-    {% if (nginx_primal_name != nginx_canonical_name) %}
-    return {{ redirect_code }} http://{{ nginx_canonical_name }}$request_uri;
+    {% if (SRV.force_https | default(false) ) %}
+    return {{ redirect_code }} https://{{ SRV.target_name }}$request_uri;
     {% else %}
-    return {{ redirect_code }} https://{{ nginx_primal_name }}$request_uri;
+    return {{ redirect_code }} http://{{ SRV.target_name }}$request_uri;
     {% endif %}
   }
 }
-{% endif %}
 
-{% if (nginx_primal_name != nginx_canonical_name) %}
-# Insecure canonical: Serve.
-# The canonical name normally isn't used in staging mode (DNS doesn't point here),
-# so serving instead of redirecting prevents "invalid SSL" errors during a launch transition.
-server {
-  listen {{ http_port }};
-  server_name {{ nginx_canonical_name }};
-  access_log {{ nginx_access_log_conf }};
-  error_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-error.log;
-  include /etc/nginx/includes/letsencrypt-acme-challenge.conf;
-  include /etc/nginx/includes/{{ linux_owner }}-{{ project }}.core.conf;
-}
-{% endif %}
-
-{% if nginx_aliases|length > 0 %}
-# Secure aliases: Serve. Expect SSL errors, since aliases are not yet included in the certificate.
+# Secure redirect: send to the specified destination on https.
+# Expect SSL errors, since the name is not yet included in the certificate. DNS
+# isnt expected to be pointing at the server in staging mode, so there's no way
+# to register a LE SSL cert yet.
 server {
   listen {{ https_port }} {{ 'ssl http2' if nginx_http2 else 'ssl' }};
-  server_name {{ nginx_aliases|join(' ') }};
+  server_name {{ SRV.name }}{% for ALIAS in SRV.aliases | default([]) %}{{ ' ' + ALIAS.name }}{% endfor %};
   {% include 'ssl.letsencrypt.inc.j2' %}
   access_log {{ nginx_access_log_conf }};
   error_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-error.log;
   include /etc/nginx/includes/letsencrypt-acme-challenge.conf;
   location / {
-    return {{ redirect_code }} https://{{ nginx_canonical_name }}$request_uri;
+    return {{ redirect_code }} https://{{ SRV.target_name }}$request_uri;
   }
 }
-{% endif %}
 
-{% if (nginx_primal_name != nginx_canonical_name) %}
-# Secure canonical. Serve. Expect SSL errors, since the canonical name is not yet included in the certificate.
+{% elif SRV.type == 'canonical' %}
+
+# Insecure canonical (staging): Serve.
+# The canonical name normally isn't used in staging mode. DNS isn't expected to point here.
+# Anyone arriving with this name in staging mode is either using curl or has edited
+# their hosts file, so SSL isn't a priority.
+# Since DNS mus be pointed at the server before LetsEnrypt SSL cert registration takes place,
+# serving instead of pushing to https prevents "invalid SSL" errors during the launch.
+server {
+  listen {{ http_port }};
+  server_name {{ SRV.name }}{% for ALIAS in SRV.aliases | default([]) %}{{ ' ' + ALIAS.name }}{% endfor %};
+  access_log {{ nginx_access_log_conf }};
+  error_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-error.log;
+  include /etc/nginx/includes/letsencrypt-acme-challenge.conf;
+  include /etc/nginx/includes/{{ linux_owner }}-{{ project }}.core.conf;
+}
+
+# Secure canonical (staging). Serve.
+# Expect SSL errors, since the canonical name is won't be included in the certificate.
 server {
   listen {{ https_port }} {{ 'ssl http2' if nginx_http2 else 'ssl' }};
-  server_name {{ nginx_canonical_name }};
+  server_name {{ SRV.name }}{% for ALIAS in SRV.aliases | default([]) %}{{ ' ' + ALIAS.name }}{% endfor %};
   {% include 'ssl.letsencrypt.inc.j2' %}
   access_log {{ nginx_access_log_conf }};
   error_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-error.log;
   include /etc/nginx/includes/letsencrypt-acme-challenge.conf;
   include /etc/nginx/includes/{{ linux_owner }}-{{ project }}.core.conf;
 }
+
 {% endif %}
+
+{% endfor %}
