@@ -155,3 +155,6 @@ php_rate_limit_nginx_conf: "zone={{ nginx_limit_req_zone_name }} burst={{ php_ra
 
 # When serving from a proxied / load balanced node, set this to true, so redirects send people right to https instead of possibly boucning them to http on a different name, and then bouncing them again to https
 always_redirect_to_https: false
+
+# Wait up to X seconds for cert registration to complete
+letsencrypt_cert_registration_timeout: 300

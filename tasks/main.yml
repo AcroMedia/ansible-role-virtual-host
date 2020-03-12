@@ -41,7 +41,7 @@
   assert:
     that:
       - nginx_primal_name not in nginx_aliases
-    fail_msg: The value for nginx_primal_name appears to be duplicated in the nginx_aliases list 
+    fail_msg: The value for nginx_primal_name appears to be duplicated in the nginx_aliases list
 
 - name: Make sure canonical name isn't duplicated in aliases
   assert:
@@ -159,9 +159,24 @@
     owner: root
     group: root
 
-- name: Run acro-add-website - SSL registration can take up to a minute or more
+- name: Run acro-add-website, waiting up to {{ letsencrypt_cert_registration_timeout }} seconds for letsencrypt cert registration
   shell: >
-     export TERM=xterm-256color {{ env_mysql_db_name }} {{ env_mysql_db_user }} {{ env_mysql_db_pass }}; /usr/bin/timeout 30s /bin/bash /usr/local/sbin/acro-add-website.sh --account {{ linux_owner }} --project {{ project }} --fqdn {{ nginx_primal_name }} --webroot {{ web_root_dir_name }} --php-version {{ php_version }} --responsible-person {{ responsible_person }} --mysql-allow-from {{ mysql_allow_from }} --mysql-host-address {{ mysql_host_address }} {{ skip_ssl_flag }} {{ rds_flag }} {{ service_account_flag }} {{ force_flag}} {{ skip_mysql_flag }}
+     export TERM=xterm-256color {{ env_mysql_db_name }} {{ env_mysql_db_user }} {{ env_mysql_db_pass }};
+     /usr/bin/timeout {{ letsencrypt_cert_registration_timeout }}s
+     /bin/bash /usr/local/sbin/acro-add-website.sh
+     --account {{ linux_owner }}
+     --project {{ project }}
+     --fqdn {{ nginx_primal_name }}
+     --webroot {{ web_root_dir_name }}
+     --php-version {{ php_version }}
+     --responsible-person {{ responsible_person }}
+     --mysql-allow-from {{ mysql_allow_from }}
+     --mysql-host-address {{ mysql_host_address }}
+     {{ skip_ssl_flag }}
+     {{ rds_flag }}
+     {{ service_account_flag }}
+     {{ force_flag}}
+     {{ skip_mysql_flag }}
   args:
     creates: /home/{{ linux_owner }}/.acro-add-website/{{ project }}
 
