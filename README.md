@@ -4,11 +4,11 @@ Manage a NGINX virtual host (including PHP version and SSL certificates) over it
 
 ## Requirements
 
-- The acro infrastructure utilities must already be installed on the server
-
-- Acro-add-website.sh must already be installed (and configured) on the server
+- Acro devops utils must already be installed and configured
 
 - LetsEncrypt installed, configured, and working
+
+- Mariadb installed, configured, and working
 
 - If you're providing your own manually registered SSL certificate, the certificate + key need to be placed on the server **before** this role is invoked.
 
@@ -463,7 +463,7 @@ The variables to tune are:
 
 ## License
 
-For Acro Media internal use only.
+GPLv3
 
 ## Author Information
 
