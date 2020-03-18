@@ -16,10 +16,4 @@ galaxy_info:
       - 6
       - 7
   galaxy_tags: []
-dependencies:
-  - name: Install linux cron job for Drupal
-    role: vendor/github.com/AcroMedia/ansible-role-drupal-cron/master
-    src: https://github.com/AcroMedia/ansible-role-drupal-cron.git
-    scm: git
-    version: origin/master
-    server_name: "{{ nginx_canonical_name }}"
+dependencies: []
