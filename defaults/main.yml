@@ -158,3 +158,6 @@ always_redirect_to_https: false
 
 # Wait up to X seconds for cert registration to complete
 letsencrypt_cert_registration_timeout: 300
+
+# Who should receive letsencrypt SSL expiry notices.
+letsencrypt_expiry_email: ''

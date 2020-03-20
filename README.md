@@ -412,6 +412,7 @@ php_sendmail_path: '/usr/sbin/sendmail -t -i -f foo@example.com'
 
 **disable_environment_indicator** (boolean): Defaults to false. On staging/dev servers, the global nginx config may be imposing password authentication. Let it be disabled per-virtual host.
 
+**letsencrypt_expiry_email** (email address): Defaults to nothing. It's highly recommended that you set this if using letsencrypt. LE SSL certs expire *very* quickly, and if is going sideways with cert renewals, you will want to know about it before it affects your users.
 
 ## NGINX/PHP Rate Limiting
 
