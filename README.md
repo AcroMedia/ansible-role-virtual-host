@@ -97,11 +97,11 @@ If using the role more than once **in the same play**, you must re-specify **all
 
 - Example:
     ```
-    project.server.acro.website
+    project.server.dev-env.net
     ```
     or:
     ```
-    www.client.acro.website
+    www.client.dev-env.net
     ```
     if there is only one site on a given server.
 
@@ -445,7 +445,7 @@ The variables to tune are:
       vars:
         linux_owner: bigcorp
         project: bigcorp
-        nginx_primal_name: www.bigcorp.acro.website
+        nginx_primal_name: www.bigcorp.dev-env.net
         nginx_canonical_name: www.bigcorp.com
         nginx_aliases:
           - bigcorp.com
