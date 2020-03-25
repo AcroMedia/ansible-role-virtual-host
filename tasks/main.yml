@@ -210,6 +210,7 @@
     INVENTORY_HOSTNAME: "{{ inventory_hostname }}"
     CERT_NAME: "{{ nginx_primal_name }}"
     DOMAINS_LIST: "{{ nginx_server_names | map(attribute='name') | list | join(',') }}"
+    LE_EXPIRY_EMAIL: "{{ letsencrypt_expiry_email }}"
   when: deploy_env == 'production'
     and ssl == 'letsencrypt'
   register: letsencrypt_result
@@ -363,3 +364,10 @@
   when: require_http_auth == true
   notify:
     - arvh safe reload nginx
+
+- name: Warn if letsencrypt_expiry_email is not set, but don't stop the play
+  assert:
+    that: letsencrypt_expiry_email != ''
+    fail_msg: There is no value for letsencrypt_expiry_email. This is not a strict requirement, but it's highly recommended that someone be able to receive expiry notifications in case of unexpected renewal failures.
+  when: ssl == 'letsencrypt'
+  ignore_errors: true
