@@ -2,8 +2,8 @@
 # See https://git.acromedia.com/acro/devops/ansible-role-virtual-host/tree/master/templates/etc/nginx/sites-available/staging.letsencrypt.j2
 
 ### STAGING ###
-# For 'staging' sites, primal takes precedence over canonical, since DNS for canonical doesn't point to this machine.
-# If primal and canonical are both the same, only primal will be used.
+# For 'staging' sites, primal takes precedence over (does not redirect to) canonical, since DNS for canonical doesn't point to this machine.
+
 
 {% for SRV in nginx_server_names %}
 {% if SRV.type == 'primal' %}
@@ -42,7 +42,7 @@ server {
   error_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-error.log;
   include /etc/nginx/includes/letsencrypt-acme-challenge.conf;
   location / {
-    {% if (SRV.force_https | default(false) ) %}
+    {% if (SRV.force_https | default(false) ) or always_redirect_to_https %}
     return {{ redirect_code }} https://{{ SRV.target_name }}$request_uri;
     {% else %}
     return {{ redirect_code }} http://{{ SRV.target_name }}$request_uri;
