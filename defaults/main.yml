@@ -93,6 +93,9 @@ php_fpm_status_path: ''
 # PHP other
 php_short_open_tag: 'Off'
 
+# This goes into php fpm pool config template. It used to be automatic based on nginx_primal_name, but that doesn't exist any more.
+new_relic_app_name: "{{ linux_owner }}/{{ project }} - {{ deploy_env }}"
+
 # Allow arbitrary location blocks from the role (without an include file). See readme.
 nginx_location_extras: []
 
