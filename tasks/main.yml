@@ -9,13 +9,34 @@
       - nginx_server_names is iterable
     fail_msg: "The 'nginx_canonical_name', 'nginx_primal_name', and 'nginx_aliases' have been replaced by the much more flexible 'nginx_server_names' array. You need to convert your playbook's variables before continuing. See the role's README.md for details."
 
-- name: Ensure the list of names in nginx_server_names is unique
+- set_fact:
+    _all_aliases: "{{ nginx_server_names | json_query(query) }}"
+  vars:
+    query: "[].aliases[].name"
+
+- debug:
+    var: _all_aliases
+    verbosity: 1
+
+- set_fact:
+    _all_names: "{{ nginx_server_names | json_query(query) }}"
+  vars:
+    query: "[].name"
+
+- debug:
+    var: _all_names
+    verbosity: 1
+
+- set_fact:
+    nginx_names_all_names_and_aliases: "{{ _all_aliases + _all_names }}"
+
+- name: Prevent infinite redirects and ambiguous server_name entries in NGINX config
   assert:
     that: >
-          nginx_server_names | map(attribute='name') | list | count
+          nginx_names_all_names_and_aliases | count
           ==
-          nginx_server_names | map(attribute='name') | list | unique | count
-    fail_msg: "There appears to be a duplicate name in the nginx_server_names array."
+          nginx_names_all_names_and_aliases | unique | count
+    fail_msg: "There appears to be a duplicate name (or alias) in the nginx_server_names array."
 
 - name: Extract nginx_primal_name from nginx_server_names array so we can use it to create our initial vhost structure. If there is more than one primal name specified, all except the last will be ignored.
   set_fact:
@@ -23,17 +44,23 @@
   with_items: "{{ nginx_server_names }}"
   when: item.type == 'primal'
 
-- name: Make sure we have a primal name to work with
+- name: Extract primary nginx_canonical_name from nginx_server_names array so we know where to redirect primal names to in production mode. If there is more than one nginx_canonical_name specified, all except the last will be ignored.
+  set_fact:
+    nginx_canonical_name: "{{ item.name }}"
+  with_items: "{{ nginx_server_names }}"
+  when: item.type == 'canonical'
+
+- name: Make sure we have a nginx_primal_name to work with
   assert:
     that:
       - (nginx_primal_name|trim != '')
     fail_msg: There needs to be exactly one "primal" type name in the nginx_server_names array.
 
-# - name: Make sure nginx_canonical_name is not zero length
-#   assert:
-#     that:
-#       - nginx_canonical_name|trim != ''
-#     fail_msg: nginx_canonical_name cannot be empty.
+- name: Make sure we have a nginx_canonical_name to work with
+  assert:
+    that:
+      - nginx_canonical_name|trim != ''
+    fail_msg: nginx_canonical_name cannot be empty.
 
 - name: Validate 'web_application' variable value
   assert:
@@ -261,6 +288,10 @@
     backup: true
   notify:
     - arvh safe reload nginx
+
+- debug:
+    var: nginx_location_extras
+    verbosity: 1
 
 - name: Update nginx virtual host configuration for {{ linux_owner }}/{{ project }}
   template:
