@@ -305,7 +305,7 @@
   location ~ [^/]\.php(/|$) {
     fastcgi_split_path_info  ^(.+\.php)(/.+)$;
     fastcgi_index            index.php;
-    fastcgi_pass unix:/var/run/php7.3-fpm-acro-training.sock;
+    fastcgi_pass unix:/var/run/php{{ php_version }}-fpm-{{ linux_owner }}-{{ project }}.sock;
     include                  fastcgi_params;
     fastcgi_param   PATH_INFO       $fastcgi_path_info;
     fastcgi_param   SCRIPT_FILENAME $document_root$fastcgi_script_name;
