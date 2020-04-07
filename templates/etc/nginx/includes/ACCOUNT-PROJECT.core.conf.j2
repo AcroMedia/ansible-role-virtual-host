@@ -300,6 +300,17 @@
     deny all;
   }
 
+{% elif web_application == 'moodle' %}
+  # PHP FPM on a socket
+  location ~ [^/]\.php(/|$) {
+    fastcgi_split_path_info  ^(.+\.php)(/.+)$;
+    fastcgi_index            index.php;
+    fastcgi_pass unix:/var/run/php{{ php_version }}-fpm-{{ linux_owner }}-{{ project }}.sock;
+    include                  fastcgi_params;
+    fastcgi_param   PATH_INFO       $fastcgi_path_info;
+    fastcgi_param   SCRIPT_FILENAME $document_root$fastcgi_script_name;
+  }
+
 {% elif web_application == 'proxy_pass' %}
 
   # Proxy pass
@@ -334,7 +345,7 @@
   }
 {% endif %}
 
-{% if web_application != 'static' and web_application != 'proxy_pass' and php_version != 'none' %}
+{% if web_application != 'static' and web_application != 'proxy_pass' and web_application != 'moodle' and php_version != 'none' %}
 
   # PHP FPM on a socket
   location ~ \.php$ {
