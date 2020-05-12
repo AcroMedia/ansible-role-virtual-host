@@ -161,3 +161,23 @@ letsencrypt_cert_registration_timeout: 300
 
 # Who should receive letsencrypt SSL expiry notices.
 letsencrypt_expiry_email: ''
+
+# File types that can only be accesed by the nginx_trusted_cidrs list; blocked for all web applications except proxy_pass
+nginx_protected_filename_extensions:
+ - txt
+ - log
+ - sql
+ - zip
+ - gzip
+ - gz
+ - tar
+
+# Can not be accessed by anyone; only applies to Drupal web applications
+drupal_blocked_filename_extensions:
+ - module
+ - install
+ - inc
+ - theme
+ - profile
+ - engine
+ - phar

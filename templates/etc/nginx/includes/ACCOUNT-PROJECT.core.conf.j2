@@ -74,6 +74,16 @@
   include /etc/nginx/includes/robots.conf;
 {% endif %}
 
+{% if web_application != 'proxy_pass' %}
+  # Very rarely should these ever be accessed outside of your lan
+  location ~* \.({{ nginx_protected_filename_extensions | join('|') }})$ {
+    {% for allowed_cidr in nginx_trusted_cidrs %}
+    allow {{ allowed_cidr }};
+    {% endfor %}
+    deny all;
+  }
+{% endif %}
+
 {% if 'drupal' in web_application  %}
   # Drupal (all versions):
   # Deny access to install/update scripts except from "nginx_trusted_cidrs"
@@ -90,16 +100,8 @@
     {% endif %}
   }
 
-  # Very rarely should these ever be accessed outside of your lan
-  location ~* \.(txt|log|sql|zip|gzip|gz|tar)$ {
-    {% for allowed_cidr in nginx_trusted_cidrs %}
-    allow {{ allowed_cidr }};
-    {% endfor %}
-    deny all;
-  }
-
   # Other Drupal files that contain PHP, but shouldn't be served or processed directly
-  location ~* \.(module|install|inc|theme|profile|engine|phar)$ {
+  location ~* \.({{ drupal_blocked_filename_extensions | join('|') }})$ {
     return 403;
   }
 
