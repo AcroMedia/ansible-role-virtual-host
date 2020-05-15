@@ -236,6 +236,7 @@
   environment:
     INVENTORY_HOSTNAME: "{{ inventory_hostname }}"
     CERT_NAME: "{{ nginx_primal_name }}"
+    NGINX_PRIMAL_NAME: "{{ nginx_primal_name }}"
     DOMAINS_LIST: "{{ nginx_server_names | map(attribute='name') | list | join(',') }}"
     LE_EXPIRY_EMAIL: "{{ letsencrypt_expiry_email }}"
   when: deploy_env == 'production'
