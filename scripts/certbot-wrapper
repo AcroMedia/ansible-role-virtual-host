@@ -32,10 +32,10 @@ function groom_list_of_domains () {
 
   local DOMAINS
 
-  local DOMAINS_LIST=${DOMAINS_LIST}
-  if [ -n "${DOMAINS_LIST}" ]; then 
+  local DOMAINS_LIST=${DOMAINS_LIST:-}
+  if [ -n "${DOMAINS_LIST}" ]; then
     DOMAINS=${DOMAINS_LIST}
-  else 
+  else
     DOMAINS="${NGINX_PRIMAL_NAME},${NGINX_CANONICAL_NAME},${NGINX_ALIASES}"
   fi
 
