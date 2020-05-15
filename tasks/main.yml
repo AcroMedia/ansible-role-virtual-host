@@ -229,7 +229,7 @@
   args:
     creates: /home/{{ linux_owner }}/.acro-add-website/{{ project }}
 
-- name: Try and expand the primal name's Certificate to all names in the nginx_server_names array. If DNS is pointing at the machine for these names, the command will work.
+- name: Try and expand the primal name's Certificate to all names in the nginx_server_names array. If DNS is pointing at the machine for all names, and the firewal is open to port 80, the command will work.
   script:  scripts/certbot-wrapper
   args:
     executable: /bin/bash
@@ -243,6 +243,7 @@
     and ssl == 'letsencrypt'
   register: letsencrypt_result
   ignore_errors: true
+  notify: arvh safe reload nginx
 
 - name: debug nginx_server_names
   debug:
