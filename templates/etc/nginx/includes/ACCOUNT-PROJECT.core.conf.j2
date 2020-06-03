@@ -77,9 +77,9 @@
 {% if web_application != 'proxy_pass' %}
   # Very rarely should these ever be accessed outside of your lan
   location ~* \.({{ nginx_protected_filename_extensions | join('|') }})$ {
-    {% for allowed_cidr in nginx_trusted_cidrs %}
+{% for allowed_cidr in nginx_trusted_cidrs %}
     allow {{ allowed_cidr }};
-    {% endfor %}
+{% endfor %}
     deny all;
   }
 {% endif %}
@@ -91,13 +91,13 @@
   # - update.php is not needed, since we update with drush.
   # If something ever goes wrong with settings.php, this keeps the install script from being exposed to anonymous users, regardless of whether it can be used or not.
   location ~ ^(/core)?/(install|update)\.php {
-    {% for allowed_cidr in nginx_trusted_cidrs %}
+{% for allowed_cidr in nginx_trusted_cidrs %}
     allow {{ allowed_cidr }};
-    {% endfor %}
+{% endfor %}
     deny all;
-    {% if php_version != 'none' %}
+{% if php_version != 'none' %}
     include {{ path_to_nginx_php_fpm_include }};
-    {% endif %}
+{% endif %}
   }
 
   # Other Drupal files that contain PHP, but shouldn't be served or processed directly
@@ -139,23 +139,23 @@
 {% endif %}
 
 {% if web_application != 'proxy_pass' %}
-  {% if nginx_ip_restricted_locations|length > 0  %}
-    {% for restricted_location in nginx_ip_restricted_locations %}
+{% if nginx_ip_restricted_locations|length > 0  %}
+{% for restricted_location in nginx_ip_restricted_locations %}
       location {{ restricted_location }} {
-        {% for allowed_ip in nginx_allowed_ips %}
+{% for allowed_ip in nginx_allowed_ips %}
           allow {{ allowed_ip }};
-        {% endfor %}
+{% endfor %}
         deny all;
-        {% if restricted_location.endswith('.php')  %}
-          {% if php_version != 'none' %}
+{% if restricted_location.endswith('.php')  %}
+{% if php_version != 'none' %}
             include {{ path_to_nginx_php_fpm_include }};
-          {% endif %}
-        {% else %}
+{% endif %}
+{% else %}
           try_files $uri $uri/ @rewrite;
-        {% endif %}
+{% endif %}
       }
-    {% endfor %}{# /nginx_ip_restricted_locations|length > 0 #}
-  {% endif %}{# /restricted_location in nginx_ip_restricted_locations #}
+{% endfor %}{# /nginx_ip_restricted_locations|length > 0 #}
+{% endif %}{# /restricted_location in nginx_ip_restricted_locations #}
 {% endif %}{# /web_application != 'proxy_pass' #}
 
 
@@ -206,17 +206,17 @@
     return 403;
   }
   location = /xmlrpc.php {
-    {% if nginx_allow_wp_xmlrpc and php_version != 'none' %}
+{% if nginx_allow_wp_xmlrpc and php_version != 'none' %}
       include {{ path_to_nginx_php_fpm_include }};
-    {% else %}
+{% else %}
       return 403;
-    {% endif %}
+{% endif %}
   }
-  {% if not nginx_allow_wp_json %}
+{% if not nginx_allow_wp_json %}
   location /wp-json {
     return 403;
   }
-  {% endif %}
+{% endif %}
 
   # Wordpress:
   # Include the "?$args" part so non-default permalinks doesn't break when using query string
@@ -341,9 +341,9 @@
   location ~* \.(js|css|png|jpg|jpeg|gif|ico)$ {
     expires max;
     log_not_found off;
-    {% if nginx_rewrite_static_content %}
+{% if nginx_rewrite_static_content %}
     try_files $uri @rewrite;
-    {% endif %}
+{% endif %}
   }
 {% endif %}
 
