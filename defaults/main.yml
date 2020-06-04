@@ -207,3 +207,8 @@ nginx_static_resource_filename_extensions_default:
   - ico
 nginx_static_resource_filename_extensions_extra: []
 nginx_static_resource_filename_extensions: "{{ nginx_static_resource_filename_extensions_default + nginx_static_resource_filename_extensions_extra }}"
+
+
+# templates/etc/php/VERSION/fpm/pool.d/ACCOUNT-PROJECT.conf.j2
+# -> php_value[newrelic.appname]
+php_fpm_newrelic_appname: "{{ nginx_canonical_name }} ({{ linux_owner }}/{{ project }}) - {{ deploy_env }}"
