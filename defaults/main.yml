@@ -162,8 +162,13 @@ letsencrypt_cert_registration_timeout: 300
 # Who should receive letsencrypt SSL expiry notices.
 letsencrypt_expiry_email: ''
 
-# File types that can only be accesed by the nginx_trusted_cidrs list; blocked for all web applications except proxy_pass
-nginx_protected_filename_extensions:
+# -------------------------------------
+# nginx_protected_filename_extensions:
+# - File types that can only be accesed by the nginx_trusted_cidrs list.
+# - Blocked for all web applications except proxy_pass
+# - You can either ovewrite `nginx_protected_filename_extensions` in your playbook, or, for a cleaner playbook, append to the default list by only setting `nginx_protected_filename_extensions_extra`
+# -------------------------------------
+nginx_protected_filename_extensions_default:
  - txt
  - log
  - sql
@@ -171,9 +176,15 @@ nginx_protected_filename_extensions:
  - gzip
  - gz
  - tar
+nginx_protected_filename_extensions_extra: []
+nginx_protected_filename_extensions: "{{ nginx_protected_filename_extensions_default + nginx_protected_filename_extensions_extra }}"
 
-# Can not be accessed by anyone; only applies to Drupal web applications
-drupal_blocked_filename_extensions:
+# -----------------------------------------------
+# drupal_blocked_filename_extensions:
+# - Can not be accessed by anyone
+# - Only applies to Drupal web applications
+# -----------------------------------------------
+drupal_blocked_filename_extensions_default:
  - module
  - install
  - inc
@@ -181,8 +192,12 @@ drupal_blocked_filename_extensions:
  - profile
  - engine
  - phar
+drupal_blocked_filename_extensions_extra: []
+drupal_blocked_filename_extensions: "{{ drupal_blocked_filename_extensions_default + drupal_blocked_filename_extensions_extra }}"
 
-nginx_static_resource_filename_extensions:
+# -----------------------------------------------
+# -----------------------------------------------
+nginx_static_resource_filename_extensions_default:
   - js
   - css
   - png
@@ -190,3 +205,5 @@ nginx_static_resource_filename_extensions:
   - jpeg
   - gif
   - ico
+nginx_static_resource_filename_extensions_extra: []
+nginx_static_resource_filename_extensions: "{{ nginx_static_resource_filename_extensions_default + nginx_static_resource_filename_extensions_extra }}"
