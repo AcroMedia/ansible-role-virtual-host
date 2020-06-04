@@ -181,3 +181,12 @@ drupal_blocked_filename_extensions:
  - profile
  - engine
  - phar
+
+nginx_static_resource_filename_extensions:
+  - js
+  - css
+  - png
+  - jpg
+  - peg
+  - gif
+  - ico
