@@ -42,10 +42,9 @@
 {% endif %}
 
 {% if nginx_inline_custom != '' %}
-# <nginx_inline_custom>
+  # nginx_inline_custom BEGIN
 {{ nginx_inline_custom }}
-
-# </nginx_inline_custom>
+  # nginx_inline_custom END
 {% endif %}
 
 {% if web_application != 'proxy_pass' %}
