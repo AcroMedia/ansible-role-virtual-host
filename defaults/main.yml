@@ -187,6 +187,6 @@ nginx_static_resource_filename_extensions:
   - css
   - png
   - jpg
-  - peg
+  - jpeg
   - gif
   - ico
