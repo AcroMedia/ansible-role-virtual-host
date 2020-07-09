@@ -87,6 +87,7 @@ php_fpm_min_spare_servers: 1
 php_fpm_max_spare_servers: 3
 php_fpm_max_requests: 5000
 php_memory_limit: 128M
+php_memory_limit_locked: true   # Don't allow PHP scripts (drupal) to override.
 php_max_input_vars: 3001
 php_fpm_status_path: ''
 
