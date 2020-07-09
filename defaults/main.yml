@@ -87,6 +87,7 @@ php_fpm_min_spare_servers: 1
 php_fpm_max_spare_servers: 3
 php_fpm_max_requests: 5000
 php_memory_limit: 128M
+php_memory_limit_locked: true   # Don't allow PHP scripts (drupal) to override.
 php_max_input_vars: 3001
 php_fpm_status_path: ''
 
@@ -158,3 +159,57 @@ always_redirect_to_https: false
 
 # Wait up to X seconds for cert registration to complete
 letsencrypt_cert_registration_timeout: 300
+
+# Who should receive letsencrypt SSL expiry notices.
+letsencrypt_expiry_email: ''
+
+# -------------------------------------
+# nginx_protected_filename_extensions:
+# - File types that can only be accesed by the nginx_trusted_cidrs list.
+# - Blocked for all web applications except proxy_pass
+# - You can either ovewrite `nginx_protected_filename_extensions` in your playbook, or, for a cleaner playbook, append to the default list by only setting `nginx_protected_filename_extensions_extra`
+# -------------------------------------
+nginx_protected_filename_extensions_default:
+ - txt
+ - log
+ - sql
+ - zip
+ - gzip
+ - gz
+ - tar
+nginx_protected_filename_extensions_extra: []
+nginx_protected_filename_extensions: "{{ nginx_protected_filename_extensions_default + nginx_protected_filename_extensions_extra }}"
+
+# -----------------------------------------------
+# drupal_blocked_filename_extensions:
+# - Can not be accessed by anyone
+# - Only applies to Drupal web applications
+# -----------------------------------------------
+drupal_blocked_filename_extensions_default:
+ - module
+ - install
+ - inc
+ - theme
+ - profile
+ - engine
+ - phar
+drupal_blocked_filename_extensions_extra: []
+drupal_blocked_filename_extensions: "{{ drupal_blocked_filename_extensions_default + drupal_blocked_filename_extensions_extra }}"
+
+# -----------------------------------------------
+# -----------------------------------------------
+nginx_static_resource_filename_extensions_default:
+  - js
+  - css
+  - png
+  - jpg
+  - jpeg
+  - gif
+  - ico
+nginx_static_resource_filename_extensions_extra: []
+nginx_static_resource_filename_extensions: "{{ nginx_static_resource_filename_extensions_default + nginx_static_resource_filename_extensions_extra }}"
+
+
+# templates/etc/php/VERSION/fpm/pool.d/ACCOUNT-PROJECT.conf.j2
+# -> php_value[newrelic.appname]
+php_fpm_newrelic_appname: "{{ nginx_canonical_name }} ({{ linux_owner }}/{{ project }}) - {{ deploy_env }}"

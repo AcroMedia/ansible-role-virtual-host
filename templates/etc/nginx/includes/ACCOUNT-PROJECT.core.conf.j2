@@ -42,10 +42,9 @@
 {% endif %}
 
 {% if nginx_inline_custom != '' %}
-# <nginx_inline_custom>
+  # nginx_inline_custom BEGIN
 {{ nginx_inline_custom }}
-
-# </nginx_inline_custom>
+  # nginx_inline_custom END
 {% endif %}
 
 {% if web_application != 'proxy_pass' %}
@@ -74,6 +73,16 @@
   include /etc/nginx/includes/robots.conf;
 {% endif %}
 
+{% if web_application != 'proxy_pass' %}
+  # Very rarely should these ever be accessed outside of your lan
+  location ~* \.({{ nginx_protected_filename_extensions | join('|') }})$ {
+{% for allowed_cidr in nginx_trusted_cidrs %}
+    allow {{ allowed_cidr }};
+{% endfor %}
+    deny all;
+  }
+{% endif %}
+
 {% if 'drupal' in web_application  %}
   # Drupal (all versions):
   # Deny access to install/update scripts except from "nginx_trusted_cidrs"
@@ -81,25 +90,17 @@
   # - update.php is not needed, since we update with drush.
   # If something ever goes wrong with settings.php, this keeps the install script from being exposed to anonymous users, regardless of whether it can be used or not.
   location ~ ^(/core)?/(install|update)\.php {
-    {% for allowed_cidr in nginx_trusted_cidrs %}
+{% for allowed_cidr in nginx_trusted_cidrs %}
     allow {{ allowed_cidr }};
-    {% endfor %}
+{% endfor %}
     deny all;
-    {% if php_version != 'none' %}
+{% if php_version != 'none' %}
     include {{ path_to_nginx_php_fpm_include }};
-    {% endif %}
-  }
-
-  # Very rarely should these ever be accessed outside of your lan
-  location ~* \.(txt|log|sql|zip|gzip|gz|tar)$ {
-    {% for allowed_cidr in nginx_trusted_cidrs %}
-    allow {{ allowed_cidr }};
-    {% endfor %}
-    deny all;
+{% endif %}
   }
 
   # Other Drupal files that contain PHP, but shouldn't be served or processed directly
-  location ~* \.(module|install|inc|theme|profile|engine|phar)$ {
+  location ~* \.({{ drupal_blocked_filename_extensions | join('|') }})$ {
     return 403;
   }
 
@@ -137,23 +138,23 @@
 {% endif %}
 
 {% if web_application != 'proxy_pass' %}
-  {% if nginx_ip_restricted_locations|length > 0  %}
-    {% for restricted_location in nginx_ip_restricted_locations %}
+{% if nginx_ip_restricted_locations|length > 0  %}
+{% for restricted_location in nginx_ip_restricted_locations %}
       location {{ restricted_location }} {
-        {% for allowed_ip in nginx_allowed_ips %}
+{% for allowed_ip in nginx_allowed_ips %}
           allow {{ allowed_ip }};
-        {% endfor %}
+{% endfor %}
         deny all;
-        {% if restricted_location.endswith('.php')  %}
-          {% if php_version != 'none' %}
+{% if restricted_location.endswith('.php')  %}
+{% if php_version != 'none' %}
             include {{ path_to_nginx_php_fpm_include }};
-          {% endif %}
-        {% else %}
+{% endif %}
+{% else %}
           try_files $uri $uri/ @rewrite;
-        {% endif %}
+{% endif %}
       }
-    {% endfor %}{# /nginx_ip_restricted_locations|length > 0 #}
-  {% endif %}{# /restricted_location in nginx_ip_restricted_locations #}
+{% endfor %}{# /nginx_ip_restricted_locations|length > 0 #}
+{% endif %}{# /restricted_location in nginx_ip_restricted_locations #}
 {% endif %}{# /web_application != 'proxy_pass' #}
 
 
@@ -167,7 +168,7 @@
     or web_application == 'drupal5'
     or web_application == 'drupal4')    %}
 
-  # Serve static content before trying to get PHP involved.
+  # Serve static content before involving PHP
   location / {
     try_files $uri $uri/ @rewrite;
   }
@@ -185,7 +186,7 @@
 
 {% elif web_application == 'wordpress' %}
 
-  # This is cool because no php is touched for static content
+  # Serve static content before involving PHP
   location / {
     try_files $uri $uri/ @rewrite;
   }
@@ -204,17 +205,17 @@
     return 403;
   }
   location = /xmlrpc.php {
-    {% if nginx_allow_wp_xmlrpc and php_version != 'none' %}
+{% if nginx_allow_wp_xmlrpc and php_version != 'none' %}
       include {{ path_to_nginx_php_fpm_include }};
-    {% else %}
+{% else %}
       return 403;
-    {% endif %}
+{% endif %}
   }
-  {% if not nginx_allow_wp_json %}
+{% if not nginx_allow_wp_json %}
   location /wp-json {
     return 403;
   }
-  {% endif %}
+{% endif %}
 
   # Wordpress:
   # Include the "?$args" part so non-default permalinks doesn't break when using query string
@@ -224,7 +225,7 @@
 
 {% elif web_application == 'drupal7' %}
 
-  # Drupal 7: Serve static content before getting PHP involved.
+  # Drupal 7: Serve static content before involving PHP
   location / {
     try_files $uri $uri/ @rewrite;
   }
@@ -246,7 +247,7 @@
 
 {% elif web_application == 'drupal8' %}
 
-  # Drupal 8: Serve static content before getting PHP involved.
+  # Drupal 8: Serve static content before involving PHP
   location / {
     try_files $uri $uri/ @rewrite;
   }
@@ -285,7 +286,7 @@
     return 403;
   }
 
-  location ~* \.(js|css|png|jpg|jpeg|gif|ico)$ {
+  location ~* \.({{ nginx_static_resource_filename_extensions | join('|') }})$ {
     try_files $uri /index.php;
     expires max;
     log_not_found off;
@@ -298,6 +299,17 @@
 
   location ^~ /cache/ {
     deny all;
+  }
+
+{% elif web_application == 'moodle' %}
+  # PHP FPM on a socket
+  location ~ [^/]\.php(/|$) {
+    fastcgi_split_path_info  ^(.+\.php)(/.+)$;
+    fastcgi_index            index.php;
+    fastcgi_pass unix:/var/run/php{{ php_version }}-fpm-{{ linux_owner }}-{{ project }}.sock;
+    include                  fastcgi_params;
+    fastcgi_param   PATH_INFO       $fastcgi_path_info;
+    fastcgi_param   SCRIPT_FILENAME $document_root$fastcgi_script_name;
   }
 
 {% elif web_application == 'proxy_pass' %}
@@ -325,16 +337,16 @@
 
 {% if web_application != 'proxy_pass' %}
   # Dont spam log files, and cache static content forever.
-  location ~* \.(js|css|png|jpg|jpeg|gif|ico)$ {
+  location ~* \.({{ nginx_static_resource_filename_extensions | join('|') }})$ {
     expires max;
     log_not_found off;
-    {% if nginx_rewrite_static_content %}
+{% if nginx_rewrite_static_content %}
     try_files $uri @rewrite;
-    {% endif %}
+{% endif %}
   }
 {% endif %}
 
-{% if web_application != 'static' and web_application != 'proxy_pass' and php_version != 'none' %}
+{% if web_application != 'static' and web_application != 'proxy_pass' and web_application != 'moodle' and php_version != 'none' %}
 
   # PHP FPM on a socket
   location ~ \.php$ {

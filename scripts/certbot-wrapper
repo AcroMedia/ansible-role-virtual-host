@@ -19,7 +19,9 @@ function main () {
   CMD="$CMD --webroot"
   CMD="$CMD --webroot-path /var/www/letsencrypt"
   CMD="$CMD --agree-tos"
-  CMD="$CMD --email webmaster@acromedia.com"
+  if [ -n "$LE_EXPIRY_EMAIL" ]; then
+    CMD="$CMD --email '${LE_EXPIRY_EMAIL}'"
+  fi
   CMD="$CMD --cert-name $NGINX_PRIMAL_NAME"
   CMD="$CMD --keep"
   CMD="$CMD --domains ${GROOMED_DOMAINS_LIST}"

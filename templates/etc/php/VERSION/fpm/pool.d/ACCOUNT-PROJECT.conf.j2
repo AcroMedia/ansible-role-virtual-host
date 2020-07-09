@@ -29,11 +29,15 @@ php_admin_value[max_execution_time] = {{ php_max_execution_time }}
 php_admin_value[default_socket_timeout] = {{ php_default_socket_timeout }}
 security.limit_extensions = .php
 php_admin_value[open_basedir] = "{{ php_open_basedir }}"
-php_value[newrelic.appname] = "{{ nginx_canonical_name }} ({{ linux_owner }}/{{ project }}) - {{ deploy_env }}"
+php_value[newrelic.appname] = "{{ php_fpm_newrelic_appname }}"
 php_flag[expose_php] = off
 php_admin_value[upload_max_filesize] = {{ php_upload_max_filesize }}
 php_admin_value[post_max_size] = {{ php_post_max_size }}
+{% if php_memory_limit_locked %}
 php_admin_value[memory_limit] = {{ php_memory_limit }}
+{% else %}
+php_value[memory_limit] = {{ php_memory_limit }}
+{% endif %}
 {% if php_sendmail_path is defined %}
 php_admin_value[sendmail_path] = '{{ php_sendmail_path }}'
 {% endif %}
