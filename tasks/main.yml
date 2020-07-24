@@ -321,7 +321,9 @@
 
 - name: Install dependency for htpasswd operations
   apt:
-    name: python-passlib
+    name:
+      - python-passlib
+      - python3-passlib
     state: present
     update_cache: true
   when: require_http_auth == true
