@@ -389,7 +389,7 @@ nginx_location_extras:
 
 **nginx_include_custom**: Path to a template file in your playbook that will be uploaded to the server, and then `include`d before the start of the nginx 'location' directives for the virtual host. You may use any variables in your template that are avaialble to the role. Your template will be processed and uploaded to the server as `/etc/nginx/includes/{{ linux_owner }}-{{ project }}.custom.conf`.
 
-**nginx_include_resident**: Absolute path to a file that already resides on the server (for example, one that was deployed by your Drupal project's code repository inside your web root), to be `include`d before the location directives in the virtual host. **Caveats:**  **(1)** The path you specify *MUST* already exist on the server, or your nginx config will break. **(2)** Future changes to your included file will not be automatically applied, since the role has no way of knowing when this file changed, and no means to intelligently trigger a reload. It will be up to you to manually reload nginx when needed.
+**nginx_include_resident**: Absolute path to a file that already resides on the server (for example, one that was deployed by your Drupal project's code repository inside your web root), to be `include`d before the location directives in the virtual host. **Caveats:**  **(1)** The file you specify *MUST* already exist on the server, or your nginx config will break. **(2)** Modifications to your resident include file do not trigger an nginx reload, since the role has no way of knowing when your file changed. It will be up to you to manually reload nginx if/when needed.
 
 **nginx_inline_custom**: Whatever you specify is placed as-is, inside the virtual host's main `server` block, before any location directives.
 

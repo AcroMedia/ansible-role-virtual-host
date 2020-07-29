@@ -76,6 +76,7 @@
           or web_application == 'static'
           or web_application == 'wordpress'
           or web_application == 'mediawiki'
+          or web_application == 'moodle'
     fail_msg: "ERROR: Value for web_application is not supported: {{ web_application }}"
 
 - name: Make sure linux_owner is not the same as php_service_user
@@ -380,7 +381,9 @@
 
 - name: Install dependency for htpasswd operations
   apt:
-    name: python-passlib
+    name:
+      - python-passlib
+      - python3-passlib
     state: present
     update_cache: true
   when: require_http_auth == true
