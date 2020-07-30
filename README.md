@@ -93,6 +93,55 @@ If using the role more than once **in the same play**, you must re-specify **all
 
 - The dir name for the project inside the linux owner's home dir. Usually should be the same as linux owner, unless the owner has more than one site or project.
 
+### letsencrypt_certificates (complex)
+
+A list of certs the role will register for you in order to run SSL on your vhost.
+
+DNS must resolve to the vhost for all names specified.
+
+Successful certificate registration creates 3 files that you then need to pass into the nginx_listeners config:
+- /etc/letsencrypt/live/{{ name }}/fullchain.pem (as ssl_fullchain_path)
+- /etc/letsencrypt/live/{{ name }}/chain.pem (as ssl_intermediates_path)
+- /etc/letsencrypt/live/{{ name }}/privkey.pem (as ssl_key_path)
+
+
+```yaml
+letsencrypt_certificates:
+  - name: www.example.com  #  Cert and key files will be created in /etc/letsencrypt/live/{{ name }}/
+    domains:               #  All names listed in {{ domains }} must resolve with DNS, or LE cert registration will fail.
+      - www.example.com    #  {{ name }} of cert is not implied and *MUST* be explicitly included in your list of domains.
+      - example.com  
+      - oldname.com
+      - www.oldname.com
+```
+
+### nginx_listeners (complex)
+```yaml
+nginx_listeners:
+  - port: 80
+    server_name: www.example.com
+    aliases:
+      - example.com
+      - oldname.com
+    redirect:
+      destination: https://www.example.com   # Must include protocol. No trailing slash. Nginx's $request_uri is implied.
+      permanent: true
+
+  - port: 443
+    ssl: true
+    http2: true
+    server_name: www.example.com
+    aliases:
+      - example.com
+      - oldname.com
+    ssl_fullchain_path: /etc/letsencrypt/live/www.example.com/fullchain.pem
+    ssl_intermediates_path: /etc/letsencrypt/live/www.example.com/chain.pem
+    ssl_key_path: /etc/letsencrypt/live/www.example.com/privkey.pem
+
+```
+
+
+
 #### nginx_primal_name
 
 - Example:

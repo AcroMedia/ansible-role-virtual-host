@@ -162,8 +162,13 @@ always_redirect_to_https: false
 # Wait up to X seconds for cert registration to complete
 letsencrypt_cert_registration_timeout: 300
 
+# Decoupled cert registration / expansion (as opposed to lumping it in with site creation and wiring it into templates) for reduced logical complexity in the role
+letsencrypt_certificates: [] # See readme for format.
+
 # New style array for server names, provides MUCH greater flexibility (and less confusion) than "nginx_primal_name" + "nginx_canonical_name" + "nginx_aliases"
-nginx_server_names: []
+nginx_listeners: [] # See readme for format.
+
+
 
 # Who should receive letsencrypt SSL expiry notices.
 letsencrypt_expiry_email: ''

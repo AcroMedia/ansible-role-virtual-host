@@ -1,66 +1,13 @@
 ---
 - include_vars: "vars/{{ ansible_os_family }}.yml"
 
-- name: Make sure we have an nginx_server_names array
+- name: Make sure we have an nginx_listeners array
   assert:
     that:
-      - (nginx_server_names | length) > 0
-      - nginx_server_names is not string
-      - nginx_server_names is iterable
-    fail_msg: "The 'nginx_canonical_name', 'nginx_primal_name', and 'nginx_aliases' have been replaced by the much more flexible 'nginx_server_names' array. You need to convert your playbook's variables before continuing. See the role's README.md for details."
-
-- set_fact:
-    _all_aliases: "{{ nginx_server_names | json_query(query) }}"
-  vars:
-    query: "[].aliases[].name"
-
-- debug:
-    var: _all_aliases
-    verbosity: 1
-
-- set_fact:
-    _all_names: "{{ nginx_server_names | json_query(query) }}"
-  vars:
-    query: "[].name"
-
-- debug:
-    var: _all_names
-    verbosity: 1
-
-- set_fact:
-    nginx_names_all_names_and_aliases: "{{ _all_aliases + _all_names }}"
-
-- name: Prevent infinite redirects and ambiguous server_name entries in NGINX config
-  assert:
-    that: >
-          nginx_names_all_names_and_aliases | count
-          ==
-          nginx_names_all_names_and_aliases | unique | count
-    fail_msg: "There appears to be a duplicate name (or alias) in the nginx_server_names array."
-
-- name: Extract nginx_primal_name from nginx_server_names array so we can use it to create our initial vhost structure. If there is more than one primal name specified, all except the last will be ignored.
-  set_fact:
-    nginx_primal_name: "{{ item.name }}"
-  with_items: "{{ nginx_server_names }}"
-  when: item.type == 'primal'
-
-- name: Extract primary nginx_canonical_name from nginx_server_names array so we know where to redirect primal names to in production mode. If there is more than one nginx_canonical_name specified, all except the last will be ignored.
-  set_fact:
-    nginx_canonical_name: "{{ item.name }}"
-  with_items: "{{ nginx_server_names }}"
-  when: item.type == 'canonical'
-
-- name: Make sure we have a nginx_primal_name to work with
-  assert:
-    that:
-      - (nginx_primal_name|trim != '')
-    fail_msg: There needs to be exactly one "primal" type name in the nginx_server_names array.
-
-- name: Make sure we have a nginx_canonical_name to work with
-  assert:
-    that:
-      - nginx_canonical_name|trim != ''
-    fail_msg: nginx_canonical_name cannot be empty.
+      - (nginx_listeners | length) > 0
+      - nginx_listeners is not string
+      - nginx_listeners is iterable
+    fail_msg: "The 'nginx_canonical_name', 'nginx_primal_name', and 'nginx_aliases' have been replaced by the much more flexible 'nginx_listeners' array. You need to convert your playbook's variables before continuing. See the role's README.md for details."
 
 - name: Validate 'web_application' variable value
   assert:
@@ -86,18 +33,6 @@
     fail_msg: "ERROR: The PHP user (php_service_user) cannot be the same account as the web account owner (linux_owner).\n
       If they are, the account will be marked as a 'service' account, SSH will not work for it, and you will\n
       not be able create a working CI deploy job."
-
-- name: Make sure primal_name isn't duplicated in aliases
-  assert:
-    that:
-      - nginx_primal_name not in nginx_aliases
-    fail_msg: The value for nginx_primal_name appears to be duplicated in the nginx_aliases list
-
-# - name: Make sure canonical name isn't duplicated in aliases
-#   assert:
-#     that:
-#       - nginx_canonical_name not in nginx_aliases
-#     fail_msg: The value for nginx_canonical_name appears to be duplicated in the nginx_aliases list
 
 - name: See if a site has already been created with AAW
   stat:
@@ -139,8 +74,8 @@
 
 - set_fact:
     skip_ssl_flag: '--skip-ssl'
-  when: ssl == 'none'
-    or (ssl == 'manual' and deploy_env == 'production')
+  # when: ssl == 'none'
+  #   or (ssl == 'manual' and deploy_env == 'production')
 
 - set_fact:
     rds_flag: '--rds'
@@ -209,7 +144,7 @@
     owner: root
     group: root
 
-- name: Run acro-add-website, waiting up to {{ letsencrypt_cert_registration_timeout }} seconds for letsencrypt cert registration
+- name: Run acro-add-website  #, waiting up to {{ letsencrypt_cert_registration_timeout }} seconds for letsencrypt cert registration
   shell: >
      export TERM=xterm-256color {{ env_mysql_db_name }} {{ env_mysql_db_user }} {{ env_mysql_db_pass }};
      /usr/bin/timeout {{ letsencrypt_cert_registration_timeout }}s
@@ -230,26 +165,24 @@
   args:
     creates: /home/{{ linux_owner }}/.acro-add-website/{{ project }}
 
-- name: Try and expand the primal name's Certificate to all names in the nginx_server_names array. If DNS is pointing at the machine for all names, and the firewal is open to port 80, the command will work.
+- name: Register or expand letsencrypt certificate(s). If DNS is pointing at the machine for all names, and the firewal is open to port 80, the command should succeed.
   script:  scripts/certbot-wrapper
   args:
     executable: /bin/bash
   environment:
     INVENTORY_HOSTNAME: "{{ inventory_hostname }}"
-    CERT_NAME: "{{ nginx_primal_name }}"
-    NGINX_PRIMAL_NAME: "{{ nginx_primal_name }}"
-    DOMAINS_LIST: "{{ nginx_server_names | map(attribute='name') | list | join(',') }}"
+    CERT_NAME: "{{ item.name }}"
+    NGINX_PRIMAL_NAME: "{{ item.name }}"
+    DOMAINS_LIST: "{{ item.domains | join(',') }}"
     LE_EXPIRY_EMAIL: "{{ letsencrypt_expiry_email }}"
-  when: deploy_env == 'production'
-    and ssl == 'letsencrypt'
+  with_items: "{{ letsencrypt_certificates }}"
   register: letsencrypt_result
-  ignore_errors: true
+#  ignore_errors: true
   notify: arvh safe reload nginx
 
-- name: debug nginx_server_names
+- name: debug nginx_listeners array
   debug:
-    var: nginx_server_names | map(attribute='name') | list | join(',')
-
+    var: nginx_listeners
 
 
 - name: Upload arbitrary customizations from the playbook through the role to the remote host
@@ -298,7 +231,7 @@
 
 - name: Update nginx virtual host configuration for {{ linux_owner }}/{{ project }}
   template:
-    src: "{{ role_path }}/templates/etc/nginx/sites-available/{{ deploy_env }}.{{ ssl }}.conf.j2"
+    src: "{{ role_path }}/templates/etc/nginx/sites-available/ACCOUNT-PROJECT.conf.j2"
     dest: "{{ nginx_vhost_conf_dir }}/{{ linux_owner }}-{{ project }}.conf"
     backup: true
   notify:
@@ -405,5 +338,7 @@
   assert:
     that: letsencrypt_expiry_email != ''
     fail_msg: There is no value for letsencrypt_expiry_email. This is not a strict requirement, but it's highly recommended that someone be able to receive expiry notifications in case of unexpected renewal failures.
-  when: ssl == 'letsencrypt'
+  when: letsencrypt_certificates is not string
+    and letsencrypt_certificates is iterable
+    and (letsencrypt_certificates | length > 0)
   ignore_errors: true

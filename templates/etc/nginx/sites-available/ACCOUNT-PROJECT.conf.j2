@@ -1,0 +1,32 @@
+# {{ ansible_managed }}
+
+{% for listener in nginx_listeners %}
+server {
+  listen {{ listener.port | default('80') }}
+{%- if listener.ssl | default(false) %} ssl {%- endif -%}
+{%- if listener.http2 | default(false) %} http2 {%- endif -%}
+;
+  server_name {{ listener.server_name }} {{ (listener.aliases | default([])) | join(' ') }};
+  access_log {{ nginx_access_log_conf }};
+  error_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-error.log;
+  include /etc/nginx/includes/letsencrypt-acme-challenge.conf;
+{% if (listener.ssl | default(false)) %}
+  ssl_certificate {{ listener.ssl_fullchain_path }};
+  ssl_certificate_key {{ listener.ssl_key_path }};
+  ssl_dhparam /usr/local/ssl/private/dhparams.pem;
+  ssl_protocols {{ ssl_protocols }};
+  ssl_ciphers '{{ ssl_ciphers }}';
+  ssl_prefer_server_ciphers on;
+  ssl_stapling on;
+  ssl_stapling_verify on;
+  ssl_trusted_certificate {{ listener.ssl_intermediates_path }};
+{% endif %}
+{% if listener.redirect is defined %}
+  location / {
+    return {{ (listener.redirect.permanent|default(false)) | ternary('301', '302') }} {{ listener.redirect.destination }}$request_uri;
+  }
+{% else %}
+  include /etc/nginx/includes/{{ linux_owner }}-{{ project }}.core.conf;
+{% endif %}
+}
+{% endfor %}

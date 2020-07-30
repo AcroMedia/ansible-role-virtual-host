@@ -1,9 +1,0 @@
-  ssl_certificate {{ ssl_fullchain_path }};
-  ssl_certificate_key {{ ssl_key_path }};
-  ssl_dhparam /usr/local/ssl/private/dhparams.pem;
-  ssl_protocols {{ ssl_protocols }};
-  ssl_ciphers '{{ ssl_ciphers }}';
-  ssl_prefer_server_ciphers on;
-  ssl_stapling on;
-  ssl_stapling_verify on;
-  ssl_trusted_certificate {{ ssl_intermediates_path }};
