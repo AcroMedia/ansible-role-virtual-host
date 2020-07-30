@@ -29,7 +29,11 @@ php_admin_value[max_execution_time] = {{ php_max_execution_time }}
 php_admin_value[default_socket_timeout] = {{ php_default_socket_timeout }}
 security.limit_extensions = .php
 php_admin_value[open_basedir] = "{{ php_open_basedir }}"
+{% if new_relic_app_name is defined %}{# old/duplicate var name. #}
+php_value[newrelic.appname] = "{{ new_relic_app_name }}"
+{% else %}
 php_value[newrelic.appname] = "{{ php_fpm_newrelic_appname }}"
+{% endif %}
 php_flag[expose_php] = off
 php_admin_value[upload_max_filesize] = {{ php_upload_max_filesize }}
 php_admin_value[post_max_size] = {{ php_post_max_size }}
