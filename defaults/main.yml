@@ -17,10 +17,6 @@ nginx_aliases: []
 # No trailing slash.
 nginx_drupal_uploads_dir_pattern: '/sites/.*/files'
 
-# Allow standard ports to be overridden
-http_port: 80
-https_port: 443
-
 # For use with mult-server setups
 mysql_allow_from: localhost
 mysql_host_address: localhost
@@ -125,9 +121,6 @@ disable_http_auth: false
 # On staging/dev servers, the global nginx config may be imposing password authentication. Let it be disabled per-virtual host.
 disable_environment_indicator: false
 
-# In most cases you want HTTP2 enabled. The role only enables HTTP2 for HTTPS connections.
-nginx_http2: true
-
 # Debian style. You'll need to override this to be "/etc/nginx/conf.d" on CentOS 6 / RedHat 6
 nginx_vhost_conf_dir: /etc/nginx/sites-available
 
@@ -155,9 +148,6 @@ nginx_limit_req_zone_rate: '{{ php_rate_limit_max_requests_per_second }}r/s'
 nginx_limit_req_zone_value: "${{ nginx_limit_req_zone_key }} zone={{ nginx_limit_req_zone_name }}:{{ nginx_limit_req_zone_size }} rate={{ nginx_limit_req_zone_rate }}"
 nginx_limit_req_zone_file: /etc/nginx/conf.d/limit_req_zone.{{ nginx_limit_req_zone_name }}.conf
 php_rate_limit_nginx_conf: "zone={{ nginx_limit_req_zone_name }} burst={{ php_rate_limit_burst_limit }} nodelay"
-
-# When serving from a proxied / load balanced node, set this to true, so redirects send people right to https instead of possibly boucning them to http on a different name, and then bouncing them again to https
-always_redirect_to_https: false
 
 # Wait up to X seconds for cert registration to complete
 letsencrypt_cert_registration_timeout: 300

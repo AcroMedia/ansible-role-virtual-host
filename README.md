@@ -1,34 +1,48 @@
 # Ansible role: Virtual Host
 
-Manage a NGINX virtual host (including PHP version and SSL certificates) over its life cycle from staging to production.
+**TL;DR**: The [[Example playbook set]] is at the very bottom of the page.
+
+Manage a comprehensive virtual host configuration (NGINX, PHP, mariadb db + user, TLS certificates) over a site's life cycle from staging to production to decommission.
+
+This role is designed specifically for us in high performance / high security Acro Media hosting environments, and does not aim to be compatible with cpanel, plesk, or any other low-cost or generic hosting scheme.
+
+
+## Dependencies
+
+- [acromedia.devops-utils](https://github.com/AcroMedia/ansible-role-devops-utils)
+- [acromedia.postfix](https://github.com/AcroMedia/ansible-role-postfix)
+- [acromedia.nginx](https://github.com/AcroMedia/ansible-role-nginx)
+- [acromedia.letsencrypt](https://github.com/AcroMedia/ansible-role-letsencrypt)
+- [acromedia.php](https://github.com/AcroMedia/ansible-role-php)
+- [acromedia.mariadb](https://github.com/AcroMedia/ansible-role-mariadb)
+- [acromedia.drupal-cron](https://github.com/AcroMedia/ansible-role-drupal-cron)
+
 
 ## Requirements
 
-- Acro devops utils must already be installed and configured
+- All dependent software (see Dependencies above) must be installed, configured, running, and error-free.
 
-- LetsEncrypt installed, configured, and working
+- If you're providing your own manually registered TLS certificate(s), the fullchain, key, and intermediate files need to be placed on the server **before** this role is invoked.
 
-- Mariadb installed, configured, and working
+- If using letsencrypt, the role will generate TLS certificates and place them for you, but you still need to know their paths, so you can feed them to the nginx_listners variable.
 
-- If you're providing your own manually registered SSL certificate, the certificate + key need to be placed on the server **before** this role is invoked.
+- If using letsencrypt, DNS for the names in your certificate must already point at your server before you run this role.
 
-- Since this role is designed to support a "normal" virtual host from staging to production using SSL, both **nginx_primal_name**, and **nginx_canonical_name** are required in order for the role to work.
+- If using letsencrypt, port 80 must be open to the server from all public IPs. LetsEncrypt does not publish their origin addresses.
 
-- If using letsencrypt for SSL, **nginx_primal_name** should **not** be changed, once the original certificate has been registered, since this name refers to the physical directory of the SSL cert files in the /etc/letsencrypt live directory.
+- LetsEncrypt certificates are only suitable for use on single-app-node systems. LetsEncrypt cannot be used on load balanced systems... at least, not with this role.
 
-- If using SSL, DNS for your nginx_primal_name must already point at your server before you run this role. The other two (nginx_canonical_name and nginx_aliases) don't need to resolve until after you switch to `production`.
-
-- Don't be tempted to set `deploy_env` to `production` until *after* your site / server has been completely configured and tested and is truly ready for go-live.
 
 ## Beware of Variable Bleed
 
-It's common to require using this role multiple times in the same playbook. Becaue of [Ansible Variable Scope](https://docs.ansible.com/ansible/latest/user_guide/playbooks_variables.html#scoping-variables), multiple uses of any role in the same playbook requires extra care.
+It's common, especially on dev or staging servers, to require this role multiple times in the same playbook. Because of [Ansible's (lack of) Variable Scope](https://docs.ansible.com/ansible/latest/user_guide/playbooks_variables.html#scoping-variables), multiple uses of any role in the same playbook requires close attention.
 
-The best way to prevent variable bleeed is to split up multiple uses of the role into indvidual plays. As long as you're not gathering facts in each play, this doesn't add any extra time to the playbook's run time. It also lets you keep things more organized, especially when your virtual host has a lot of customization. For example:
+The best way to prevent variable bleed is to split up multiple uses of a role into individual plays. If you're gathering facts, doing so as it's own separate play will save playbook run time, since it doesn't normally need to be re-collected in the same playbook run.
+
+Example:
 ```yaml
 ---
-# Best practice: Split multiple uses of the same role
-# into their own plays to prevent variable bleed.
+# Best practice: Split multiple uses of the same role into their own plays to prevent variable bleed.
 - name: Gather facts in a separate play before we do any work
   hosts: app-nodes
   become: true
@@ -42,44 +56,19 @@ The best way to prevent variable bleeed is to split up multiple uses of the role
   hosts: app-nodes
   become: true
   gather_facts: false
+  vars:
+    ...
   roles:
     role: acromedia.virtual-host
-    vars: ...
 
 - name: Configure virtual host B
   hosts: app-nodes
   become: true
   gather_facts: false
+  vars:
+    ...
   roles:
     role: acromedia.virtual-host
-    vars: ...
-
-```
-
-If using the role more than once **in the same play**, you must re-specify **all** role variables that were used for each instance of the role. Role defaults are not re-set between role uses from the same play. Every variable, including role defaults, "stick" to the value they were set to between role instances. A variable that was defined in the first instance retains its value for the next instance, so if you don't re-specify it, even if it has no bearing on your second role instance, mayhem can ensue:
-
-```yaml
----
-# Avoid this situation.
-- hosts: app-nodes
-  become: true
-  gather_facts: true
-  roles:
-    - name: Configure vhost A
-      role: acromedia.virtual-host
-      vars:
-        php_version: 5.6
-        web_application: drupal6
-        ...
-    - name: Configure vhost B
-      role: acromedia.virtual-host
-      vars:
-        web_application: drupal8
-        # Missing the specification for "php_version" here
-        # makes this instance of the role inherit the last
-        # isntance's value of "5.6", which breaks
-        # this virtual host.
-        ...
 ```
 
 
@@ -91,114 +80,7 @@ If using the role more than once **in the same play**, you must re-specify **all
 
 #### project
 
-- The dir name for the project inside the linux owner's home dir. Usually should be the same as linux owner, unless the owner has more than one site or project.
-
-### letsencrypt_certificates (complex)
-
-A list of certs the role will register for you in order to run SSL on your vhost.
-
-DNS must resolve to the vhost for all names specified.
-
-Successful certificate registration creates 3 files that you then need to pass into the nginx_listeners config:
-- /etc/letsencrypt/live/{{ name }}/fullchain.pem (as ssl_fullchain_path)
-- /etc/letsencrypt/live/{{ name }}/chain.pem (as ssl_intermediates_path)
-- /etc/letsencrypt/live/{{ name }}/privkey.pem (as ssl_key_path)
-
-
-```yaml
-letsencrypt_certificates:
-  - name: www.example.com  #  Cert and key files will be created in /etc/letsencrypt/live/{{ name }}/
-    domains:               #  All names listed in {{ domains }} must resolve with DNS, or LE cert registration will fail.
-      - www.example.com    #  {{ name }} of cert is not implied and *MUST* be explicitly included in your list of domains.
-      - example.com  
-      - oldname.com
-      - www.oldname.com
-```
-
-### nginx_listeners (complex)
-```yaml
-nginx_listeners:
-  - port: 80
-    server_name: www.example.com
-    aliases:
-      - example.com
-      - oldname.com
-    redirect:
-      destination: https://www.example.com   # Must include protocol. No trailing slash. Nginx's $request_uri is implied.
-      permanent: true
-
-  - port: 443
-    ssl: true
-    http2: true
-    server_name: www.example.com
-    aliases:
-      - example.com
-      - oldname.com
-    ssl_fullchain_path: /etc/letsencrypt/live/www.example.com/fullchain.pem
-    ssl_intermediates_path: /etc/letsencrypt/live/www.example.com/chain.pem
-    ssl_key_path: /etc/letsencrypt/live/www.example.com/privkey.pem
-
-```
-
-
-
-#### nginx_primal_name
-
-- Example:
-    ```
-    project.server.dev-env.net
-    ```
-    or:
-    ```
-    www.client.dev-env.net
-    ```
-    if there is only one site on a given server.
-
-- Its purpose is to be a DNS name that can be used to access the virtual host before (and after) the site's canonical DNS name points to the virtual host, so your team (and/or the client) can get be sure everything works (with valid SSL), before the site's real DNS name is pointed at the server.
-
-- When using letsencrypt, **do not** change or remove the value of `nginx_primal_name` after the playbook has run against your server**. SSL directory names created by the role are tied to the name you create. If you change it or remove this name, you will break your NGINX and LetsEncrypt config, and will be left with a nasty mess to clean up.
-
-- Not optional, and must be unique from the other nginx virtual host names on the server.
-
-
-
-#### nginx_canonical_name
-
-- Example:
-    ```
-    www.bigcorp.com
-    ```
-
--  Once a site is launched, the final destination name for the site.
-
-- Not optional, and must be unique from the other nginx virtual host names on the server.
-
-- When using LetsEncrypt, the nginx_canonical_name will be appended to the SSL certificate (that was registered using the nginx_primal_name) after you set deploy_env to 'production'.
-
-
-#### nginx_aliases
-
-- A list of any other virtual host names (besides the primal & canonical names) that the site should respond to, and redirect to the canoncial name.  Examples:
-    ```yaml
-    # Single non-www alias:
-    nginx_aliases:
-      - bigcorp.com
-
-    # Non-www plus a second domain name:
-    nginx_aliases:
-      - bigcorp.com
-      - www.othername.com
-      - othername.com
-
-    # N aliases: specify an empty list:
-    nginx_aliases: []
-  ```
-- Must be a list; regardless of how many aliases there are.
-
-- nginx_aliases always redirect to nginx_canonical_name.
-
-- When using LetsEncrypt , all nginx_aliases will be appended to the SSL certificate (that was registered using the nginx_primal_name) after you set deploy_env to 'production'.
-
+- The dir name for the project inside the linux owner's /home/www/ dir. Expected to be the same as linux owner, unless the owner has more than one site or project.
 
 #### php_version
 
@@ -212,190 +94,77 @@ nginx_listeners:
 
 - Tells the role which nginx configuration to apply. Defaults to `undefined`. Can be one of `drupal4`, `drupal5`, `drupal6`, `drupal7`, `drupal8`, `wordpress`, `php`, `static`, `proxy_pass`, or `redirect`.
 
-#### deploy_env
 
-- Can be one of `staging` or `production`. If you're using this role in a development environment, just specify `staging`. This variable does not have a default, since having the role guess could have negative consequences.
-
-- Use `staging` before DNS for the site's canoncial domain name points at your server
-
-- Switch to `production` (and then re-run the playbook) after you've pointed DNS for your nginx_canonical_name (and aliases) at your server
-
-- When set to `production` and `ssl` is set to `letsencrypt`, the scripts will attempt to add the nginx_canonical_name and nginx_aliases to the LetsEncrypt SSL certificate.
-
-#### ssl
-
-- Can be one of `letsencrypt`, `manual`, or `none`. This variable does not have a default, since having the role guess could have negative consequences.
-
-- Specify `letsencrypt` when you don't have a manually registered SSL cert to install.
-
-- Specify `none` when it's not possible or practical to use a SSL certificate, such as on a private network, for local development, or when using proxy_pass behind varnish or a load balanacer. Production without SSL is not recommended, so if you're specifying 'none', it's expected that you're taking care of SSL in some other way.
-
-- Specify `manual` when you're providing a manually registered SSL certificate. **This role does not place your SSL certificate on the server; you'll need to do that BEFORE you run this playbook**.
-
-- When `deploy_env` is `staging`, you'll need to adjust your own local /etc/hosts file in order to see your staging site using the canonical domain name, if DNS is not pointing at the server.
-
-- **Warning**: When using `manual`, the certificate you provide must work for all of the `nginx_canonical_name` and `nginx_aliases` you specify. Providing mis-matched names *will* result in SSL errors in browsers, and *may* break NGINX configuraiton, preventing the service from starting.
-
-## How the combination of `deploy_env` + `ssl` affects redirects
-
-In `staging` modes, the `nginx_primal_name` never redirects to the canonical name, because it's expected that DNS is not pointing at the server yet.
-
-##### staging + no ssl
-
-See also: **always_redirect_to_https**.
-
-target_port = {{ ternary(always_redirect_to_https, 'https', 'http') }}
-
-  - **nginx_primal_name:80**:
-
-    Serve content.
-
-  - **nginx_aliases:80**:
-
-    Redirect to nginx_canonical_name:target_port. Assume the user had to adjust /etc/hosts to make requests with this name.
-
-  - **nginx_canonical_name:80**:
-
-    Serve content. Assume the user had to adjust /etc/hosts to make requests with this name.
-
-
-##### staging + letsencrypt ssl:
-
-  -  **nginx_primal_name:80**
-
-    Redirect to nginx_primal_name:443. Assume primal name is under our control, so we can always use SSL for this name.
-
-  -  **nginx_aliases:80**
-
-    If aliases are present, redirect to nginx_canonical_name:80 if nginx_canonical_name and nginx_primal_name are not the same, otherwise redirect to nginx_primal_name:443. We redirect to http for canonical instead of https, since going to https with the canonical would produce SSL warnings.
-
-  - **nginx_canonical_name:80**
-
-    Only used if nginx_canonical_name is different than nginx_primal_name. Serve content instead of redirecting to https, since the cert won't be valid until production mode is enabled. This particular case  has the convenient side effect of serving older sites immediately as soon as DNS switches, instead of pushing them to https where SSL won't be valid yet.
-
-  - **nginx_primal_name:443**
-
-    Serve content instead of redirecting to canonical name. It wouldn't make sense to direct to the Canonical, since DNS doesn't point at the server yet, and trying to use the canonical name would produce invalid SSL errors.
-
-  - **nginx_aliases:443**
-
-    If aliases exist, redirect them to nginx_canonical_name:443. Assume the user had to adjust /etc/hosts to make requests with this name. Expect to see Invalid SSL errors for all aliases, since they won't be part of the LetsEncrypt certificate deploy_env is switched to production.
-
-  - **nginx_canonical_name:443**
-
-    Only used if nginx_canonical_name != nginx_primal_name. Serve content with an invalid certificate. Assume the user had to adjust /etc/hosts to make requests with this name.
-
-
-##### staging + manual ssl:
-
-  -  **nginx_primal_name:80**
-
-    Redirect to nginx_primal_name:443. Assume primal name is under our control, so we can always use SSL for this name.
-
-  - **nginx_aliases:80**
-
-    Redirect to nginx_canonical_name:443. Assume the user had to adjust /etc/hosts to make requests with this name.
-
-  - **nginx_canonical_name:80**
-
-    Redirect to nginx_canonical_name:443. Assume the user had to adjust /etc/hosts to make requests with this name.
-
-  - **nginx_primal_name:443**
-
-    Serve content instead of redirecting to canonical name. Canonical name can't be used since DNS doesn't point here yet.
-
-  -  **nginx_aliases:443**
-
-    Redirect to nginx_canonical_name:443. Assume the user had to adjust /etc/hosts to make requests with this name.
-
-  - **nginx_canonical_name:443**
-
-    Serve content. Assume the user had to adjust /etc/hosts to make requests with this name.
-
-
-##### production + no ssl:
-
-See also: **always_redirect_to_https**.
-
-target_port = {{ ternary(always_redirect_to_https, 'https', 'http') }}
-
-  - **nginx_primal_name:80**
-
-    Redirect to nginx_canonical_name:target_port.
-
-  - **nginx_aliases:80**
-
-    Redirect to nginx_canonical_name:target_port.
-
-  - **nginx_canonical_name:80**
-
-    Serve content.
-
-
-#####  production + (manual or letsencrypt) ssl:
-
-  - **nginx_primal_name:80**
-
-    Redirect to nginx_canonical_name:443
-
-  - **nginx_aliases:80**
-
-    Redirect to nginx_canonical_name:443
-
-  - **nginx_canonical_name:80**
-
-    Redirect to nginx_canonical_name:443
-
-  - **nginx_primal_name:443**
-
-    Redirect to nginx_canonical_name:443
-
-  - **nginx_aliases:443**
-
-    Redirect to nginx_canonical_name:443
-
-  - **nginx_canonical_name:443**
-
-    Serve content. This is the final destination for all names.
-
-
-
-#### When providing manually registered / paid SSL certificates
-
-These files need to be placed on the server **before** you run the playbook, or your nginx configuration will fail, and nginx will likely be unable to start.
-
-**ssl_fullchain_path**: For nginx. Needs to include both the site's certificate and the CA intermediates. E.g:  `/usr/local/ssl/certs/mydomain.com.fullchain.pem`
-
-**ssl_key_path**: E.g: `/usr/local/ssl/private/mydomain.com.key`
-
-**ssl_intermediates_path**: E.g: `/usr/local/ssl/certs/mydomain.com.intermediates.pem`
-
-#### When web_application == 'proxy_pass'
-
-**nginx_proxy_pass_blob**: This gets placed as is, directly into to the nginx default `location / {}` directive.
-
-When using proxy_pass, all other diretives except those related to secruity (ie those that immediately return a 403) get disabled, as they are expected to be handled by your upstream / proxied application.
-
-#### When running nginx behind SSL terminated load balancer (ssl: 'none')
-
-**always_redirect_to_https**: Default == false. Set this to true if nginx serves on port 80, but SSL is being terminated in front of it. That way, a redirect can hit the right name and port immediately, instead of having to bounce to the right name on http, and then bounce again to the right name on https.
-
-
-### Optional Role Variables
-
-**See defaults/main.yml** - there are quite a few variables in there that are straightforward, and don't require documentation.
-
-**redirect_code**: Defaults to `302` (temporary redirect). After your site has launched and working without any issues, change this to `301` and run your playbook again to make redirects [to the canoncial name] permanent.
+#### letsencrypt_certificates
+- Specifies the name and list of domains on each TLS certificate that you want the role to register for you.
+- Example:
+```yaml
+letsencrypt_certificates:
+  - name: www.example.com
+    domains:
+      - www.example.com
+      - example.com
+      - oldname.com
+      - www.oldname.com
+```
+- Empty list by default
+- Cert and key files will be created in ``/etc/letsencrypt/live/{{ name }}/``
+- All names listed in `domains:` must resolve with DNS, or LE cert registration will fail.
+- `name:` of cert is not implied and **MUST** be explicitly included in your list of domains.
+- Successful certificate registration creates 3 files, the paths of which you will then need to feed into the nginx_listeners config:
+  - /etc/letsencrypt/live/{{ name }}/fullchain.pem - see `ssl_fullchain_path` below
+  - /etc/letsencrypt/live/{{ name }}/chain.pem - see `ssl_intermediates_path` below
+  - /etc/letsencrypt/live/{{ name }}/privkey.pem - see `ssl_key_path` below
+
+#### nginx_listeners
+- Specifies what ports, protocols, names to serve your site on (or how to move visitors to the right place), and the paths to your SSL certs.
+- Any number of listeners may be defined for a given vhost.
+- Example:
+```yaml
+nginx_listeners:
+  - port: 80
+    server_name: www.example.com
+    aliases:
+      - example.com
+      - oldname.com
+    redirect_to: https://www.example.com   # Include protocol, exclude trailing slash.
+    redirect_permanent: true
+  - port: 443
+    ssl: true
+    http2: true
+    server_name: www.example.com
+    aliases:
+      - example.com
+      - oldname.com
+    ssl_fullchain_path: /etc/letsencrypt/live/www.example.com/fullchain.pem
+    ssl_intermediates_path: /etc/letsencrypt/live/www.example.com/chain.pem
+    ssl_key_path: /etc/letsencrypt/live/www.example.com/privkey.pem
+```
+  - `port`, integer, defaults to `80`
+  - `ssl`, boolean, defaults to `false`.
+  - `http2`, boolean, defaults to `false`, and is ignored unless `ssl` is `true`.
+  - `server_name` string, always required.
+  - `aliases`, optional list of strings. Exists purely for playbook readability. In the nginx template, the list of alias values are simply appended to server_name.
+  - `redirect_to`, string, defaults to empty. If specified, must be a URI including the protocol and excluding trailing slash. When `redirect_to` is not empty, nginx's `$request_uri` is automatically appended to it inside the resulting nginx template. If `redirect_to` is specified, the nginx listener will push all traffic to the specified URI.
+  - `redirect_permanent`, boolean, defaults to false. Controls the 301 (permanent) or 302 (temporary) code returned by nginx when redirecting traffic elsewhere.
+  - `ssl_fullchain_path`, absolute path on the server to the TLS certificate + intermediates (in that order) file. Defaults to empty. Ignored unless `ssl` == `true`. If using paid or manually registered TLS certs (not generated by letsencrypt), you need to have uploaded them to the server before the role executes, or nginx will be unable to start.
+  - `ssl_intermediates_path`, absolute path on the server to the TLS intermediate, without the certificate. Defaults to empty. Ignored unless `ssl` == `true`.
+  - `ssl_key_path`, absolute path on the server to the TLS private key. Defaults to empty. Ignored unless `ssl` == `true`.
+
+
+### Optional variables
+
+See also: **defaults/main.yml**. There are quite a few variables in there that are straightforward, and don't require documentation.
 
 **responsible_person**: Defaults to `root`. This adds a line to to postfix's /etc/aliases file. Who should receive messages from the system (usually generated by Cron) about this site? Can either be the name of a local linux user, or an email address.
 
-**~~drupal_cron_url~~**: This variable is deprecated in favor of a dedicated role for the purpose. After your site goes live, (or before, if you want it to run during staging),use the [acromedia.drupal-cron](https://github.com/AcroMedia/ansible-role-drupal-cron) role to your play to create a linux cron job on the server. See that role's readme for more details.
-
-**mysql_allow_from**: This should really be renamed to: `mysql_allow_root_from`. Defaults to 'localhost'. You only need to set this when using multi-server setups. In your app node playbook, setting this to `{{ ansible_default_ipv4.address }}` should usually work, assuming both app node(s) and mysql host are both on the same private network. In order for this to work, your app node needs to be able to operate as mysql root, with crentials stored at /root/.my.cnf.
+**mysql_allow_from**: Defaults to 'localhost'. This should really be renamed to: `mysql_allow_root_from`. You only need to set this when using multi-server setups. In your app node playbook, setting this to `{{ ansible_default_ipv4.address }}` should usually work, assuming both app node(s) and mysql host are both on the same private network. In order for this to work, your app node needs to be able to operate as mysql root, with crentials stored at /root/.my.cnf.
 
 **mysql_host_address**: Defaults to 'localhost'. You only need to set this when using multi-server setups. If your app node(s) and mysql host are both on the same private network (they usually will be), set this to be your mysql host's private / internal IP address. In order for this to work, your app node needs to be able to operate as mysql root, with crentials stored at /root/.my.cnf.
 
 **rds** (boolean): Set this to true if you're creating a site backed by an amazon RDS instance.
+
+**nginx_proxy_pass_blob**: When web_application == 'proxy_pass', this gets placed as is, directly into to the nginx default `location / {}` directive. When using proxy_pass, all other directives except those related to security (ie those that immediately return a 403) get disabled, as they are expected to be handled by your upstream / proxied application.
 
 **nginx_ip_restricted_locations** + **nginx_allowed_ips** (lists): Make sure to TEST your restrictions after you put them in place. Nginx locations can be slippery creatures.
 ```yaml
@@ -430,11 +199,9 @@ nginx_location_extras:
 
 **rewrite_target**: Defaults to `/index.php`. If your site is static, specify `/index.html` or `/index.htm`. If using D6, specify `/index.php?q=$1`. If you have another file you want your pretty urls to be rewritten to, change this to whatever your main index file is.
 
-**image_cache_location**: "Location" in the context of Nginx location regex pattern. Defaults to `/sites/.*/files/styles/` which works for >= D7. If using D6, specify whatever your image cache dir is (usually `/sites/.*/files/imagecache/` )
+**image_cache_location**: Specific to Drupal. Defaults to `/sites/.*/files/styles/` which works for >= D7. If using D6, specify whatever your image cache dir is (usually `/sites/.*/files/imagecache/` )
 
 **nginx_drupal_uploads_dir_pattern**: Used for preventing PHP execution from within sites/default/files directories. Defaults to `'/sites/.*/files'`. No need to change it unless your site puts files in a weird place, or is a very old version of drupal.
-
-**http_port**, **https_port**: Default to 80 and 443 respectively. Caveat: If you're changing this, you'll likely also need to change the server-wide default port(s), which is not handled by this role.
 
 **nginx_include_custom**: Path to a template file in your playbook that will be uploaded to the server, and then `include`d before the start of the nginx 'location' directives for the virtual host. You may use any variables in your template that are avaialble to the role. Your template will be processed and uploaded to the server as `/etc/nginx/includes/{{ linux_owner }}-{{ project }}.custom.conf`.
 
@@ -463,6 +230,7 @@ php_sendmail_path: '/usr/sbin/sendmail -t -i -f foo@example.com'
 
 **letsencrypt_expiry_email** (email address): Defaults to nothing. It's highly recommended that you set this if using letsencrypt. LE SSL certs expire *very* quickly, and if is going sideways with cert renewals, you will want to know about it before it affects your users.
 
+
 ## NGINX/PHP Rate Limiting
 
 Per-IP rate limiting is on by default, but set quite high. For most sites, it shouldn't actually kick in and will need to be configured.
@@ -478,40 +246,137 @@ The variables to tune are:
 - **nginx_limit_req_zone_key** (string): Defaults to "binary_remote_addr", which is only good for sites directly serving traffic. If your server is behind a proxy or load balancer, change this to `http_x_forwarded_for` instead, and make sure the X-Forwarded-For header is being sent to your server. If the header is not present, rate limiting will not happen.
 
 
-## Dependencies
+## What happened to ...
 
-- [acromedia.drupal-cron](https://github.com/AcroMedia/ansible-role-drupal-cron)
-- [acromedia.postfix](https://github.com/AcroMedia/ansible-role-postfix)
-- [acromedia.mariadb](https://github.com/AcroMedia/ansible-role-mariadb)
+The old combination of `nginx_canonical_name` + `nginx_aliases` + `ssl` + `deploy_env`, as well as a very long list of kludge variables, have been replaced by `nginx_listeners` and `letsencrypt_certificates` definitions.
+
+While old set of variables resulted in a simpler looking playbook, that setup resulted in unworkable limitations in too many edge cases, and continuously spawned workarounds and code smells. As well, the role's nginx templates were becoming complicated logical nightmares.
+
+The new variables eliminate all of the template guesswork that the role used to do, by putting control of the role's traffic routing behavior in developers hands.
 
 
-## Example Playbook
+## Example playbook set
 
+inventories/production/hosts:
+```ini
+[app_nodes]
+bigcorp-prod-app.hosting-company.net
+```
+
+inventories/production/group_vars/all.yml:
 ```yaml
-- hosts: servers
-  roles:
-    - name: Configure the nginx virtual host for bigcorp
-      role: acromedia.virtual-host
-      vars:
-        linux_owner: bigcorp
-        project: bigcorp
-        nginx_primal_name: www.bigcorp.dev-env.net
-        nginx_canonical_name: www.bigcorp.com
-        nginx_aliases:
-          - bigcorp.com
-        php_version: 7.1
-        web_root_dir_name: web
-        deploy_env: staging
-        ssl: letsencrypt
-        redirect_code: 302
-        web_application: drupal8
+---
+linux_owner: bigcorp
+project: bigcorp
+php_version: 7.1
+web_root_dir_name: web
+web_application: drupal8
+nginx_canonical_name: www.bigcorp.net   #  nginx_canonical_name is not used by the role. It's only used here to prevent typos.
+nginx_aliases:                          #  nginx_aliases is not used by the role. It's only used here to prevent typos.
+  - bigcorp.net
+letsencrypt_certificates:
+  - name: "{{ nginx_canonical_name }}"
+    domains: "{{ [ nginx_canonical_name ] + nginx_aliases }}"
+nginx_listeners:
+  - desc: Push plain-text traffic arriving on all names over to the proper server name, and SSL
+    port: 80
+    server_name: "{{ nginx_canonical_name }}"
+    aliases: "{{ nginx_aliases }}"
+    redirect_to: https://{{ nginx_canonical_name }}
+    redirect_permanent: true
+  - desc: Push aliases arriving on SSL to the right name
+    port: 443
+    ssl: true
+    http2: true
+    server_name: "{{ nginx_aliases | join(' ') }}"
+    ssl_fullchain_path: /etc/letsencrypt/live/{{ nginx_canonical_name }}/fullchain.pem
+    ssl_key_path: /etc/letsencrypt/live/{{ nginx_canonical_name }}/prvkey.pem
+    ssl_intermediates_path: /etc/letsencrypt/live/{{ nginx_canonical_name }}/chain.pem
+    redirect_to: https://{{ nginx_canonical_name }}
+    redirect_permanent: true
+  - desc: Serve the site on SSL using a single canonical name.
+    port: 443
+    ssl: true
+    http2: true
+    server_name: "{{ nginx_canonical_name }}"
+    ssl_fullchain_path: /etc/letsencrypt/live/{{ nginx_canonical_name }}/fullchain.pem
+    ssl_key_path: /etc/letsencrypt/live/{{ nginx_canonical_name }}/prvkey.pem
+    ssl_intermediates_path: /etc/letsencrypt/live/{{ nginx_canonical_name }}/chain.pem
 
-    - name: Configure a linxu cron to hit bigcrorp's drupal cron url
-      role: acromedia.drupal-cron
-      vars:
-        drupal_cron_url: "https://{{ nginx_canonical_name }}/cron/abcdefgh12345678"
+drupal_cron_url: "https://{{ nginx_canonical_name }}/cron/abcdefgh12345678"
+```
+
+inventories/staging/hosts:
+```ini
+[app_nodes]
+bigcorp-stg-app.hosting-company.net
+```
+
+inventories/staging/group_vars/all.yml:
+```yaml
+---
+linux_owner: bigcorp
+project: bigcorp
+php_version: 7.1
+web_root_dir_name: web
+web_application: drupal8
+nginx_canonical_name: stg.bigcorp.net  # <- Must have DNS that resolves to your physical app node.
+nginx_aliases: []
+letsencrypt_certificates:
+  - name: "{{ nginx_canonical_name }}"
+    domains: "{{ [ nginx_canonical_name ] + nginx_aliases }}"
+nginx_listeners:
+  - desc: Push plain-text traffic arriving on all names over to the proper server name, and SSL
+    port: 80
+    server_name: "{{ nginx_canonical_name }}"
+    aliases: "{{ nginx_aliases }}"
+    redirect_to: https://{{ nginx_canonical_name }}
+    redirect_permanent: true
+  - desc: Push aliases arriving on SSL to the right name
+    port: 443
+    ssl: true
+    http2: true
+    server_name: "{{ nginx_aliases | join(' ') }}"
+    ssl_fullchain_path: /etc/letsencrypt/live/{{ nginx_canonical_name }}/fullchain.pem
+    ssl_key_path: /etc/letsencrypt/live/{{ nginx_canonical_name }}/prvkey.pem
+    ssl_intermediates_path: /etc/letsencrypt/live/{{ nginx_canonical_name }}/chain.pem
+    redirect_to: https://{{ nginx_canonical_name }}
+    redirect_permanent: true
+  - desc: Serve the site on SSL using a single canonical name.
+    port: 443
+    ssl: true
+    http2: true
+    server_name: "{{ nginx_canonical_name }}"
+    ssl_fullchain_path: /etc/letsencrypt/live/{{ nginx_canonical_name }}/fullchain.pem
+    ssl_key_path: /etc/letsencrypt/live/{{ nginx_canonical_name }}/prvkey.pem
+    ssl_intermediates_path: /etc/letsencrypt/live/{{ nginx_canonical_name }}/chain.pem
+```
+
+playbooks/main.yml:
+```yaml
+---
+- hosts: app_nodes
+  gather_facts: true
+  become: true
+  roles:
+    - role: acromedia.devops-utils
+    - role: acromedia.postfix
+    - role: acromedia.mariadb
+    - role: acromedia.nginx
+    - role: acromedia.php
+    - role: acromedia.letsencrypt
+    - role: acromedia.virtual-host
+    - role: acromedia.drupal-cron
 
 ```
+
+To run the playbooks:
+```bash
+ansible-playbook playbooks/main.yml -i inventories/staging
+ansible-playbook playbooks/main.yml -i inventories/production
+```
+
+
 
 ## License
 

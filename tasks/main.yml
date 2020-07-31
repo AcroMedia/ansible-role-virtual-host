@@ -7,7 +7,7 @@
       - (nginx_listeners | length) > 0
       - nginx_listeners is not string
       - nginx_listeners is iterable
-    fail_msg: "The 'nginx_canonical_name', 'nginx_primal_name', and 'nginx_aliases' have been replaced by the much more flexible 'nginx_listeners' array. You need to convert your playbook's variables before continuing. See the role's README.md for details."
+    fail_msg: "The 'nginx_canonical_name', 'nginx_primal_name', 'nginx_aliases', 'deploy_env', and 'ssl' variables have been replaced by the much more flexible 'nginx_listeners' and 'letsencrypt_certificates' definitions. You need to convert your playbook's variables before continuing. See the role's README.md for details."
 
 - name: Validate 'web_application' variable value
   assert:
@@ -151,7 +151,7 @@
      /bin/bash /usr/local/sbin/acro-add-website.sh
      --account {{ linux_owner }}
      --project {{ project }}
-     --fqdn {{ nginx_primal_name }}
+     --fqdn {{ project }}.{{ linux_owner }}.{{ inventory_hostname }}
      --webroot {{ web_root_dir_name }}
      --php-version {{ php_version }}
      --responsible-person {{ responsible_person }}
@@ -160,7 +160,7 @@
      {{ skip_ssl_flag }}
      {{ rds_flag }}
      {{ service_account_flag }}
-     {{ force_flag}}
+     {{ force_flag }}
      {{ skip_mysql_flag }}
   args:
     creates: /home/{{ linux_owner }}/.acro-add-website/{{ project }}

@@ -3,9 +3,7 @@
 {% for listener in nginx_listeners %}
 server {
   listen {{ listener.port | default('80') }}
-{%- if listener.ssl | default(false) %} ssl {%- endif -%}
-{%- if listener.http2 | default(false) %} http2 {%- endif -%}
-;
+{%- if listener.ssl | default(false) %} ssl {%- if listener.http2 | default(true) %} http2 {%- endif -%}{%- endif -%};
   server_name {{ listener.server_name }} {{ (listener.aliases | default([])) | join(' ') }};
   access_log {{ nginx_access_log_conf }};
   error_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-error.log;
@@ -21,9 +19,9 @@ server {
   ssl_stapling_verify on;
   ssl_trusted_certificate {{ listener.ssl_intermediates_path }};
 {% endif %}
-{% if listener.redirect is defined %}
+{% if listener.redirect_to is defined %}
   location / {
-    return {{ (listener.redirect.permanent|default(false)) | ternary('301', '302') }} {{ listener.redirect.destination }}$request_uri;
+    return {{ (listener.redirect.permanent|default(false)) | ternary('301', '302') }} {{ listener.redirect_to }}$request_uri;
   }
 {% else %}
   include /etc/nginx/includes/{{ linux_owner }}-{{ project }}.core.conf;
