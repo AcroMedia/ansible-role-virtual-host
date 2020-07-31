@@ -255,6 +255,8 @@
     - /etc/nginx/sites-available/{{ nginx_primal_name }}
     - /etc/nginx/sites-enabled/{{ nginx_primal_name }}
   when: ansible_os_family == 'Debian'
+    and nginx_primal_name is defined
+    and (nginx_primal_name | length) > 0
   notify:
     - arvh safe reload nginx
 

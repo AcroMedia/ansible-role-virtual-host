@@ -1,6 +1,6 @@
 ---
-nginx_primal_name: ''
-nginx_canonical_name: ''
+#nginx_primal_name: '' # Defunct.
+#nginx_canonical_name: ''  # Defunct.
 php_version: 7.1
 responsible_person: root
 web_root_dir_name: web
