@@ -12,8 +12,8 @@ server {
   ssl_certificate {{ listener.ssl_fullchain_path }};
   ssl_certificate_key {{ listener.ssl_key_path }};
   ssl_dhparam /usr/local/ssl/private/dhparams.pem;
-  ssl_protocols {{ ssl_protocols }};
-  ssl_ciphers '{{ ssl_ciphers }}';
+  ssl_protocols {{ listener.ssl_protocols | default(ssl_protocols) }};
+  ssl_ciphers '{{ listener.ssl_ciphers | default(ssl_ciphers) }}';
   ssl_prefer_server_ciphers on;
   ssl_stapling on;
   ssl_stapling_verify on;
