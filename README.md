@@ -87,7 +87,7 @@ If using the role more than once **in the same play**, you must re-specify **all
 
 #### linux_owner
 
-- The name of the user account to create
+- The name of the user account to create. Don't use a privileged (sudoable) account, or the account of a 'real' person. Let ansible create a new account specifically to hold the virtual host, as NGINX will be given traverse access into the account dir.
 
 #### project
 
