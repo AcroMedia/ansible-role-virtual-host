@@ -21,7 +21,7 @@ server {
 {% endif %}
 {% if listener.redirect_to is defined %}
   location / {
-    return {{ (listener.redirect.permanent|default(false)) | ternary('301', '302') }} {{ listener.redirect_to }}$request_uri;
+    return {{ (listener.redirect_permanent|default(false)) | ternary('301', '302') }} {{ listener.redirect_to }}$request_uri;
   }
 {% else %}
   include /etc/nginx/includes/{{ linux_owner }}-{{ project }}.core.conf;
