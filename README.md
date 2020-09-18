@@ -107,14 +107,18 @@ letsencrypt_certificates:
       - oldname.com
       - www.oldname.com
 ```
-- Empty list by default
+- **letsencrypt_certificates** is an empty list `[]` by default.
+- **name** is the filename of the cert.
+- All names listed in the list of **domains** must resolve with DNS, or LE cert registration will fail.
+- **name** is not implied and *MUST* be explicitly included in your list of **domains**.
 - Cert and key files will be created in ``/etc/letsencrypt/live/{{ name }}/``
-- All names listed in `domains:` must resolve with DNS, or LE cert registration will fail.
-- `name:` of cert is not implied and **MUST** be explicitly included in your list of domains.
 - Successful certificate registration creates 3 files, the paths of which you will then need to feed into the nginx_listeners config:
   - /etc/letsencrypt/live/{{ name }}/fullchain.pem - see `ssl_fullchain_path` below
   - /etc/letsencrypt/live/{{ name }}/chain.pem - see `ssl_intermediates_path` below
   - /etc/letsencrypt/live/{{ name }}/privkey.pem - see `ssl_key_path` below
+- The server must be able to accept port 80 tcp from anywhere, since LetsEncrypt does not publish their origin addresses. It's fine to restrict HTTPS (port 443) traffic with authentication or firewall rules. LetsEncrypt does not need access there.
+- Empty list by default
+
 
 #### nginx_listeners
 - Specifies what ports, protocols, names to serve your site on (or how to move visitors to the right place), and the paths to your SSL certs.
@@ -271,39 +275,41 @@ project: bigcorp
 php_version: 7.1
 web_root_dir_name: web
 web_application: drupal8
-nginx_canonical_name: www.bigcorp.net   #  nginx_canonical_name is not used by the role. It's only used here to prevent typos.
-nginx_aliases:                          #  nginx_aliases is not used by the role. It's only used here to prevent typos.
+prod_server_primary_name: www.bigcorp.net
+prod_server_secondary_names:
   - bigcorp.net
-letsencrypt_certificates:
-  - name: "{{ nginx_canonical_name }}"
-    domains: "{{ [ nginx_canonical_name ] + nginx_aliases }}"
+  - oldname.com
+  - www.oldname.com
+letsencrypt_certificates:  
+  - name: "{{ prod_server_primary_name }}"
+    domains: "{{ [ prod_server_primary_name ] + prod_server_secondary_names }}"  # All names must resolve, and the server must accept public connections on port 80 for letsencrypt cert registration to be successful.
 nginx_listeners:
-  - desc: Push plain-text traffic arriving on all names over to the proper server name, and SSL
+  - desc: Push all plain-text traffic from all names over to the proper name on SSL
     port: 80
-    server_name: "{{ nginx_canonical_name }}"
-    aliases: "{{ nginx_aliases }}"
-    redirect_to: https://{{ nginx_canonical_name }}
+    server_name: "{{ prod_server_primary_name }}"
+    aliases: "{{ prod_server_secondary_names }}"
+    redirect_to: https://{{ prod_server_primary_name }}
     redirect_permanent: true
-  - desc: Push aliases arriving on SSL to the right name
+  - desc: Push traffic using non-canonical names on SSL over to the proper name
     port: 443
     ssl: true
     http2: true
-    server_name: "{{ nginx_aliases | join(' ') }}"
-    ssl_fullchain_path: /etc/letsencrypt/live/{{ nginx_canonical_name }}/fullchain.pem
-    ssl_key_path: /etc/letsencrypt/live/{{ nginx_canonical_name }}/prvkey.pem
-    ssl_intermediates_path: /etc/letsencrypt/live/{{ nginx_canonical_name }}/chain.pem
-    redirect_to: https://{{ nginx_canonical_name }}
+    server_name: "{{ prod_server_secondary_names | join(' ') }}"
+    ssl_fullchain_path: /etc/letsencrypt/live/{{ prod_server_primary_name }}/fullchain.pem
+    ssl_key_path: /etc/letsencrypt/live/{{ prod_server_primary_name }}/prvkey.pem
+    ssl_intermediates_path: /etc/letsencrypt/live/{{ prod_server_primary_name }}/chain.pem
+    redirect_to: https://{{ prod_server_primary_name }}
     redirect_permanent: true
   - desc: Serve the site on SSL using a single canonical name.
     port: 443
     ssl: true
     http2: true
-    server_name: "{{ nginx_canonical_name }}"
-    ssl_fullchain_path: /etc/letsencrypt/live/{{ nginx_canonical_name }}/fullchain.pem
-    ssl_key_path: /etc/letsencrypt/live/{{ nginx_canonical_name }}/prvkey.pem
-    ssl_intermediates_path: /etc/letsencrypt/live/{{ nginx_canonical_name }}/chain.pem
+    server_name: "{{ prod_server_primary_name }}"
+    ssl_fullchain_path: /etc/letsencrypt/live/{{ prod_server_primary_name }}/fullchain.pem
+    ssl_key_path: /etc/letsencrypt/live/{{ prod_server_primary_name }}/prvkey.pem
+    ssl_intermediates_path: /etc/letsencrypt/live/{{ prod_server_primary_name }}/chain.pem
 
-drupal_cron_url: "https://{{ nginx_canonical_name }}/cron/abcdefgh12345678"
+drupal_cron_url: "https://{{ prod_server_primary_name }}/cron/abcdefgh12345678"
 ```
 
 inventories/staging/hosts:
@@ -320,36 +326,25 @@ project: bigcorp
 php_version: 7.1
 web_root_dir_name: web
 web_application: drupal8
-nginx_canonical_name: stg.bigcorp.net  # <- Must have DNS that resolves to your physical app node.
-nginx_aliases: []
-letsencrypt_certificates:
-  - name: "{{ nginx_canonical_name }}"
-    domains: "{{ [ nginx_canonical_name ] + nginx_aliases }}"
+staging_server_dns_name: stg.bigcorp.net
+letsencrypt_certificates:      # DNS must resolve, port 80 must be open to the public.
+  - name: "{{ staging_server_dns_name }}"
+    domains:
+      - "{{ staging_server_dns_name }}"
 nginx_listeners:
-  - desc: Push plain-text traffic arriving on all names over to the proper server name, and SSL
+  - desc: Redirect to SSL
     port: 80
-    server_name: "{{ nginx_canonical_name }}"
-    aliases: "{{ nginx_aliases }}"
-    redirect_to: https://{{ nginx_canonical_name }}
+    server_name: "{{ staging_server_dns_name }}"
+    redirect_to: https://{{ staging_server_dns_name }}   # Include protocol, exclude trailing slash.
     redirect_permanent: true
-  - desc: Push aliases arriving on SSL to the right name
-    port: 443
+  - desc: Serve with letsencrypt cert
     ssl: true
-    http2: true
-    server_name: "{{ nginx_aliases | join(' ') }}"
-    ssl_fullchain_path: /etc/letsencrypt/live/{{ nginx_canonical_name }}/fullchain.pem
-    ssl_key_path: /etc/letsencrypt/live/{{ nginx_canonical_name }}/prvkey.pem
-    ssl_intermediates_path: /etc/letsencrypt/live/{{ nginx_canonical_name }}/chain.pem
-    redirect_to: https://{{ nginx_canonical_name }}
-    redirect_permanent: true
-  - desc: Serve the site on SSL using a single canonical name.
     port: 443
-    ssl: true
     http2: true
-    server_name: "{{ nginx_canonical_name }}"
-    ssl_fullchain_path: /etc/letsencrypt/live/{{ nginx_canonical_name }}/fullchain.pem
-    ssl_key_path: /etc/letsencrypt/live/{{ nginx_canonical_name }}/prvkey.pem
-    ssl_intermediates_path: /etc/letsencrypt/live/{{ nginx_canonical_name }}/chain.pem
+    server_name: "{{ staging_server_dns_name }}"
+    ssl_fullchain_path: /etc/letsencrypt/live/{{ staging_server_dns_name }}/fullchain.pem
+    ssl_key_path: /etc/letsencrypt/live/{{ staging_server_dns_name }}/prvkey.pem
+    ssl_intermediates_path: /etc/letsencrypt/live/{{ staging_server_dns_name }}/chain.pem
 ```
 
 playbooks/main.yml:
