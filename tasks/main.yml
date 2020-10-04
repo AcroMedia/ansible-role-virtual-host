@@ -34,6 +34,12 @@
       If they are, the account will be marked as a 'service' account, SSH will not work for it, and you will\n
       not be able create a working CI deploy job."
 
+- name: Warn about letting the role use the default value for php_fpm_newrelic_appname
+  assert:
+    that: php_fpm_newrelic_appname != (linux_owner + '/' + project)
+    fail_msg: If using New Relic, be sure to set a meaningful app name. A good format to use is "yourdomain.com - env descriptor". Set the value to anything other than the default to disable this message.
+  ignore_errors: true
+
 - name: See if a site has already been created with AAW
   stat:
     path: /home/{{ linux_owner }}/.acro-add-website/{{ project }}

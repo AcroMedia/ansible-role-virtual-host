@@ -90,7 +90,7 @@ php_fpm_status_path: ''
 # PHP other
 php_short_open_tag: 'Off'
 
-# new_relic_app_name: "{{ linux_owner }}/{{ project }} - {{ deploy_env }}"  # DEPRECATED / Duplicate. Use php_fpm_newrelic_appname instead.
+# new_relic_app_name: "{{ nginx_canonical_name }} ({{ linux_owner }}/{{ project }}) - {{ deploy_env }}"  # DEPRECATED / Duplicate. Use php_fpm_newrelic_appname instead.
 
 # Allow arbitrary location blocks from the role (without an include file). See readme.
 nginx_location_extras: []
@@ -212,4 +212,4 @@ nginx_static_resource_filename_extensions: "{{ nginx_static_resource_filename_ex
 
 # templates/etc/php/VERSION/fpm/pool.d/ACCOUNT-PROJECT.conf.j2
 # -> php_value[newrelic.appname]
-php_fpm_newrelic_appname: "{{ nginx_canonical_name }} ({{ linux_owner }}/{{ project }}) - {{ deploy_env }}"
+php_fpm_newrelic_appname: "{{ linux_owner }}/{{ project }}"
