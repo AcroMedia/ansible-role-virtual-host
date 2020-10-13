@@ -20,6 +20,9 @@ server {
   ssl_trusted_certificate {{ listener.ssl_intermediates_path }};
 {% endif %}
 {% if listener.redirect_to is defined %}
+{% if listener.inline_custom is defined %}
+  {{ listener.inline_custom | indent(2, false) }}
+{% endif %}
   location / {
     return {{ (listener.redirect_permanent|default(false)) | ternary('301', '302') }} {{ listener.redirect_to }}$request_uri;
   }
