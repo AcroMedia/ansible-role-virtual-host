@@ -108,7 +108,7 @@ letsencrypt_certificates:
       - www.oldname.com
 ```
 - **letsencrypt_certificates** is an empty list `[]` by default.
-- **name** is the filename of the cert.
+- **name** is the directory name of the cert, as it exists (or will exist) in `/etc/letsencrypt/live`. It makes sense to keep this the same as the first domain name you attach to the cert.
 - All names listed in the list of **domains** must resolve with DNS, or LE cert registration will fail.
 - **name** is not implied and *MUST* be explicitly included in your list of **domains**.
 - Cert and key files will be created in ``/etc/letsencrypt/live/{{ name }}/``
