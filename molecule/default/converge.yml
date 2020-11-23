@@ -4,11 +4,9 @@
   become: true
 
   vars:
-
+    nginx_primal_name: 'acro-ansible-test.com'
+    nginx_canonical_name: 'www.acro-ansible-test.com'
   pre_tasks:
-    - name: Update apt cache.
-      apt: update_cache=true cache_valid_time=600
-      changed_when: false
 
   roles:
     - role: ansible-role-virtual-host

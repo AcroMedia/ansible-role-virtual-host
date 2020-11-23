@@ -1,5 +1,7 @@
 # Ansible role: Virtual Host
 
+![.github/workflows/molecule.yml](https://github.com/AcroMedia/ansible-role-virtual-host/workflows/.github/workflows/molecule.yml/badge.svg)
+
 Manage a NGINX virtual host (including PHP version and SSL certificates) over its life cycle from staging to production.
 
 ## Requirements
