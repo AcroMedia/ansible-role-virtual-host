@@ -62,6 +62,18 @@
           - make
           - findutils
           - curl
+          - util-linux
+
+    - name: Ensure CentOS-8 dependencies are present in test image
+      package:
+        name: "{{ package_dependencies }}"
+        state: present
+      vars:
+        package_dependencies:
+          - util-linux-user
+      when: ansible_distribution == 'CentOS'
+        and ansible_distribution_major_version == '8'
+
 
 # ------------------------------------------------------------------------
 - name: Prepare III - Install role dependencies that acromedia.virtual-host will need
