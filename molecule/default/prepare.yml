@@ -37,6 +37,14 @@
         update_cache: yes
       when: ansible_os_family == 'Debian'
 
+    - name: Make sure dirmngr is present on ubuntu (required for installing ppa packages)
+      apt:
+        name:
+          - dirmngr
+        state: present
+      when: ansible_os_family == 'Debian'
+
+
     - name: Update yum cache
       yum:
         update_cache: yes
