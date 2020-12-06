@@ -180,6 +180,8 @@
      {{ skip_mysql_flag }}
   args:
     creates: /home/{{ linux_owner }}/.acro-add-website/{{ project }}
+  environment:
+    PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 - name: Try and expand the primal name's Certificate to include nginx aliases and canonical name. If DNS is pointing at the machine for these names, the command will work.
   script:  scripts/certbot-wrapper
@@ -239,15 +241,15 @@
 - name: Update nginx virtual host configuration for {{ linux_owner }}/{{ project }}
   template:
     src: "{{ role_path }}/templates/etc/nginx/sites-available/{{ deploy_env }}.{{ ssl }}.conf.j2"
-    dest: "{{ nginx_vhost_conf_dir }}/{{ linux_owner }}-{{ project }}.conf"
+    dest: "{{ nginx_vhost_conf_dir_available }}/{{ linux_owner }}-{{ project }}.conf"
     backup: true
   notify:
     - arvh safe reload nginx
 
 - name: Enable (symlink) nginx virtual host configuration for {{ linux_owner }}/{{ project }}
   file:
-    src: "/etc/nginx/sites-available/{{ linux_owner }}-{{ project }}.conf"
-    dest: "/etc/nginx/sites-enabled/{{ linux_owner }}-{{ project }}.conf"
+    src: "{{ nginx_vhost_conf_dir_available }}/{{ linux_owner }}-{{ project }}.conf"
+    dest: "{{ nginx_vhost_conf_dir_enabled }}/{{ linux_owner }}-{{ project }}.conf"
     state: link
   when: ansible_os_family == 'Debian'
     and not ansible_check_mode

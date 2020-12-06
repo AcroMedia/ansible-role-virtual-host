@@ -1,4 +1,5 @@
 ---
+# ------------------------------------------------------------------------
 - name: Make sure rsync is installed (locally) on the ansible controller.
     This is only necessary for testing roles that use rsync, because the fedora
     image from robertdebock does not come with rsync installed.
@@ -26,6 +27,7 @@
           - rsync
         state: present
 
+# ------------------------------------------------------------------------
 - name: Prepare II - Initialize yum/apt caches, install software needed by role dependencies
   hosts: all
   become: yes
@@ -61,6 +63,7 @@
           - findutils
           - curl
 
+# ------------------------------------------------------------------------
 - name: Prepare III - Install role dependencies that acromedia.virtual-host will need
   hosts: all
   become: yes
@@ -68,6 +71,6 @@
 
   roles:
     - contrib/acromedia.devops-utils
-    - contrib/acromedia.nginx
     - contrib/acromedia.postfix
+    - contrib/acromedia.nginx
     #- contrib/acromedia.php
