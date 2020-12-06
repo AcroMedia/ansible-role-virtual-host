@@ -1,8 +1,17 @@
 ---
 - name: Verify role
   hosts: all
-  become: yes
-
+  become: no
   tasks:
+    - name: Test our virtual host by name
+      command: curl -sS http://{{ nginx_primal_name }}/ --resolve {{ nginx_primal_name }}:80:127.0.0.1
+      register: curl_result
 
+    - name: Show results to a human
+      debug:
+        var: curl_result
 
+    - name: Make sure request looks how it should
+      assert:
+        that:
+          - '"It works!" in curl_result.stdout'

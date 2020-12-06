@@ -3,10 +3,5 @@
   hosts: all
   become: true
 
-  vars:
-    nginx_primal_name: 'acro-ansible-test.com'
-    nginx_canonical_name: 'www.acro-ansible-test.com'
-  pre_tasks:
-
   roles:
     - role: ansible-role-virtual-host

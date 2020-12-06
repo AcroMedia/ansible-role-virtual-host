@@ -1,0 +1,22 @@
+---
+# ---------------------------------
+# acromedia.nginx
+# ---------------------------------
+nginx_robots_policy: production
+
+# ---------------------------------
+# acromedia.virtual-host
+# ---------------------------------
+linux_owner: bigcorp
+project: bigcorp
+nginx_primal_name: staging.bigcorp.com
+nginx_canonical_name: www.bigcorp.com
+nginx_aliases:
+  - bigcorp.com
+php_version: none
+web_root_dir_name: wwwroot
+deploy_env: staging
+ssl: none
+redirect_code: 302
+web_application: static
+skip_mysql: true

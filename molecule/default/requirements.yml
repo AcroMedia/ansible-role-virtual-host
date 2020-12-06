@@ -1,0 +1,29 @@
+---
+- name: contrib/acromedia.nginx
+  src: https://github.com/AcroMedia/ansible-role-nginx
+  version: origin/master
+
+- name: contrib/acromedia.essentials
+  src: https://github.com/AcroMedia/ansible-role-essentials
+  version: origin/master
+
+- name: contrib/acromedia.letsencrypt
+  src: https://github.com/AcroMedia/ansible-role-letsencrypt
+  version: origin/master
+
+- name: contrib/acromedia.postfix
+  src: https://github.com/AcroMedia/ansible-role-postfix
+  version: origin/master
+
+- name: contrib/acromedia.mariadb
+  src: https://github.com/AcroMedia/ansible-role-mariadb
+  version: origin/master
+
+- name: contrib/acromedia.devops-utils
+  scm: git
+  src: https://github.com/AcroMedia/ansible-role-devops-utils
+  version: origin/master
+
+- name: contrib/acromedia.php
+  src: https://github.com/AcroMedia/ansible-role-php
+  version: origin/master
