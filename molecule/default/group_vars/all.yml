@@ -1,5 +1,11 @@
 ---
 # ---------------------------------
+# acromedia.postfix
+# ---------------------------------
+default_mail_recipient: nobody@example.com
+postfix_inet_interfaces: 127.0.0.1
+
+# ---------------------------------
 # acromedia.nginx
 # ---------------------------------
 nginx_robots_policy: production
