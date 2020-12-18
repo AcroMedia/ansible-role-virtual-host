@@ -154,7 +154,6 @@
   file:
     state: directory
     dest: "{{ dir.dest }}"
-    recurse: true
     mode: "{{ dir.mode }}"
   loop:
     - dest: /usr/local/ssl
