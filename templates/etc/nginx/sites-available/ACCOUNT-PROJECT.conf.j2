@@ -15,10 +15,12 @@ server {
   ssl_protocols {{ listener.ssl_protocols | default(ssl_protocols) }};
   ssl_ciphers '{{ listener.ssl_ciphers | default(ssl_ciphers) }}';
   ssl_prefer_server_ciphers on;
+{% if (listener.ssl_intermediates_path|default('')|length) %}
   ssl_stapling on;
   ssl_stapling_verify on;
   ssl_trusted_certificate {{ listener.ssl_intermediates_path }};
-{% endif %}
+{% endif %}{# stapling #}
+{% endif %}{# ssl #}
 {% if listener.redirect_to is defined %}
 {% if listener.inline_custom is defined %}
   {{ listener.inline_custom | indent(2, false) }}
