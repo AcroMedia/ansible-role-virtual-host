@@ -150,6 +150,10 @@
     env_mysql_db_pass: 'DBPASS="{{ mysql_db_pass }}"'
   when: (mysql_db_pass|trim) != ''
 
+- name: Make sure Diffie Hellman parameters file has been initialized for SSL-enabled sites (can take several minutes on slow systems)
+  shell: umask 077 && openssl dhparam -out /usr/local/ssl/private/dhparams.pem 2048
+  args:
+    creates: /usr/local/ssl/private/dhparams.pem
 
 - name: Make sure the Acme Challenge include file exists, even if LetsEncrypt is not installed on the system. Otherwise we will end up with nginx fatal config errors.
   copy:
