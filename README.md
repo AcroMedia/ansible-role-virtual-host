@@ -42,7 +42,8 @@ The best way to prevent variable bleed is to split up multiple uses of a role in
 Example:
 ```yaml
 ---
-# Best practice: Split multiple uses of the same role into their own plays to prevent variable bleed.
+# Best practice: Split multiple uses of the same role
+# into their own plays to prevent variable bleed.
 - name: Gather facts in a separate play before we do any work
   hosts: app-nodes
   become: true
@@ -56,19 +57,18 @@ Example:
   hosts: app-nodes
   become: true
   gather_facts: false
-  vars:
-    ...
   roles:
     role: acromedia.virtual-host
+    vars: ...
 
 - name: Configure virtual host B
   hosts: app-nodes
   become: true
   gather_facts: false
-  vars:
-    ...
   roles:
     role: acromedia.virtual-host
+    vars: ...
+
 ```
 
 
@@ -156,7 +156,7 @@ nginx_listeners:
   - `ssl_key_path`, absolute path on the server to the TLS private key. Defaults to empty. Ignored unless `ssl` == `true`.
 
 
-### Optional variables
+### Optional Role Variables
 
 See also: **defaults/main.yml**. There are quite a few variables in there that are straightforward, and don't require documentation.
 
@@ -370,7 +370,6 @@ To run the playbooks:
 ansible-playbook playbooks/main.yml -i inventories/staging
 ansible-playbook playbooks/main.yml -i inventories/production
 ```
-
 
 
 ## License

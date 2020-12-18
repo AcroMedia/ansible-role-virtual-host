@@ -189,7 +189,7 @@
 - name: debug nginx_listeners array
   debug:
     var: nginx_listeners
-
+    verbosity: 1
 
 - name: Upload arbitrary customizations from the playbook through the role to the remote host
   template:
