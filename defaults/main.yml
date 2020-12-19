@@ -126,8 +126,10 @@ disable_environment_indicator: false
 # In most cases you want HTTP2 enabled. The role only enables HTTP2 for HTTPS connections.
 nginx_http2: true
 
-# Debian style. You'll need to override this to be "/etc/nginx/conf.d" on CentOS 6 / RedHat 6
-nginx_vhost_conf_dir: /etc/nginx/sites-available
+nginx_vhost_conf_dir_by_os_family:
+  Debian: /etc/nginx/sites-available
+  RedHat: /etc/nginx/conf.d
+nginx_vhost_conf_dir: "{{ nginx_vhost_conf_dir_by_os_family[ansible_os_family] }}"
 
 # Debian style. You'll need to override this to be "/etc/php-fpm.d" on CentOS 6 / RedHat 6
 php_fpm_pool_dir: /etc/php/{{ php_version }}/fpm/pool.d
