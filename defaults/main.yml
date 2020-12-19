@@ -90,8 +90,6 @@ php_fpm_status_path: ''
 # PHP other
 php_short_open_tag: 'Off'
 
-# new_relic_app_name: "{{ nginx_canonical_name }} ({{ linux_owner }}/{{ project }}) - {{ deploy_env }}"  # DEPRECATED / Duplicate. Use php_fpm_newrelic_appname instead.
-
 # Allow arbitrary location blocks from the role (without an include file). See readme.
 nginx_location_extras: []
 
@@ -121,8 +119,10 @@ disable_http_auth: false
 # On staging/dev servers, the global nginx config may be imposing password authentication. Let it be disabled per-virtual host.
 disable_environment_indicator: false
 
-# Debian style. You'll need to override this to be "/etc/nginx/conf.d" on CentOS 6 / RedHat 6
-nginx_vhost_conf_dir: /etc/nginx/sites-available
+nginx_vhost_conf_dir_by_os_family:
+  Debian: /etc/nginx/sites-available
+  RedHat: /etc/nginx/conf.d
+nginx_vhost_conf_dir: "{{ nginx_vhost_conf_dir_by_os_family[ansible_os_family] }}"
 
 # Debian style. You'll need to override this to be "/etc/php-fpm.d" on CentOS 6 / RedHat 6
 php_fpm_pool_dir: /etc/php/{{ php_version }}/fpm/pool.d
