@@ -46,6 +46,8 @@ fpm_pool_filename: ''
 # Throw caution to the wind: Ignore errors and skip safety checks from acro-add-website.sh
 force: false
 
+# In some cases, grep + PCRE goes haywire, and cant deal with what is generated here.
+aaw_default_fqdn: "{{ project }}.{{ linux_owner }}.{{ inventory_hostname }}"
 
 # Keep staging, or pre-production sites away from google's prying eyes. This is created at the virtaul host level. See also "disable_http_auth".
 require_http_auth: false

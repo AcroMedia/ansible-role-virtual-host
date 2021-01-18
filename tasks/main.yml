@@ -174,7 +174,7 @@
      /bin/bash /usr/local/sbin/acro-add-website.sh
      --account {{ linux_owner }}
      --project {{ project }}
-     --fqdn {{ project }}.{{ linux_owner }}.{{ inventory_hostname }}
+     --fqdn {{ aaw_default_fqdn }}
      --webroot {{ web_root_dir_name }}
      --php-version {{ php_version }}
      --responsible-person {{ responsible_person }}
