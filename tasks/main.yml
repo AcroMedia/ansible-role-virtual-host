@@ -9,6 +9,11 @@
       - nginx_listeners is iterable
     fail_msg: "The 'nginx_canonical_name', 'nginx_primal_name', 'nginx_aliases', 'deploy_env', and 'ssl' variables have been replaced by the much more flexible 'nginx_listeners' and 'letsencrypt_certificates' definitions. You need to convert your playbook's variables before continuing. See the role's README.md for details."
 
+- name: debug nginx_listeners array
+  debug:
+    var: nginx_listeners
+    verbosity: 1
+
 - name: Validate 'web_application' variable value
   assert:
     that:
@@ -187,6 +192,12 @@
      {{ skip_mysql_flag }}
   args:
     creates: /home/{{ linux_owner }}/.acro-add-website/{{ project }}
+  register: aaw_result
+
+- name: debug aaw_result
+  debug:
+    var: aaw_result
+    verbosity: 1
 
 - name: Register or expand letsencrypt certificate(s). If DNS is pointing at the machine for all names, and the firewal is open to port 80, the command should succeed.
   script:  scripts/certbot-wrapper
@@ -203,9 +214,9 @@
 #  ignore_errors: true
   notify: arvh safe reload nginx
 
-- name: debug nginx_listeners array
+- name: debug letsencrypt_result
   debug:
-    var: nginx_listeners
+    var: letsencrypt_result
     verbosity: 1
 
 - name: Upload arbitrary customizations from the playbook through the role to the remote host
