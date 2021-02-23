@@ -11,7 +11,8 @@ function main () {
 
   local GROOMED_DOMAINS_LIST=""
   GROOMED_DOMAINS_LIST=$(groom_list_of_domains)
-  CMD="/usr/local/bin/certbot-auto"
+
+  CMD="$(find_certbot)"
   CMD="$CMD certonly"
   CMD="$CMD --no-self-upgrade"
   CMD="$CMD --non-interactive"
@@ -26,6 +27,27 @@ function main () {
   CMD="$CMD --domains ${GROOMED_DOMAINS_LIST}"
   (set -x && $CMD --dry-run && $CMD)
 
+}
+
+# Letsencrypt has flip-flopped with its name and location over the years.
+# Simply doing a "which" may hit the wrong one if legacy versions are still around.
+function find_certbot() {
+  if [ -e /snap/bin/certbot ]; then   # Snap version, 2020
+    echo /snap/bin/certbot
+    return 0
+  elif [ -e /usr/local/bin/certbot-auto ]; then  # Self-updating script version, 2019ish, now deprecated.
+    echo /usr/local/bin/certbot-auto
+    return 0
+  elif [ -e /usr/bin/certbot ]; then   # Package version, 2018ish, now deprecated.
+    echo /usr/bin/certbot
+    return 0
+  else
+    # Try and guess, prioritizing the current name.
+    which certbot || which certbot-auto || {
+      >&2 echo "No certbot or certbot-auto found"
+      return 1
+    }
+  fi
 }
 
 function groom_list_of_domains () {
