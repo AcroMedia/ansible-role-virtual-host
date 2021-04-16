@@ -199,7 +199,7 @@
     var: aaw_result
     verbosity: 1
 
-- name: Register or expand letsencrypt certificate(s). If DNS is pointing at the machine for all names, and the firewal is open to port 80, the command should succeed.
+- name: Register or expand letsencrypt certificate(s). If DNS is pointing at the machine for all names, and the firewall is open to port 80, the command should succeed.
   script:  scripts/certbot-wrapper
   args:
     executable: /bin/bash
