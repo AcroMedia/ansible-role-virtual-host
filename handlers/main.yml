@@ -4,6 +4,10 @@
   become: true
   shell: "/usr/sbin/nginx -t && {{ path_to_service_binary }} nginx reload"
 
+- name: arvh safe restart nginx
+  become: true
+  shell: "/usr/sbin/nginx -t && {{ path_to_service_binary }} nginx restart"
+
 - name: restart php5-fpm
   service:
     name: php5-fpm

@@ -235,7 +235,7 @@
     group: root
     mode: 0644
   notify:
-    - arvh safe reload nginx
+    - arvh safe restart nginx
   when: php_version != 'none'
 
 - name: Update PHP FPM nginx include for {{ linux_owner }}/{{ project }}
