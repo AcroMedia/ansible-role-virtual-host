@@ -179,6 +179,9 @@ nginx_protected_filename_extensions_default:
  - gzip
  - gz
  - tar
+ - key
+ - pem
+ - env
 nginx_protected_filename_extensions_extra: []
 nginx_protected_filename_extensions: "{{ nginx_protected_filename_extensions_default + nginx_protected_filename_extensions_extra }}"
 
