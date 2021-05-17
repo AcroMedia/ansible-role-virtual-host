@@ -382,7 +382,7 @@
     name: "{{ http_auth_username }}"
     password: "{{ http_auth_password }}"
     owner: root
-    group: www-data
+    group: "{{ nginx_process_owner }}"
     mode: 0640
   when: require_http_auth == true
   ignore_errors: "{{ ansible_check_mode }}"   # This task doesn't always survive check mode.
