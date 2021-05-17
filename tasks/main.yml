@@ -348,7 +348,7 @@
     and php_version != 'none'
     and ansible_os_family == 'Debian'
 
-- name: Install dependency for htpasswd operations
+- name: Install dependency for htpasswd operations (Debian)
   apt:
     name:
       - python-passlib
@@ -357,6 +357,24 @@
     update_cache: true
   when: require_http_auth == true
     and ansible_os_family == 'Debian'
+
+- name: Install dependency for htpasswd operations (EL 7)
+  yum:
+    name:
+      - python-passlib
+    state: present
+    update_cache: true
+  when: ansible_os_family == 'RedHat'
+    and ansible_distribution_major_version == '7'
+
+- name: Install dependency for htpasswd operations (EL 8)
+  yum:
+    name:
+      - python3-passlib
+    state: present
+    update_cache: true
+  when: ansible_os_family == 'RedHat'
+    and ansible_distribution_major_version == '8'
 
 - name: Create htpasswd file for {{ linux_owner }}-{{ project }}
   htpasswd:
