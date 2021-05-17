@@ -23,3 +23,6 @@ php_version: none
 web_root_dir_name: wwwroot
 web_application: static
 skip_mysql: true
+require_http_auth: true
+http_auth_username: 'test'
+http_auth_password: 'test'

@@ -367,6 +367,7 @@
     group: www-data
     mode: 0640
   when: require_http_auth == true
+  ignore_errors: "{{ ansible_check_mode }}"   # This task doesn't always survive check mode.
   notify:
     - arvh safe reload nginx
 
