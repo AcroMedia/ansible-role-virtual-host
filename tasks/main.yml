@@ -172,24 +172,33 @@
     owner: root
     group: root
 
-- name: Run acro-add-website  #, waiting up to {{ letsencrypt_cert_registration_timeout }} seconds for letsencrypt cert registration
-  shell: >
-     export TERM=xterm-256color {{ env_mysql_db_name }} {{ env_mysql_db_user }} {{ env_mysql_db_pass }};
-     /usr/bin/timeout {{ letsencrypt_cert_registration_timeout }}s
-     /bin/bash /usr/local/sbin/acro-add-website.sh
-     --account {{ linux_owner }}
-     --project {{ project }}
-     --fqdn {{ aaw_default_fqdn }}
-     --webroot {{ web_root_dir_name }}
-     --php-version {{ php_version }}
-     --responsible-person {{ responsible_person }}
-     --mysql-allow-from {{ mysql_allow_from }}
-     --mysql-host-address {{ mysql_host_address }}
-     {{ skip_ssl_flag }}
-     {{ rds_flag }}
-     {{ service_account_flag }}
-     {{ force_flag }}
-     {{ skip_mysql_flag }}
+- name: Compose AAW command line
+  set_fact:
+    _aaw_cli: >
+       export TERM=xterm-256color {{ env_mysql_db_name }} {{ env_mysql_db_user }} {{ env_mysql_db_pass }};
+       /usr/bin/timeout {{ letsencrypt_cert_registration_timeout }}s
+       /bin/bash /usr/local/sbin/acro-add-website.sh
+       --account {{ linux_owner }}
+       --project {{ project }}
+       --fqdn {{ aaw_default_fqdn }}
+       --webroot {{ web_root_dir_name }}
+       --php-version {{ php_version }}
+       --responsible-person {{ responsible_person }}
+       --mysql-allow-from {{ mysql_allow_from }}
+       --mysql-host-address {{ mysql_host_address }}
+       {{ skip_ssl_flag }}
+       {{ rds_flag }}
+       {{ service_account_flag }}
+       {{ force_flag }}
+       {{ skip_mysql_flag }}
+
+- name: Debug _aaw_cli
+  debug:
+    var: _aaw_cli
+    verbosity: 1
+
+- name: Run AAW command line  #, waiting up to {{ letsencrypt_cert_registration_timeout }} seconds for letsencrypt cert registration
+  shell: "{{ _aaw_cli }}"
   args:
     creates: /home/{{ linux_owner }}/.acro-add-website/{{ project }}
   register: aaw_result
