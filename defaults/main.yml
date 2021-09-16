@@ -14,8 +14,10 @@ web_application: 'undefined'
 
 nginx_aliases: []
 
-# No trailing slash.
-nginx_drupal_uploads_dir_pattern: '/sites/.*/files'
+# Location patterns to help enforce security.
+nginx_drupal_uploads_dir_pattern: '/sites/.*/files'   #  Don't include a trailing slash.
+nginx_drupal_private_dir_pattern: '^/sites/.*/private/'
+nginx_drupal_temp_dir_pattern: '^/sites/.*/tmp/'
 
 # For use with mult-server setups
 mysql_allow_from: localhost
