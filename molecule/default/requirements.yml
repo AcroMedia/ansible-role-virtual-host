@@ -26,4 +26,4 @@
 
 - name: contrib/acromedia.php
   src: https://github.com/AcroMedia/ansible-role-php
-  version: origin/master
+  version: origin/10-add-support-for-php8.0

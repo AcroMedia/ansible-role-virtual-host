@@ -19,7 +19,7 @@ nginx_server_name: www.bigcorp.com
 nginx_listeners:
   - server_name: "{{ nginx_server_name }}"
     port: 80
-php_version: none
+php_version: 8.0
 web_root_dir_name: wwwroot
 web_application: static
 skip_mysql: true
