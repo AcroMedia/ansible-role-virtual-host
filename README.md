@@ -24,7 +24,7 @@ This role is designed specifically for us in high performance / high security Ac
 
 - If you're providing your own manually registered TLS certificate(s), the fullchain, key, and intermediate files need to be placed on the server **before** this role is invoked.
 
-- If using letsencrypt, the role will generate TLS certificates and place them for you, but you still need to know their paths, so you can feed them to the nginx_listners variable.
+- If using letsencrypt, the role will generate TLS certificates and place them for you, but you still need to know their paths, so you can feed them to the nginx_listeners variable.
 
 - If using letsencrypt, DNS for the names in your certificate must already point at your server before you run this role.
 
