@@ -11,6 +11,13 @@ postfix_inet_interfaces: 127.0.0.1
 nginx_robots_policy: production
 
 # ---------------------------------
+# acromedia.php
+# ---------------------------------
+php_default_version: 8.0
+php_versions:
+ - 8.0
+
+# ---------------------------------
 # acromedia.virtual-host
 # ---------------------------------
 linux_owner: bigcorp
