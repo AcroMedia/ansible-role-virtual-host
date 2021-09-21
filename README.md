@@ -296,7 +296,7 @@ nginx_listeners:
     http2: true
     server_name: "{{ prod_server_secondary_names | join(' ') }}"
     ssl_fullchain_path: /etc/letsencrypt/live/{{ prod_server_primary_name }}/fullchain.pem
-    ssl_key_path: /etc/letsencrypt/live/{{ prod_server_primary_name }}/prvkey.pem
+    ssl_key_path: /etc/letsencrypt/live/{{ prod_server_primary_name }}/privkey.pem
     ssl_intermediates_path: /etc/letsencrypt/live/{{ prod_server_primary_name }}/chain.pem
     redirect_to: https://{{ prod_server_primary_name }}
     redirect_permanent: true
@@ -306,7 +306,7 @@ nginx_listeners:
     http2: true
     server_name: "{{ prod_server_primary_name }}"
     ssl_fullchain_path: /etc/letsencrypt/live/{{ prod_server_primary_name }}/fullchain.pem
-    ssl_key_path: /etc/letsencrypt/live/{{ prod_server_primary_name }}/prvkey.pem
+    ssl_key_path: /etc/letsencrypt/live/{{ prod_server_primary_name }}/privkey.pem
     ssl_intermediates_path: /etc/letsencrypt/live/{{ prod_server_primary_name }}/chain.pem
 
 drupal_cron_url: "https://{{ prod_server_primary_name }}/cron/abcdefgh12345678"
@@ -343,7 +343,7 @@ nginx_listeners:
     http2: true
     server_name: "{{ staging_server_dns_name }}"
     ssl_fullchain_path: /etc/letsencrypt/live/{{ staging_server_dns_name }}/fullchain.pem
-    ssl_key_path: /etc/letsencrypt/live/{{ staging_server_dns_name }}/prvkey.pem
+    ssl_key_path: /etc/letsencrypt/live/{{ staging_server_dns_name }}/privkey.pem
     ssl_intermediates_path: /etc/letsencrypt/live/{{ staging_server_dns_name }}/chain.pem
 ```
 
