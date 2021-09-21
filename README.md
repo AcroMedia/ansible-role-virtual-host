@@ -250,12 +250,13 @@ The variables to tune are:
 
 ## What happened to ...
 
-The old combination of `nginx_canonical_name` + `nginx_aliases` + `ssl` + `deploy_env`, as well as a very long list of kludge variables, have been replaced by `nginx_listeners` and `letsencrypt_certificates` definitions.
+The old combination of `nginx_canonical_name` + `nginx_aliases` + `ssl` + `deploy_env`, as well as a very long list of kludge variables, have been replaced by `nginx_listeners` and `letsencrypt_certificates` definitions as of the role's 2.x version.
 
 While old set of variables resulted in a simpler looking playbook, that setup resulted in unworkable limitations in too many edge cases, and continuously spawned workarounds and code smells. As well, the role's nginx templates were becoming complicated logical nightmares.
 
-The new variables eliminate all of the template guesswork that the role used to do, by putting control of the role's traffic routing behavior in developers hands.
+The new variables eliminate all of the template guesswork that the role used to do, by leaving the traffic routing decisions to the human writing the playbook.
 
+See [how-to-upgrade-from-version-1.x.md](how-to-upgrade-from-version-1.x.md) for an example variable conversion.
 
 ## Example playbook set
 
