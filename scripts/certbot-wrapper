@@ -22,7 +22,7 @@ function main () {
   if [ -n "$LE_EXPIRY_EMAIL" ]; then
     CMD="$CMD --email '${LE_EXPIRY_EMAIL}'"
   fi
-  CMD="$CMD --cert-name $NGINX_PRIMAL_NAME"
+  CMD="$CMD --cert-name ${NGINX_PRIMAL_NAME}"
   CMD="$CMD --keep"
   CMD="$CMD --domains ${GROOMED_DOMAINS_LIST}"
   (set -x && $CMD --dry-run && $CMD)
@@ -53,7 +53,13 @@ function find_certbot() {
 function groom_list_of_domains () {
 
   local DOMAINS
-  DOMAINS="${NGINX_PRIMAL_NAME},${NGINX_CANONICAL_NAME},${NGINX_ALIASES}"
+
+  local DOMAINS_LIST=${DOMAINS_LIST:-}
+  if [ -n "${DOMAINS_LIST}" ]; then
+    DOMAINS=${DOMAINS_LIST}
+  else
+    DOMAINS="${NGINX_PRIMAL_NAME},${NGINX_CANONICAL_NAME},${NGINX_ALIASES}"
+  fi
 
   # Remove duplicate names
   DOMAINS=$(echo "$DOMAINS"|tr ',' '\n'|sort|uniq|tr '\n' ',')

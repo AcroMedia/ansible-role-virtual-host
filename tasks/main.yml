@@ -1,17 +1,18 @@
 ---
 - include_vars: "vars/{{ ansible_os_family }}.yml"
 
-- name: Make sure nginx_primal_name is not zero length
+- name: Make sure we have an nginx_listeners array
   assert:
     that:
-      - nginx_primal_name|trim != ''
-    fail_msg: nginx_primal_name cannot be empty.
+      - (nginx_listeners | length) > 0
+      - nginx_listeners is not string
+      - nginx_listeners is iterable
+    fail_msg: "The 'nginx_canonical_name', 'nginx_primal_name', 'nginx_aliases', 'deploy_env', and 'ssl' variables have been replaced by the much more flexible 'nginx_listeners' and 'letsencrypt_certificates' definitions. You need to convert your playbook's variables before continuing. See the role's README.md for details."
 
-- name: Make sure nginx_canonical_name is not zero length
-  assert:
-    that:
-      - nginx_canonical_name|trim != ''
-    fail_msg: nginx_canonical_name cannot be empty.
+- name: debug nginx_listeners array
+  debug:
+    var: nginx_listeners
+    verbosity: 1
 
 - name: Validate 'web_application' variable value
   assert:
@@ -38,17 +39,11 @@
       If they are, the account will be marked as a 'service' account, SSH will not work for it, and you will\n
       not be able create a working CI deploy job."
 
-- name: Make sure primal_name isn't duplicated in aliases
+- name: Warn about letting the role use the default value for php_fpm_newrelic_appname
   assert:
-    that:
-      - nginx_primal_name not in nginx_aliases
-    fail_msg: The value for nginx_primal_name appears to be duplicated in the nginx_aliases list
-
-- name: Make sure canonical name isn't duplicated in aliases
-  assert:
-    that:
-      - nginx_canonical_name not in nginx_aliases
-    fail_msg: The value for nginx_canonical_name appears to be duplicated in the nginx_aliases list
+    that: php_fpm_newrelic_appname != (linux_owner + '/' + project)
+    fail_msg: If using New Relic, be sure to set a meaningful app name. A good format to use is "yourdomain.com - env descriptor". Set the value to anything other than the default to disable this message.
+  ignore_errors: true
 
 - name: See if a site has already been created with AAW
   stat:
@@ -90,8 +85,8 @@
 
 - set_fact:
     skip_ssl_flag: '--skip-ssl'
-  when: ssl == 'none'
-    or (ssl == 'manual' and deploy_env == 'production')
+  # when: ssl == 'none'
+  #   or (ssl == 'manual' and deploy_env == 'production')
 
 - set_fact:
     rds_flag: '--rds'
@@ -177,43 +172,61 @@
     owner: root
     group: root
 
-- name: Run acro-add-website, waiting up to {{ letsencrypt_cert_registration_timeout }} seconds for letsencrypt cert registration
-  shell: >
-     export TERM=xterm-256color {{ env_mysql_db_name }} {{ env_mysql_db_user }} {{ env_mysql_db_pass }};
-     /usr/bin/timeout {{ letsencrypt_cert_registration_timeout }}s
-     /bin/bash /usr/local/sbin/acro-add-website.sh
-     --account {{ linux_owner }}
-     --project {{ project }}
-     --fqdn {{ nginx_primal_name }}
-     --webroot {{ web_root_dir_name }}
-     --php-version {{ php_version }}
-     --responsible-person {{ responsible_person }}
-     --mysql-allow-from {{ mysql_allow_from }}
-     --mysql-host-address {{ mysql_host_address }}
-     {{ skip_ssl_flag }}
-     {{ rds_flag }}
-     {{ service_account_flag }}
-     {{ force_flag}}
-     {{ skip_mysql_flag }}
+- name: Compose AAW command line
+  set_fact:
+    _aaw_cli: >
+       export TERM=xterm-256color {{ env_mysql_db_name }} {{ env_mysql_db_user }} {{ env_mysql_db_pass }};
+       /usr/bin/timeout {{ letsencrypt_cert_registration_timeout }}s
+       /bin/bash /usr/local/sbin/acro-add-website.sh
+       --account {{ linux_owner }}
+       --project {{ project }}
+       --fqdn {{ aaw_default_fqdn }}
+       --webroot {{ web_root_dir_name }}
+       --php-version {{ php_version }}
+       --responsible-person {{ responsible_person }}
+       --mysql-allow-from {{ mysql_allow_from }}
+       --mysql-host-address {{ mysql_host_address }}
+       {{ skip_ssl_flag }}
+       {{ rds_flag }}
+       {{ service_account_flag }}
+       {{ force_flag }}
+       {{ skip_mysql_flag }}
+
+- name: Debug _aaw_cli
+  debug:
+    var: _aaw_cli
+    verbosity: 1
+
+- name: Run AAW command line  #, waiting up to {{ letsencrypt_cert_registration_timeout }} seconds for letsencrypt cert registration
+  shell: "{{ _aaw_cli }}"
   args:
     creates: /home/{{ linux_owner }}/.acro-add-website/{{ project }}
-  environment:
-    PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+  register: aaw_result
 
-- name: Try and expand the primal name's Certificate to include nginx aliases and canonical name. If DNS is pointing at the machine for these names, the command will work.
+- name: debug aaw_result
+  debug:
+    var: aaw_result
+    verbosity: 1
+
+- name: Register or expand letsencrypt certificate(s). If DNS is pointing at the machine for all names, and the firewall is open to port 80, the command should succeed.
   script:  scripts/certbot-wrapper
   args:
     executable: /bin/bash
   environment:
     INVENTORY_HOSTNAME: "{{ inventory_hostname }}"
-    NGINX_PRIMAL_NAME: "{{ nginx_primal_name }}"
-    NGINX_CANONICAL_NAME: "{{ nginx_canonical_name }}"
-    NGINX_ALIASES: "{{ nginx_aliases |join(',') }}"
+    CERT_NAME: "{{ item.name }}"
+    NGINX_PRIMAL_NAME: "{{ item.name }}"
+    DOMAINS_LIST: "{{ item.domains | join(',') }}"
     LE_EXPIRY_EMAIL: "{{ letsencrypt_expiry_email }}"
-  when: deploy_env == 'production'
-    and ssl == 'letsencrypt'
+  with_items: "{{ letsencrypt_certificates }}"
   register: letsencrypt_result
-  ignore_errors: true
+#  ignore_errors: true
+  notify: arvh safe reload nginx
+
+- name: debug letsencrypt_result
+  debug:
+    var: letsencrypt_result
+    verbosity: 1
 
 - name: Upload arbitrary customizations from the playbook through the role to the remote host
   template:
@@ -255,18 +268,22 @@
   notify:
     - arvh safe reload nginx
 
+- debug:
+    var: nginx_location_extras
+    verbosity: 1
+
 - name: Update nginx virtual host configuration for {{ linux_owner }}/{{ project }}
   template:
-    src: "{{ role_path }}/templates/etc/nginx/sites-available/{{ deploy_env }}.{{ ssl }}.conf.j2"
-    dest: "{{ nginx_vhost_conf_dir_available }}/{{ linux_owner }}-{{ project }}.conf"
+    src: "{{ role_path }}/templates/etc/nginx/sites-available/ACCOUNT-PROJECT.conf.j2"
+    dest: "{{ nginx_vhost_conf_dir }}/{{ linux_owner }}-{{ project }}.conf"
     backup: true
   notify:
     - arvh safe reload nginx
 
 - name: Enable (symlink) nginx virtual host configuration for {{ linux_owner }}/{{ project }}
   file:
-    src: "{{ nginx_vhost_conf_dir_available }}/{{ linux_owner }}-{{ project }}.conf"
-    dest: "{{ nginx_vhost_conf_dir_enabled }}/{{ linux_owner }}-{{ project }}.conf"
+    src: "/etc/nginx/sites-available/{{ linux_owner }}-{{ project }}.conf"
+    dest: "/etc/nginx/sites-enabled/{{ linux_owner }}-{{ project }}.conf"
     state: link
   when: ansible_os_family == 'Debian'
     and not ansible_check_mode
@@ -281,6 +298,8 @@
     - /etc/nginx/sites-available/{{ nginx_primal_name }}
     - /etc/nginx/sites-enabled/{{ nginx_primal_name }}
   when: ansible_os_family == 'Debian'
+    and nginx_primal_name is defined
+    and (nginx_primal_name | length) > 0
   notify:
     - arvh safe reload nginx
 
@@ -338,7 +357,7 @@
     and php_version != 'none'
     and ansible_os_family == 'Debian'
 
-- name: Install dependency for htpasswd operations
+- name: Install dependency for htpasswd operations (Debian)
   apt:
     name:
       - python-passlib
@@ -348,15 +367,34 @@
   when: require_http_auth == true
     and ansible_os_family == 'Debian'
 
+- name: Install dependency for htpasswd operations (EL 7)
+  yum:
+    name:
+      - python-passlib
+    state: present
+    update_cache: true
+  when: ansible_os_family == 'RedHat'
+    and ansible_distribution_major_version == '7'
+
+- name: Install dependency for htpasswd operations (EL 8)
+  yum:
+    name:
+      - python3-passlib
+    state: present
+    update_cache: true
+  when: ansible_os_family == 'RedHat'
+    and ansible_distribution_major_version == '8'
+
 - name: Create htpasswd file for {{ linux_owner }}-{{ project }}
   htpasswd:
     path: "{{ path_to_htpasswd_file }}"
     name: "{{ http_auth_username }}"
     password: "{{ http_auth_password }}"
     owner: root
-    group: www-data
+    group: "{{ nginx_process_owner }}"
     mode: 0640
   when: require_http_auth == true
+  ignore_errors: "{{ ansible_check_mode }}"   # This task doesn't always survive check mode.
   notify:
     - arvh safe reload nginx
 
@@ -364,5 +402,7 @@
   assert:
     that: letsencrypt_expiry_email != ''
     fail_msg: There is no value for letsencrypt_expiry_email. This is not a strict requirement, but it's highly recommended that someone be able to receive expiry notifications in case of unexpected renewal failures.
-  when: ssl == 'letsencrypt'
+  when: letsencrypt_certificates is not string
+    and letsencrypt_certificates is iterable
+    and (letsencrypt_certificates | length > 0)
   ignore_errors: true

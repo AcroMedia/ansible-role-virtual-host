@@ -1,6 +1,6 @@
 ---
-nginx_primal_name: ''
-nginx_canonical_name: ''
+#nginx_primal_name: '' # Defunct.
+#nginx_canonical_name: ''  # Defunct.
 php_version: 7.1
 responsible_person: root
 web_root_dir_name: web
@@ -14,12 +14,10 @@ web_application: 'undefined'
 
 nginx_aliases: []
 
-# No trailing slash.
-nginx_drupal_uploads_dir_pattern: '/sites/.*/files'
-
-# Allow standard ports to be overridden
-http_port: 80
-https_port: 443
+# Location patterns to help enforce security.
+nginx_drupal_uploads_dir_pattern: '/sites/.*/files'   #  Don't include a trailing slash.
+nginx_drupal_private_dir_pattern: '^/sites/.*/private/'
+nginx_drupal_temp_dir_pattern: '^/sites/.*/tmp/'
 
 # For use with mult-server setups
 mysql_allow_from: localhost
@@ -50,6 +48,8 @@ fpm_pool_filename: ''
 # Throw caution to the wind: Ignore errors and skip safety checks from acro-add-website.sh
 force: false
 
+# In some cases, grep + PCRE goes haywire, and cant deal with what is generated here.
+aaw_default_fqdn: "{{ project }}.{{ linux_owner }}.{{ inventory_hostname }}"
 
 # Keep staging, or pre-production sites away from google's prying eyes. This is created at the virtaul host level. See also "disable_http_auth".
 require_http_auth: false
@@ -123,9 +123,6 @@ disable_http_auth: false
 # On staging/dev servers, the global nginx config may be imposing password authentication. Let it be disabled per-virtual host.
 disable_environment_indicator: false
 
-# In most cases you want HTTP2 enabled. The role only enables HTTP2 for HTTPS connections.
-nginx_http2: true
-
 nginx_vhost_conf_dir_by_os_family:
   Debian: /etc/nginx/sites-available
   RedHat: /etc/nginx/conf.d
@@ -156,11 +153,16 @@ nginx_limit_req_zone_value: "${{ nginx_limit_req_zone_key }} zone={{ nginx_limit
 nginx_limit_req_zone_file: /etc/nginx/conf.d/limit_req_zone.{{ nginx_limit_req_zone_name }}.conf
 php_rate_limit_nginx_conf: "zone={{ nginx_limit_req_zone_name }} burst={{ php_rate_limit_burst_limit }} nodelay"
 
-# When serving from a proxied / load balanced node, set this to true, so redirects send people right to https instead of possibly boucning them to http on a different name, and then bouncing them again to https
-always_redirect_to_https: false
-
 # Wait up to X seconds for cert registration to complete
 letsencrypt_cert_registration_timeout: 300
+
+# Decoupled cert registration / expansion (as opposed to lumping it in with site creation and wiring it into templates) for reduced logical complexity in the role
+letsencrypt_certificates: [] # See readme for format.
+
+# New style array for server names, provides MUCH greater flexibility (and less confusion) than "nginx_primal_name" + "nginx_canonical_name" + "nginx_aliases"
+nginx_listeners: [] # See readme for format.
+
+
 
 # Who should receive letsencrypt SSL expiry notices.
 letsencrypt_expiry_email: ''
@@ -217,4 +219,4 @@ nginx_static_resource_filename_extensions: "{{ nginx_static_resource_filename_ex
 
 # templates/etc/php/VERSION/fpm/pool.d/ACCOUNT-PROJECT.conf.j2
 # -> php_value[newrelic.appname]
-php_fpm_newrelic_appname: "{{ nginx_canonical_name }} ({{ linux_owner }}/{{ project }}) - {{ deploy_env }}"
+php_fpm_newrelic_appname: "{{ linux_owner }}/{{ project }}"

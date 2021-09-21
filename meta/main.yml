@@ -1,7 +1,11 @@
+---
+allow_duplicates: true
 galaxy_info:
   author: Dale Anderson
   description: Configure a NGINX virtual host
   company: Acro Media Inc.
+  role_name: virtual_host
+  namespace: acromedia
   issue_tracker_url: https://git.acromedia.com/acro/devops/ansible-role-virtual-host/issues
   license: GPLv3
   min_ansible_version: 2.4

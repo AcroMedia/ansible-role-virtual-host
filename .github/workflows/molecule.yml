@@ -8,6 +8,7 @@ on:
   pull_request:
     branches:
       - master
+      - 2-nginx_aliases-is-a-lie
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -29,9 +30,8 @@ jobs:
         image:
           - geerlingguy/docker-ubuntu2004-ansible:latest
           - geerlingguy/docker-ubuntu1804-ansible:latest
-          - geerlingguy/docker-ubuntu1604-ansible:latest
-          - geerlingguy/docker-centos8-ansible:latest
-          - geerlingguy/docker-centos7-ansible:latest
+          #- geerlingguy/docker-centos8-ansible:latest   # Can't test this until the PHP role supports CentOS
+          #- geerlingguy/docker-centos7-ansible:latest   # Can't test this until the PHP role supports CentOS
     steps:
       - name: checkout
         uses: actions/checkout@v2
