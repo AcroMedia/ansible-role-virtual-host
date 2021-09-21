@@ -24,7 +24,7 @@ This role is designed specifically for us in high performance / high security Ac
 
 - If you're providing your own manually registered TLS certificate(s), the fullchain, key, and intermediate files need to be placed on the server **before** this role is invoked.
 
-- If using letsencrypt, the role will generate TLS certificates and place them for you, but you still need to know their paths, so you can feed them to the nginx_listners variable.
+- If using letsencrypt, the role will generate TLS certificates and place them for you, but you still need to know their paths, so you can feed them to the nginx_listeners variable.
 
 - If using letsencrypt, DNS for the names in your certificate must already point at your server before you run this role.
 
@@ -76,7 +76,7 @@ Example:
 
 #### linux_owner
 
-- The name of the user account to create. Don't use a privileged (sudoable) account, or the account of a 'real' person. Let ansible create a new account specifically to hold the virtual host, as NGINX will be given traverse access into the account dir.
+- The name of the user account to create. Don't use a privileged (sudoable) account, or the account of a real person. Let ansible create dedicated user accounts specifically to hold the virtual host. NGINX will be given traverse access through the specified account's home dir so it can serve the contents of the public web directory within.
 
 #### project
 
@@ -93,32 +93,6 @@ Example:
 #### web_application
 
 - Tells the role which nginx configuration to apply. Defaults to `undefined`. Can be one of `drupal4`, `drupal5`, `drupal6`, `drupal7`, `drupal8`, `wordpress`, `php`, `static`, `proxy_pass`, or `redirect`.
-
-
-#### letsencrypt_certificates
-- Specifies the name and list of domains on each TLS certificate that you want the role to register for you.
-- Example:
-```yaml
-letsencrypt_certificates:
-  - name: www.example.com
-    domains:
-      - www.example.com
-      - example.com
-      - oldname.com
-      - www.oldname.com
-```
-- **letsencrypt_certificates** is an empty list `[]` by default.
-- **name** is the directory name of the cert, as it exists (or will exist) in `/etc/letsencrypt/live`. It makes sense to keep this the same as the first domain name you include to the cert.
-- **domains** is the list of domain names you want included in the certificate. All names listed in **domains** must resolve with DNS, or LE cert registration will fail.
-- **name** is not implied and *MUST* be explicitly included in your list of **domains**.
-- Cert and key files will be created in ``/etc/letsencrypt/live/{{ name }}/``
-- Successful certificate registration creates 3 files, the paths of which you will then need to feed into the nginx_listeners config:
-  - /etc/letsencrypt/live/{{ name }}/fullchain.pem - see `ssl_fullchain_path` below
-  - /etc/letsencrypt/live/{{ name }}/chain.pem - see `ssl_intermediates_path` below
-  - /etc/letsencrypt/live/{{ name }}/privkey.pem - see `ssl_key_path` below
-- The server must be able to accept port 80 tcp from anywhere, since LetsEncrypt does not publish their origin addresses. It's fine to restrict HTTPS (port 443) traffic with authentication or firewall rules. LetsEncrypt does not need access there.
-- Empty list by default
-
 
 #### nginx_listeners
 - Specifies what ports, protocols, names to serve your site on (or how to move visitors to the right place), and the paths to your SSL certs.
@@ -159,6 +133,30 @@ nginx_listeners:
 ### Optional Role Variables
 
 See also: **defaults/main.yml**. There are quite a few variables in there that are straightforward, and don't require documentation.
+
+#### letsencrypt_certificates
+- **letsencrypt_certificates** is an empty list `[]` by default.
+- Specifies the name and list of domains on each TLS certificate that you want the role to register for you.
+- Example:
+```yaml
+letsencrypt_certificates:
+  - name: www.example.com
+    domains:
+      - www.example.com
+      - example.com
+      - oldname.com
+      - www.oldname.com
+```
+- **name** is the directory name of the cert, as it exists (or will exist) in `/etc/letsencrypt/live`. It makes sense to keep this the same as the first domain name you include to the cert.
+- **domains** is the list of domain names you want included in the certificate. All names listed in **domains** must resolve with DNS, or LE cert registration will fail.
+- **name** is not implied and *MUST* be explicitly included in your list of **domains**.
+- Cert and key files will be created in ``/etc/letsencrypt/live/{{ name }}/``
+- Successful certificate registration creates 3 files, the paths of which you will then need to feed into the nginx_listeners config:
+  - /etc/letsencrypt/live/{{ name }}/fullchain.pem - see `ssl_fullchain_path` below
+  - /etc/letsencrypt/live/{{ name }}/chain.pem - see `ssl_intermediates_path` below
+  - /etc/letsencrypt/live/{{ name }}/privkey.pem - see `ssl_key_path` below
+- The server must be able to accept port 80 tcp from anywhere, since LetsEncrypt does not publish their origin addresses. It's fine to restrict HTTPS (port 443) traffic with authentication or firewall rules. LetsEncrypt does not need access there.
+- Empty list by default
 
 **responsible_person**: Defaults to `root`. This adds a line to to postfix's /etc/aliases file. Who should receive messages from the system (usually generated by Cron) about this site? Can either be the name of a local linux user, or an email address.
 
@@ -252,12 +250,13 @@ The variables to tune are:
 
 ## What happened to ...
 
-The old combination of `nginx_canonical_name` + `nginx_aliases` + `ssl` + `deploy_env`, as well as a very long list of kludge variables, have been replaced by `nginx_listeners` and `letsencrypt_certificates` definitions.
+The old combination of `nginx_canonical_name` + `nginx_aliases` + `ssl` + `deploy_env`, as well as a very long list of kludge variables, have been replaced by `nginx_listeners` and `letsencrypt_certificates` definitions as of the role's 2.x version.
 
 While old set of variables resulted in a simpler looking playbook, that setup resulted in unworkable limitations in too many edge cases, and continuously spawned workarounds and code smells. As well, the role's nginx templates were becoming complicated logical nightmares.
 
-The new variables eliminate all of the template guesswork that the role used to do, by putting control of the role's traffic routing behavior in developers hands.
+The new variables eliminate all of the template guesswork that the role used to do, by leaving the traffic routing decisions to the human writing the playbook.
 
+See [how-to-upgrade-from-version-1.x.md](how-to-upgrade-from-version-1.x.md) for an example variable conversion.
 
 ## Example playbook set
 
