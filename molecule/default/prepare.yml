@@ -85,4 +85,4 @@
     - contrib/acromedia.devops-utils
     - contrib/acromedia.postfix
     - contrib/acromedia.nginx
-    #- contrib/acromedia.php
+    - contrib/acromedia.php
