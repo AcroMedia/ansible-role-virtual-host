@@ -19,17 +19,17 @@ server {
   ssl_stapling on;
   ssl_stapling_verify on;
   ssl_trusted_certificate {{ listener.ssl_intermediates_path }};
-{% endif %}{# stapling #}
+{% endif %}{# intermediates/stapling #}
 {% endif %}{# ssl #}
-{% if listener.redirect_to is defined %}
 {% if listener.inline_custom is defined %}
   {{ listener.inline_custom | indent(2, false) }}
-{% endif %}
+{% endif %}{# /inline_custom #}
+{% if listener.redirect_to is defined %}
   location / {
     return {{ (listener.redirect_permanent|default(false)) | ternary('301', '302') }} {{ listener.redirect_to }}$request_uri;
   }
-{% else %}
+{% else %}{# redirect_to #}
   include /etc/nginx/includes/{{ linux_owner }}-{{ project }}.core.conf;
-{% endif %}
+{% endif %}{# /redirect_to #}
 }
-{% endfor %}
+{% endfor %}{# /nginx_listeners #}
