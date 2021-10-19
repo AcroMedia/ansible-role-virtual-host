@@ -181,6 +181,7 @@ nginx_protected_filename_extensions_default:
  - gzip
  - gz
  - tar
+ - tgz
  - key
  - pem
  - env
