@@ -13,9 +13,12 @@ nginx_robots_policy: production
 # ---------------------------------
 # acromedia.php
 # ---------------------------------
-php_default_version: 8.0
+php_default_version: 8.1
+php_use_legacy_module_lists: false
 php_versions:
- - 8.0
+  - 7.4
+  - 8.0
+  - 8.1
 
 # ---------------------------------
 # acromedia.virtual-host
@@ -26,7 +29,7 @@ nginx_server_name: www.bigcorp.com
 nginx_listeners:
   - server_name: "{{ nginx_server_name }}"
     port: 80
-php_version: 8.0
+php_version: "{{ php_default_version }}"
 web_root_dir_name: wwwroot
 web_application: php
 skip_mysql: true
