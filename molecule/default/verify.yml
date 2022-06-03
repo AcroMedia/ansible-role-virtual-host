@@ -1,5 +1,5 @@
 ---
-- name: Verify role
+- name: Verify role part 1
   hosts: all
   become: no
   tasks:
@@ -15,3 +15,11 @@
       assert:
         that:
           - '"It works!" in curl_result.stdout'
+
+- name: Verify role part 2 - change PHP version on the vhost to make sure things don't blow up.
+  hosts: all
+  become: no
+  vars:
+    php_version: 8.0
+  roles:
+    - role: ansible-role-virtual-host
