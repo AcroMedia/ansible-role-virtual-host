@@ -173,8 +173,8 @@ letsencrypt_certificates:
 #### **nginx_proxy_pass_blob**
 - When web_application == 'proxy_pass', this gets placed as is, directly into to the nginx default `location / {}` directive. When using proxy_pass, all other directives except those related to security (ie those that immediately return a 403) get disabled, as they are expected to be handled by your upstream / proxied application.
 
-#### `nginx_ip_restricted_locations` and `nginx_allowed_ips`
-- Empty lists (`[]`) by default 
+#### nginx_ip_restricted_locations
+- Empty list by default 
 - Make sure to TEST your restrictions after you put them in place. Nginx locations can be slippery creatures.
 ```yaml
 # Example 1: Lock down administrative locations to specific networks
@@ -185,8 +185,12 @@ nginx_allowed_ips:
   - 1.2.3.4
   - 4.3.2.0/27
 ```
+#### nginx_allowed_ips
+- Empty list by default. Only used in conjunction with [nginx_ip_restricted_locations](#nginx_ip_restricted_locations)
 
-#### **nginx_trusted_cidrs** (list)
+
+#### **nginx_trusted_cidrs**
+- Empty list by default
 - When `web_application` == `*drupal*`, access to `update.php`, `install.php`, or other sensitive files is denied. If you want a client to be allowed to talk to these locations, specify the IP address or network(s) that can do that:
 ```yaml
 nginx_trusted_cidrs:
@@ -226,9 +230,20 @@ nginx_location_extras:
 #### **nginx_inline_custom**
 - Whatever you specify is placed as-is, inside the virtual host's main `server` block, before any location directives.
 
-#### **require_http_auth**
-- boolean
-- Useful if you want to keep google's prying eyes out of your staging environment. When true, will prompt the user for the values specified by **http_auth_username** and **http_auth_password**.
+#### require_http_auth
+- Boolean, false by default
+- Useful if you want to keep google's prying eyes out of your staging environment.
+- When `require_http_auth` is `true` (it's `false` by default), the server will prompt end users for credentials defined by `http_auth_username` and `http_auth_password`
+  ```yaml
+  require_http_auth: yes
+  http_auth_username: staging123
+  http_auth_password: 'correct horse battery staple'
+  ```
+#### http_auth_username
+- String. See [require_http_auth](#require_http_auth)
+
+#### http_auth_password
+- String. See [require_http_auth](#require_http_auth)
 
 #### **max_execution_time_seconds**
 - Defaults to 300. This meta variable controls 3 individual PHP and NGINX config values. See defaults/main.yml for the individual variable names if you need more fine grained control.
