@@ -354,12 +354,10 @@
 - name: Install dependency for htpasswd operations (Debian)
   apt:
     name:
-      - python-passlib
       - python3-passlib
     state: present
     update_cache: true
-  when: require_http_auth == true
-    and ansible_os_family == 'Debian'
+  when: ansible_os_family == 'Debian'
 
 - name: Install dependency for htpasswd operations (EL 7)
   yum:
@@ -387,7 +385,8 @@
     owner: root
     group: "{{ nginx_process_owner }}"
     mode: 0640
-  when: require_http_auth == true
+  when: http_auth_username != ''
+    and http_auth_password != ''
   ignore_errors: "{{ ansible_check_mode }}"   # This task doesn't always survive check mode.
   notify:
     - arvh safe reload nginx
