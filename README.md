@@ -174,7 +174,7 @@ letsencrypt_certificates:
 - When web_application == 'proxy_pass', this gets placed as is, directly into to the nginx default `location / {}` directive. When using proxy_pass, all other directives except those related to security (ie those that immediately return a 403) get disabled, as they are expected to be handled by your upstream / proxied application.
 
 #### nginx_ip_restricted_locations
-- Empty list by default 
+- Empty list by default
 - Make sure to TEST your restrictions after you put them in place. Nginx locations can be slippery creatures.
 ```yaml
 # Example 1: Lock down administrative locations to specific networks
@@ -231,30 +231,33 @@ nginx_location_extras:
 - Whatever you specify is placed as-is, inside the virtual host's main `server` block, before any location directives.
 
 #### require_http_auth
-- Boolean, false by default
+- Boolean. False by default.
 - Useful if you want to keep google's prying eyes out of your staging environment.
-- When `require_http_auth` is `true` (it's `false` by default), the server will prompt end users for credentials defined by `http_auth_username` and `http_auth_password`
+- When `require_http_auth` is `true`, and `http_auth_username` and `http_auth_password` are specified, the server will require basic http auth for entire vhost (i.e. outside of all `location` directives), prompting end users for the credentials defined by `http_auth_username` and `http_auth_password`.
+- When `require_http_auth` is `false`, and `http_auth_username` and `http_auth_password` the role will not require authentication across the entire vhost, but will still create the `htpasswd` fil, and place it at `/etc/nginx/includes/deny-anonymous.{{ linux_owner }}-{{ project }}.htpasswd`), for you define your own conditions as to when/where basic auth is required.
   ```yaml
   require_http_auth: yes
   http_auth_username: staging123
   http_auth_password: 'correct horse battery staple'
   ```
 #### http_auth_username
-- String. See [require_http_auth](#require_http_auth)
+- Empty string `''` by default (i.e. authentication not required)
+- See [require_http_auth](#require_http_auth)
 
 #### http_auth_password
-- String. See [require_http_auth](#require_http_auth)
+- Empty string `''` by default (i.e. authentication not required)
+- See [require_http_auth](#require_http_auth)
 
 #### **max_execution_time_seconds**
 - Defaults to 300. This meta variable controls 3 individual PHP and NGINX config values. See defaults/main.yml for the individual variable names if you need more fine grained control.
 
 #### **max_upload_size_mb**
-- integer 
-- Defaults to 8. 
+- integer
+- Defaults to 8.
 - This meta variable controls 3 individual PHP and NGINX config values. See defaults/main.yml for the individual variable names if you need more fine grained control.
 
 #### **php_memory_limit**
-- Defaults to `128M`. 
+- Defaults to `128M`.
 - Accepts whatever you would normally place in php.ini. Don't forget the "M" at the end.
 
 #### **php_sendmail_path**
@@ -264,7 +267,7 @@ php_sendmail_path: '/usr/sbin/sendmail -t -i -f foo@example.com'
 ```
 
 #### **skip_mysql**
-- Boolean 
+- Boolean
 - Lets the role be used when MySQL isn't available at all. See also: `php_version: none`.
 
 #### **disable_http_auth**
