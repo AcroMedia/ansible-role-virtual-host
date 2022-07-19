@@ -5,6 +5,11 @@ php_version: 8.1
 responsible_person: root
 web_root_dir_name: web
 redirect_code: 302
+vhost_try_files_rewrite_conf: |
+  try_files $uri @rewrite;
+# ^^^ If you need nginx to serve directories (highly unlikely), use
+# ^^^      try_files $uri $uri/ @rewrite;
+# ^^^ instead.
 rewrite_target: '/index.php'
 image_cache_location: '/sites/.*/files/styles/'
 ssl_ciphers: 'ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256'

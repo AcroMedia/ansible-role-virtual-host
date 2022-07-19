@@ -150,7 +150,8 @@
             include {{ path_to_nginx_php_fpm_include }};
 {% endif %}
 {% else %}
-          try_files $uri $uri/ @rewrite;
+      {{ vhost_try_files_rewrite_conf | indent(6, false) }}
+
 {% endif %}
       }
 {% endfor %}{# /nginx_ip_restricted_locations|length > 0 #}
@@ -170,7 +171,7 @@
 
   # Serve static content before involving PHP
   location / {
-    try_files $uri $uri/ @rewrite;
+    {{ vhost_try_files_rewrite_conf | indent(4, false) }}
   }
 
   # Drupal 6
@@ -181,14 +182,14 @@
   }
   # Image cache doesn't work without this.
   location ~ {{ image_cache_location }} {
-    try_files $uri @rewrite;
+    {{ vhost_try_files_rewrite_conf | indent(4, false) }}
   }
 
 {% elif web_application == 'wordpress' %}
 
   # Serve static content before involving PHP
   location / {
-    try_files $uri $uri/ @rewrite;
+    {{ vhost_try_files_rewrite_conf | indent(4, false) }}
   }
 
   # Wordpress:
@@ -227,7 +228,7 @@
 
   # Drupal 7: Serve static content before involving PHP
   location / {
-    try_files $uri $uri/ @rewrite;
+    {{ vhost_try_files_rewrite_conf | indent(4, false) }}
   }
 
   # Drupal 7: Clean URLs are handled in drupal_environment_initialize().
@@ -237,19 +238,19 @@
 
   # Drupal 7: Image cache doesn't work without this.
   location ~ {{ image_cache_location }} {
-    try_files $uri @rewrite;
+    {{ vhost_try_files_rewrite_conf | indent(4, false) }}
   }
 
   # Drupal 7: Allow drupal to act as a broker for files served from the private dir
   location ~* /system/files/ {
-    try_files $uri @rewrite;
+    {{ vhost_try_files_rewrite_conf | indent(4, false) }}
   }
 
 {% elif web_application == 'drupal8' %}
 
   # Drupal 8: Serve static content before involving PHP
   location / {
-    try_files $uri $uri/ @rewrite;
+    {{ vhost_try_files_rewrite_conf | indent(4, false) }}
   }
 
   # Drupal 8: Clean URLs are handled in drupal_environment_initialize().
@@ -259,12 +260,12 @@
 
   # Drupal 8: Image cache doesn't work without this.
   location ~ {{ image_cache_location }} {
-    try_files $uri @rewrite;
+    {{ vhost_try_files_rewrite_conf | indent(4, false) }}
   }
 
   # Drupal 8: Allow drupal to act as a broker for files served from the private dir
   location ~* /system/files/ {
-    try_files $uri @rewrite;
+    {{ vhost_try_files_rewrite_conf | indent(4, false) }}
   }
 
 {% elif web_application == 'mediawiki' %}
@@ -275,7 +276,7 @@
   }
 
   location / {
-    try_files $uri $uri/ @rewrite;
+    {{ vhost_try_files_rewrite_conf | indent(4, false) }}
   }
 
   location @rewrite {
@@ -341,7 +342,7 @@
     expires max;
     log_not_found off;
 {% if nginx_rewrite_static_content %}
-    try_files $uri @rewrite;
+    {{ vhost_try_files_rewrite_conf | indent(4, false) }}
 {% endif %}
   }
 {% endif %}
