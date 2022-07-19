@@ -357,8 +357,7 @@
       - python3-passlib
     state: present
     update_cache: true
-  when: require_http_auth == true
-    and ansible_os_family == 'Debian'
+  when: ansible_os_family == 'Debian'
 
 - name: Install dependency for htpasswd operations (EL 7)
   yum:
