@@ -354,7 +354,6 @@
 - name: Install dependency for htpasswd operations (Debian)
   apt:
     name:
-      - python-passlib
       - python3-passlib
     state: present
     update_cache: true
