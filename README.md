@@ -185,6 +185,7 @@ nginx_allowed_ips:
   - 1.2.3.4
   - 4.3.2.0/27
 ```
+
 #### nginx_allowed_ips
 - Empty list by default. Only used in conjunction with [nginx_ip_restricted_locations](#nginx_ip_restricted_locations)
 
@@ -240,6 +241,7 @@ nginx_location_extras:
   http_auth_username: staging123
   http_auth_password: 'correct horse battery staple'
   ```
+
 #### http_auth_username
 - Empty string `''` by default (i.e. authentication not required)
 - See [require_http_auth](#require_http_auth)
