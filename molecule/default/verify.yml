@@ -3,8 +3,8 @@
   hosts: all
   become: no
   tasks:
-    - name: Test our virtual host by name
-      command: curl -sSL http://test:test@{{ nginx_server_name }}/ --resolve {{ nginx_server_name }}:80:127.0.0.1
+    - name: Test our virtual host by name, providing basic auth creds
+      command: curl --fail -sSL http://test:test@{{ nginx_server_name }}/ --resolve {{ nginx_server_name }}:80:127.0.0.1
       register: curl_result
 
     - name: Show results to a human
@@ -15,6 +15,23 @@
       assert:
         that:
           - '"It works!" in curl_result.stdout'
+
+    - name: Test that using the OPTIONS header is able to bypass basic http auth
+      command: curl --fail -sSL -XOPTIONS http://{{ nginx_server_name }}/ --resolve {{ nginx_server_name }}:80:127.0.0.1
+
+    - name: Test our virtual host by name, without basic auth creds - this call should fail
+      command: curl --fail -sSL http://test:test@{{ nginx_server_name }}/ --resolve {{ nginx_server_name }}:80:127.0.0.1
+      register: curl_unauth_result
+      ignore_errors: true
+
+    - name: Debug curl_unauth_result
+      debug:
+        var: curl_unauth_result
+
+    - assert:
+        that:
+          - curl_unauth_result.failed
+
 
 - name: Verify role part 2 - change PHP version on the vhost to make sure things don't blow up.
   hosts: all
