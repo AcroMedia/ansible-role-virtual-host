@@ -3,24 +3,34 @@
   hosts: all
   become: no
   tasks:
-    - name: Test our virtual host by name, providing basic auth creds
-      command: curl --fail -sSL http://test:test@{{ nginx_server_name }}/ --resolve {{ nginx_server_name }}:80:127.0.0.1
+    - name: Test that providing auth creds to our vhost gives us content.
+      command: curl --fail -sSL http://test:test@{{ nginx_server_name }}/molecule-curl-test.php --resolve {{ nginx_server_name }}:80:127.0.0.1
       register: curl_result
 
     - name: Show results to a human
       debug:
         var: curl_result
 
-    - name: Make sure request looks how it should
+    - name: Assert that curl_result contains the expected content
       assert:
         that:
           - '"It works!" in curl_result.stdout'
 
-    - name: Test that using the OPTIONS header is able to bypass basic http auth
-      command: curl --fail -sSL -XOPTIONS http://{{ nginx_server_name }}/ --resolve {{ nginx_server_name }}:80:127.0.0.1
+    - name: Test that using the OPTIONS header bypasses basic http auth.
+      command: curl --fail -sSL -XOPTIONS http://{{ nginx_server_name }}/molecule-curl-test.php --resolve {{ nginx_server_name }}:80:127.0.0.1
+      register: curl_options_result
 
-    - name: Test our virtual host by name, without basic auth creds - this call should fail
-      command: curl --fail -sSL http://test:test@{{ nginx_server_name }}/ --resolve {{ nginx_server_name }}:80:127.0.0.1
+    - name: Debug curl_options_result
+      debug:
+        var: curl_options_result
+
+    - name: Make curl_options_result assertions
+      assert:
+        that:
+          - curl_options_result.stdout == ''
+
+    - name: Test that skipping creds and OPTIONS denies access to content.
+      command: curl --fail -sSLI http://{{ nginx_server_name }}/molecule-curl-test.php --resolve {{ nginx_server_name }}:80:127.0.0.1
       register: curl_unauth_result
       ignore_errors: true
 
@@ -28,9 +38,11 @@
       debug:
         var: curl_unauth_result
 
-    - assert:
+    - name: Make curl_unauth_result assertions
+      assert:
         that:
           - curl_unauth_result.failed
+          - '"401 Unauthorized" in curl_unauth_result.stderr'
 
 
 - name: Verify role part 2 - change PHP version on the vhost to make sure things don't blow up.

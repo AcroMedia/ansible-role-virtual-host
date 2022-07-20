@@ -6,3 +6,20 @@
 
   roles:
     - role: ansible-role-virtual-host
+
+  tasks:
+    - name: Create a PHP file for molecule testing
+      copy:
+        dest: /home/{{ linux_owner }}/www/{{ project }}/{{ web_root_dir_name }}/molecule-curl-test.php
+        force: true
+        backup: false
+        content: |
+          <?php
+          //  When your web app responds to preflight headers ('OPTIONS') for CORS, it should also not produce any content.
+          if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+            header('Allow', 'GET, POST');
+          } else {
+            echo "It works!\n";
+          }
+      tags:
+        - copy
