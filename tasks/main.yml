@@ -228,7 +228,17 @@
     var: letsencrypt_result
     verbosity: 1
 
-- name: Upload arbitrary customizations from the playbook through the role to the remote host
+- name: Configure arbitrary NGINX "http" context customizations
+  template:
+    src: "{{ role_path }}/templates/etc/nginx/conf.d/ACCOUNT-PROJECT.conf.j2"
+    dest: "{{ vhost_path_to_nginx_conf_d_inline_custom }}"
+    owner: root
+    group: root
+    mode: 0644
+    backup: true
+  notify: arvh safe reload nginx
+
+- name: Upload arbitrary NGINX "server" context customizations from the playbook through the role to the remote host
   template:
     src: "{{ nginx_include_custom }}"
     dest: "{{ nginx_include_custom_dest }}"

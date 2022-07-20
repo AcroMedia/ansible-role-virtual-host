@@ -60,8 +60,15 @@ aaw_default_fqdn: "{{ project }}.{{ linux_owner }}.{{ inventory_hostname }}"
 require_http_auth: false
 http_auth_username: ''
 http_auth_password: ''
-http_auth_message: 'Protected area'
+http_auth_realm: 'Protected area'
+http_auth_message: '{{ http_auth_realm }}'   #  Stop using http_auth_message. Use http_auth_realm instead.
 path_to_htpasswd_file: "/etc/nginx/includes/deny-anonymous.{{ linux_owner }}-{{ project }}.htpasswd"
+
+# Specify a path to hold 'http' level settings (as opposed to `server` or `location` level)
+vhost_path_to_nginx_conf_d_inline_custom: "/etc/nginx/conf.d/{{ linux_owner }}-{{ project }}.conf"
+
+# Specify the content for `vhost_path_to_nginx_conf_d_config`
+vhost_nginx_conf_d_inline_custom: ''
 
 # Let certain locations only be accessed by specific IPs or networks
 nginx_ip_restricted_locations: []
