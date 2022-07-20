@@ -9,7 +9,12 @@
     and http_auth_username != ''
     and http_auth_password != ''
 %}
-  auth_basic "{{ http_auth_message }}";
+{% if http_auth_realm.startswith('$')  %}{# it's a map var; don't quote it  #}
+  auth_basic {{ http_auth_realm }};
+{% else %}
+  auth_basic "{{ http_auth_realm }}";
+{% endif %}
+
   auth_basic_user_file {{ path_to_htpasswd_file }};
 
 {% endif %}
