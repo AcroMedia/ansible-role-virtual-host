@@ -231,7 +231,20 @@ nginx_location_extras:
 #### **nginx_inline_custom**
 - Whatever you specify is placed as-is, inside the virtual host's main `server` block, before any location directives.
 
+#### **vhost_nginx_conf_d_inline_custom**
+- Whatever you specify will be written, as-is, to `/etc/nginx/conf.d/{{ linux_owner }}-{{ project }}.conf` (which is automatically included within the `http` block of `/etc/nginx/nginx.conf`).
+- This context is for defining `map` variables, or any other configuration that needs to be specified at the `http` level. You could even create supplimentary virtual hosts with this variable.
+- If writing more than one line of config, don't forget to use a yaml pipe (`|`) to preserve your formatting. Example:
+  ```yaml
+  vhost_nginx_conf_d_inline_custom: |
+    map $request_method $auth_basic_value {
+      default "Restricted";
+      "OPTIONS" "off";
+    }
+  ```
+
 #### require_http_auth
+- A switch to turn on HTTP Basic Authentication
 - Boolean. False by default.
 - Useful if you want to keep google's prying eyes out of your staging environment.
 - When `require_http_auth` is `true`, and `http_auth_username` and `http_auth_password` are specified, the server will require basic http auth for entire vhost (i.e. outside of all `location` directives), prompting end users for the credentials defined by `http_auth_username` and `http_auth_password`.
@@ -249,6 +262,12 @@ nginx_location_extras:
 #### http_auth_password
 - Empty string `''` by default (i.e. authentication not required)
 - See [require_http_auth](#require_http_auth)
+
+#### http_auth_realm
+- Defaults to `"Protected area"`
+- Can be a plain string, or an nginx variable name, to support the use of `map` (see [issue #32](https://github.com/AcroMedia/ansible-role-virtual-host/issues/32))
+- Not used unless `require_http_auth` is `true` (see [require_http_auth](#require_http_auth))
+
 
 #### **max_execution_time_seconds**
 - Defaults to 300. This meta variable controls 3 individual PHP and NGINX config values. See defaults/main.yml for the individual variable names if you need more fine grained control.
