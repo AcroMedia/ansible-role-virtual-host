@@ -319,7 +319,7 @@ The variables to tune are:
 - (string): Defaults to "binary_remote_addr", which is only good for sites directly serving traffic. If your server is behind a proxy or load balancer, change this to `http_x_forwarded_for` instead, and make sure the X-Forwarded-For header is being sent to your server. If the header is not present, rate limiting will not happen.
 
 
-## What happened to ...
+## What ever happened to *`insert old variable name here`*
 
 The old combination of `nginx_canonical_name` + `nginx_aliases` + `ssl` + `deploy_env`, as well as a very long list of kludge variables, have been replaced by `nginx_listeners` and `letsencrypt_certificates` definitions as of the role's 2.x version.
 
