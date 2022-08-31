@@ -24,7 +24,11 @@ server {
 {% if listener.inline_custom is defined %}
   {{ listener.inline_custom | indent(2, false) }}
 {% endif %}{# /inline_custom #}
-{% if listener.redirect_to is defined %}
+{% if listener.redirect_url is defined %}
+  location / {
+    return {{ (listener.redirect_permanent|default(false)) | ternary('301', '302') }} {{ listener.redirect_url }};
+  }
+{% elif listener.redirect_to is defined %}
   location / {
     return {{ (listener.redirect_permanent|default(false)) | ternary('301', '302') }} {{ listener.redirect_to }}$request_uri;
   }
