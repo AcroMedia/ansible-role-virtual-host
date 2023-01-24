@@ -26,4 +26,4 @@
 
 - name: contrib/acromedia.php
   src: https://github.com/AcroMedia/ansible-role-php
-  version: origin/master
+  version: origin/fix-molecule-codename-error-in-molecule

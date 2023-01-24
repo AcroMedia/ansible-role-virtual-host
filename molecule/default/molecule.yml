@@ -18,9 +18,12 @@ provisioner:
   playbooks:
     converge: ${MOLECULE_PLAYBOOK:-converge.yml}
   env:
-      ANSIBLE_VERBOSITY: ${MOLECULE_ANSIBLE_VERBOSITY:-0}
+    ANSIBLE_VERBOSITY: ${MOLECULE_ANSIBLE_VERBOSITY:-0}
+    PY_COLORS: '1'
+    ANSIBLE_FORCE_COLOR: '1'
 verifier:
   name: ansible
-env:
-  PY_COLORS: '1'
-  ANSIBLE_FORCE_COLOR: '1'
+  env:
+    ANSIBLE_VERBOSITY: ${MOLECULE_ANSIBLE_VERBOSITY:-0}
+    PY_COLORS: '1'
+    ANSIBLE_FORCE_COLOR: '1'
