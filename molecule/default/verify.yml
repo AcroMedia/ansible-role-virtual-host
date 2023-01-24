@@ -42,7 +42,7 @@
       assert:
         that:
           - curl_unauth_result.failed
-          - '"401 Unauthorized" in curl_unauth_result.stderr'
+          - '"401 Unauthorized" in curl_unauth_result.stdout or "401 Unauthorized" in curl_unauth_result.stderr'
 
 
 - name: Verify role part 2 - change PHP version on the vhost to make sure things don't blow up.
