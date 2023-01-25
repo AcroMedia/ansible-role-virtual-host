@@ -5,7 +5,7 @@
     image from robertdebock does not come with rsync installed.
   hosts: localhost
   connection: local
-  become: no
+  become: yes
   gather_facts: yes
   tasks:
 

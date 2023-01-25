@@ -1,5 +1,7 @@
 # Ansible role: Virtual Host
 
+![.github/workflows/molecule.yml](https://github.com/AcroMedia/ansible-role-virtual-host/workflows/.github/workflows/molecule.yml/badge.svg)
+
 **TL;DR**: See the [Example playbook set](#example-playbook-set) at the bottom of the page.
 
 Manage a comprehensive virtual host configuration (NGINX, PHP, mariadb db + user, TLS certificates) over a site's life cycle from staging to production to decommission.

@@ -330,14 +330,14 @@
 
   # Generic PHP website
   location / {
-    try_files $uri $uri/ =404;
+    {{ vhost_try_files_rewrite_conf | indent(4, false) }}
   }
 
 {% else %}{# implied: web_application == 'static' #}
 
   # Static website
   location / {
-    try_files $uri $uri/ =404;
+    {{ vhost_try_files_rewrite_conf | indent(4, false) }}
   }
 
 {% endif %}
