@@ -124,6 +124,16 @@
     return 403;
   }
 
+{% if vhost_valid_referers_pattern != '' %}
+  # Protect stuff in sites/defualt/files from hotlinking (static content is usually matched by the by a different rule, so this is generally only applies to pdfs etc)
+  location ~ {{ nginx_drupal_uploads_dir_pattern }} {
+    valid_referers {{ vhost_valid_referers_pattern }};
+    if ($invalid_referer) {
+        return 403;
+    }
+  }
+{% endif %}
+
   # Don't serve anything from private diretories. BTW these should really be outside of your web root anyway.
   location ~ {{ nginx_drupal_private_dir_pattern }} {
     return 403;
@@ -187,6 +197,12 @@
   }
   # Image cache doesn't work without this.
   location ~ {{ image_cache_location }} {
+{% if vhost_valid_referers_pattern != '' %}
+    valid_referers {{ vhost_valid_referers_pattern }};
+    if ($invalid_referer) {
+        return 403;
+    }
+{% endif %}
     {{ vhost_try_files_rewrite_conf | indent(4, false) }}
   }
 
@@ -248,6 +264,12 @@
 
   # Drupal 7: Allow drupal to act as a broker for files served from the private dir
   location ~* /system/files/ {
+{% if vhost_valid_referers_pattern != '' %}
+    valid_referers {{ vhost_valid_referers_pattern }};
+    if ($invalid_referer) {
+        return 403;
+    }
+{% endif %}
     {{ vhost_try_files_rewrite_conf | indent(4, false) }}
   }
 
@@ -270,6 +292,12 @@
 
   # Drupal 8: Allow drupal to act as a broker for files served from the private dir
   location ~* /system/files/ {
+{% if vhost_valid_referers_pattern != '' %}
+    valid_referers {{ vhost_valid_referers_pattern }};
+    if ($invalid_referer) {
+        return 403;
+    }
+{% endif %}
     {{ vhost_try_files_rewrite_conf | indent(4, false) }}
   }
 
@@ -344,9 +372,16 @@
 
 {% if web_application != 'proxy_pass' %}
   # Dont spam log files, and cache static content forever.
+  # Be aware that this rule matches a lot of stuff in sites/default/files.
   location ~* \.({{ nginx_static_resource_filename_extensions | join('|') }})$ {
     expires max;
     log_not_found off;
+{% if vhost_valid_referers_pattern != '' %}
+    valid_referers {{ vhost_valid_referers_pattern }};
+    if ($invalid_referer) {
+      return 403;
+    }
+{% endif %}
 {% if nginx_rewrite_static_content %}
     {{ vhost_try_files_rewrite_conf | indent(4, false) }}
 {% endif %}
