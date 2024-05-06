@@ -44,6 +44,23 @@
           - curl_unauth_result.failed
           - '"401 Unauthorized" in curl_unauth_result.stdout or "401 Unauthorized" in curl_unauth_result.stderr'
 
+    - name: Output running nginx config
+      command: /usr/sbin/nginx -T
+      register: nginx_config
+
+    - name: Debug nginx_config
+      debug:
+        var: nginx_config
+
+    - name: Run a new test to examine headers
+      command: curl --fail -sSLI http://test:test@{{ nginx_server_name }}/molecule-curl-test.php --resolve {{ nginx_server_name }}:80:127.0.0.1
+      register: curl_headers_result
+
+    - name: Make sure our x-foo header was present in the response.
+      assert:
+        that:
+          - '"x-molecule-foo: headers-are-fun" in curl_headers_result.stdout'
+
 
 - name: Verify role part 2 - change PHP version on the vhost to make sure things don't blow up.
   hosts: all
