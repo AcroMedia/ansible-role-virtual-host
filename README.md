@@ -112,6 +112,10 @@ nginx_listeners:
   - port: 443
     ssl: true
     http2: true
+    add_headers:
+      - name: Strict-Transport-Security
+        value: "max-age=31536000; includeSubDomains"
+        always: true
     server_name: www.example.com
     aliases:
       - example.com
