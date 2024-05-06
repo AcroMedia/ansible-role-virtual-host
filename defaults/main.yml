@@ -255,3 +255,14 @@ nginx_static_resource_filename_extensions: "{{ nginx_static_resource_filename_ex
 # templates/etc/php/VERSION/fpm/pool.d/ACCOUNT-PROJECT.conf.j2
 # -> php_value[newrelic.appname]
 php_fpm_newrelic_appname: "{{ linux_owner }}/{{ project }}"
+
+# -----------------------------------------------
+# Hotlink protection - Prevent other domains from serving content (images) from your website.
+# See http://nginx.org/en/docs/http/ngx_http_referer_module.html#valid_referers
+# -----------------------------------------------
+# Default behaviour: Protect from hotlinking by other domains. Does not prevent requests from cli tools or anything that omits a referer header.
+# To deny *all* hotlinking (i.e. from agents that don't pass a referer), set this to just "server_names" instead.
+# To turn off hotlink protection, set this to an empty string.
+# If you serve content from other domains, you'll need to add them to this pattern.
+# -----------------------------------------------
+vhost_valid_referers_pattern: 'none blocked server_names'
