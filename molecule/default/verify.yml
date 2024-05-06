@@ -44,6 +44,11 @@
           - curl_unauth_result.failed
           - '"401 Unauthorized" in curl_unauth_result.stdout or "401 Unauthorized" in curl_unauth_result.stderr'
 
+    - name: Make sure our x-foo header was present in the response.
+      assert:
+        that:
+          - '"x-molecule-foo: headers-are-fun" in curl_result.stdout'
+
 
 - name: Verify role part 2 - change PHP version on the vhost to make sure things don't blow up.
   hosts: all

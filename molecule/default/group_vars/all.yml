@@ -29,6 +29,10 @@ nginx_server_name: www.bigcorp.com
 nginx_listeners:
   - server_name: "{{ nginx_server_name }}"
     port: 80
+    add_headers:
+      - name: 'x-molecule-foo'
+        value: 'headers-are-fun'
+        always: true
 php_version: "{{ php_default_version }}"
 web_root_dir_name: wwwroot
 web_application: php
