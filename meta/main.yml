@@ -15,7 +15,7 @@ galaxy_info:
       - noble  # 24.04
       - jammy   # 22.04
       - focal   # 20.04
-      - bionic   # 18.04
+      #- bionic   # 18.04 ... No php 8.1 support.
   - name: EL   # Or CentOS, or Rocky
     versions:
       - 8
