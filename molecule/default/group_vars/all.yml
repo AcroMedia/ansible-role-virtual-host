@@ -46,3 +46,4 @@ require_http_auth: true
 http_auth_username: 'test'
 http_auth_password: 'test'
 http_auth_realm: '$auth_basic_realm_value'
+arvh_php_fpm_slowlog_enabled: true
