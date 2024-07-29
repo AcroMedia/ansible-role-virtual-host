@@ -3,3 +3,4 @@ path_to_service_binary: /usr/sbin/service
 nginx_process_owner: www-data
 nginx_vhost_conf_dir_available: /etc/nginx/sites-available
 nginx_vhost_conf_dir_enabled: /etc/nginx/sites-enabled
+arvh_php_fpm_slowlog_group: adm
