@@ -3,3 +3,4 @@ path_to_service_binary: /sbin/service
 nginx_process_owner: nginx
 nginx_vhost_conf_dir_available: /etc/nginx/conf.d
 nginx_vhost_conf_dir_enabled: /tmp   # does not matter. If config is placed in conf.d, its already enabled.
+arvh_php_fpm_slowlog_group: wheel

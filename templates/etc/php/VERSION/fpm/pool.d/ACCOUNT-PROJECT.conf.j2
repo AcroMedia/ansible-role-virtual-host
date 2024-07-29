@@ -47,3 +47,7 @@ php_admin_value[sendmail_path] = '{{ php_sendmail_path }}'
 {% endif %}
 php_admin_value[max_input_vars] = {{ php_max_input_vars }}
 php_admin_value[short_open_tag] = {{ php_short_open_tag }}
+{% if arvh_php_fpm_slowlog_enabled %}
+php_admin_value[request_slowlog_timeout] = {{ arvh_php_fpm_slowlog_timeout }}
+php_admin_value[slowlog] = {{ arvh_php_fpm_slowlog_path }}
+{% endif %}

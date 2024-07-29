@@ -255,3 +255,11 @@ nginx_static_resource_filename_extensions: "{{ nginx_static_resource_filename_ex
 # templates/etc/php/VERSION/fpm/pool.d/ACCOUNT-PROJECT.conf.j2
 # -> php_value[newrelic.appname]
 php_fpm_newrelic_appname: "{{ linux_owner }}/{{ project }}"
+
+# -----------------------------------------------
+# PHP-FPM Slowlog
+# See also: <this-role>/vars/{Debian|RedHat}.yml
+# -----------------------------------------------
+arvh_php_fpm_slowlog_enabled: false
+arvh_php_fpm_slowlog_timeout: '15s'
+arvh_php_fpm_slowlog_path: /var/log/vhosts/{{ linux_owner }}/{{ project }}/php-fpm-slow.log

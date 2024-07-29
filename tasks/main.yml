@@ -321,6 +321,19 @@
   notify:
     - arvh restart php-fpm
 
+# @TODO: Add logrotate config for this file.
+- name: Precipitate the PHP FPM slowlog file
+  when: arvh_php_fpm_slowlog_enabled
+  copy:
+    dest: "{{ arvh_php_fpm_slowlog_path }}"
+    content: ''
+    force: false
+    mode: '0640'
+    owner: "{{ x__php_service_user }}"
+    group: "{{ arvh_php_fpm_slowlog_group }}"
+  notify:
+    - arvh restart php-fpm
+
 - name: Update PHP {{ php_version }} FPM pool for {{ linux_owner }}/{{ project }}
   template:
     src: "{{ role_path }}/templates/etc/php/VERSION/fpm/pool.d/ACCOUNT-PROJECT.conf.j2"
