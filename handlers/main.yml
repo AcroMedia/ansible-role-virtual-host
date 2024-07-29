@@ -19,7 +19,7 @@
   listen: "arvh restart php-fpm"
   shell: >
     set -eu -o pipefail;
-    for SRV in $(dpkg --list |grep php|grep fpm |awk '{print $2}'); do
+    for SRV in $(dpkg --list | grep php | grep fpm | grep '^ii' | awk '{print $2}'); do
       (set -x && systemctl restart $SRV);
     done
   args:
