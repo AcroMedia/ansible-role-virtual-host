@@ -15,9 +15,8 @@ This role is designed specifically for us in high performance / high security Ac
 - [acromedia.postfix](https://github.com/AcroMedia/ansible-role-postfix)
 - [acromedia.nginx](https://github.com/AcroMedia/ansible-role-nginx)
 - [acromedia.letsencrypt](https://github.com/AcroMedia/ansible-role-letsencrypt)
-- [acromedia.php](https://github.com/AcroMedia/ansible-role-php)
-- [acromedia.mariadb](https://github.com/AcroMedia/ansible-role-mariadb)
-- [acromedia.drupal-cron](https://github.com/AcroMedia/ansible-role-drupal-cron)
+- [acromedia.php](https://github.com/AcroMedia/ansible-role-php) (or `vars.php_version: none`)
+- [acromedia.mariadb](https://github.com/AcroMedia/ansible-role-mariadb)  (or `vars.skip_mysql: true`)
 
 
 ## Requirements
@@ -386,7 +385,7 @@ nginx_listeners:
     ssl_key_path: /etc/letsencrypt/live/{{ prod_server_primary_name }}/privkey.pem
     ssl_intermediates_path: /etc/letsencrypt/live/{{ prod_server_primary_name }}/chain.pem
 
-drupal_cron_url: "https://{{ prod_server_primary_name }}/cron/abcdefgh12345678"
+drupal_cron_url: "https://{{ prod_server_primary_name }}/cron/abcdefgh12345678"  # if using https://github.com/AcroMedia/ansible-role-drupal-cron
 ```
 
 inventories/staging/hosts:
@@ -438,7 +437,7 @@ playbooks/main.yml:
     - role: acromedia.php
     - role: acromedia.letsencrypt
     - role: acromedia.virtual-host
-    - role: acromedia.drupal-cron
+    - role: acromedia.drupal-cron  # optional
 
 ```
 
