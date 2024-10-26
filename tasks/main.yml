@@ -29,6 +29,7 @@
           or web_application == 'wordpress'
           or web_application == 'mediawiki'
           or web_application == 'moodle'
+          or web_application == 'laravel'
     fail_msg: "ERROR: Value for web_application is not supported: {{ web_application }}"
 
 - name: Make sure linux_owner is not the same as php_service_user

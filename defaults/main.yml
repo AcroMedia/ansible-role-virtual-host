@@ -26,6 +26,7 @@ vhost_default_location_try_files_defaults:
   drupal8: "{{ vhost_try_files_rewrite_file_only }}"
   mediawiki: "{{ vhost_try_files_rewrite_file_or_dir }}"
   moodle: "{{ vhost_try_files_rewrite_file_or_dir }}"
+  laravel: "{{ vhost_try_files_rewrite_file_or_dir }}"
   wordpress: "{{ vhost_try_files_rewrite_file_or_dir }}"
   php: "{{ vhost_try_files_rewrite_none }}"
   proxy_pass: "{{ vhost_try_files_rewrite_none }}"

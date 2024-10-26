@@ -326,6 +326,35 @@
     {{ nginx_proxy_pass_blob }}
   }
 
+{% elif web_application == 'laravel' %}
+
+  # Dont allow requests for PHP files in parent directories
+  location ~ \..*/.*\.php$ {
+    return 403;
+  }
+
+  # Dont serve any filename ending with a tilde ... these are almost always backup files
+  location ~* /*~$ {
+    return 403;
+  }
+
+  # Block access to "hidden" files and directories whose names begin with a
+  # period. This includes directories used by version control systems such
+  # as Subversion or Git to store control files.
+  location ~ (^|/)\. {
+    return 403;
+  }
+
+  location / {
+    # try_files $uri $uri/ @rewrite;
+    {{ vhost_try_files_rewrite_conf | indent(4, false) }}
+  }
+
+  location @rewrite {
+    # rewrite ^ /index.php$is_args$args;
+    rewrite ^ {{ rewrite_target }};
+  }
+
 {% elif web_application == 'php' %}
 
   # Generic PHP website
