@@ -18,7 +18,7 @@ server {
   ssl_protocols {{ listener.ssl_protocols | default(ssl_protocols) }};
   ssl_ciphers '{{ listener.ssl_ciphers | default(ssl_ciphers) }}';
   ssl_prefer_server_ciphers on;
-{% if (listener.ssl_intermediates_path|default('')|length) %}
+{% if (listener.ssl_intermediates_path|default('')|length) and (listener.ssl_ocsp_must_staple | default(false)) %}
   ssl_stapling on;
   ssl_stapling_verify on;
   ssl_trusted_certificate {{ listener.ssl_intermediates_path }};
