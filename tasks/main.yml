@@ -382,7 +382,8 @@
     state: present
     update_cache: true
   when: ansible_os_family == 'Debian'
-    and require_http_auth
+    and http_auth_username != ''
+    and http_auth_password != ''
 
 - name: Install dependency for htpasswd operations (EL 7)
   yum:
@@ -392,7 +393,8 @@
     update_cache: true
   when: ansible_os_family == 'RedHat'
     and ansible_distribution_major_version == '7'
-    and require_http_auth
+    and http_auth_username != ''
+    and http_auth_password != ''
 
 - name: Install dependency for htpasswd operations (EL 8)
   yum:
@@ -402,7 +404,8 @@
     update_cache: true
   when: ansible_os_family == 'RedHat'
     and ansible_distribution_major_version == '8'
-    and require_http_auth
+    and http_auth_username != ''
+    and http_auth_password != ''
 
 - name: Create htpasswd file for {{ linux_owner }}-{{ project }}
   htpasswd:
@@ -414,7 +417,6 @@
     mode: 0640
   when: http_auth_username != ''
     and http_auth_password != ''
-    and require_http_auth
   ignore_errors: "{{ ansible_check_mode }}"   # This task doesn't always survive check mode.
   notify:
     - arvh safe reload nginx
