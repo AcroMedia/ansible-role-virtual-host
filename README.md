@@ -139,6 +139,13 @@ nginx_listeners:
   - `ssl_ocsp_must_staple`, boolean, defaults to `false`. If set to `true`, and if `ssl_intermediates_path` is set, the role will add the `ssl_stapling` and `ssl_stapling_verify` directives to the nginx config. This is only needed if your TLS certificate requires OCSP stapling. If you don't know what this means, you probably don't need it.
   - `ssl_intermediates_path`, absolute path on the server to *just* the TLS intermediate (i.e. the full chain minus the certificate). This is used for OCSP stapling, which is no longer used for LetsEncrypt certificates (the use CRL now). Defaults to empty. Ignored unless both `ssl` == `true` and `ssl_ocsp_must_staple` == `true`. If a path is provided, and both of those variables are `true`, OCSP stapling will be enabled. If the value is empty or omitted, the role assumes there is no intermediate cert to use, and will leave the OCSP stapling part out of the NGINX config.
 
+#### HSTS
+
+- `hsts_enabled`, boolean, defaults to `false`. When enabled, HTTPS listeners send a `Strict-Transport-Security` header with `always`. HTTP listeners are unaffected. It can also be overridden per listener.
+- `hsts_max_age`, integer, defaults to `31536000` (one year).
+- `hsts_include_subdomains`, boolean, defaults to `false`. Enable only when every subdomain is permanently available over HTTPS.
+- `hsts_preload`, boolean, defaults to `false`. Enable only after intentionally meeting and accepting browser preload-list requirements.
+
 
 ### Optional Role Variables
 

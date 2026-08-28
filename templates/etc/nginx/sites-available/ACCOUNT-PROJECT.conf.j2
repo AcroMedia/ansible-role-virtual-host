@@ -7,6 +7,9 @@ server {
 {% for header in listener.add_headers|default([]) %}
   add_header {{ header.name }} "{{ header.value }}"{{ header.always | default(false) | ternary(' always', '') }};
 {% endfor %}
+{% if (listener.ssl | default(false)) and (listener.hsts_enabled | default(hsts_enabled)) %}
+  add_header Strict-Transport-Security "max-age={{ listener.hsts_max_age | default(hsts_max_age) }}{% if listener.hsts_include_subdomains | default(hsts_include_subdomains) %}; includeSubDomains{% endif %}{% if listener.hsts_preload | default(hsts_preload) %}; preload{% endif %}" always;
+{% endif %}
   server_name {{ listener.server_name }} {{ (listener.aliases | default([])) | join(' ') }};
   access_log {{ nginx_access_log_conf }};
   error_log /var/log/vhosts/{{ linux_owner }}/{{ project }}/nginx-error.log;
