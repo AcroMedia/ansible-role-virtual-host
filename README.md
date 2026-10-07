@@ -359,7 +359,7 @@ inventories/production/group_vars/all.yml:
 ---
 linux_owner: bigcorp
 project: bigcorp
-php_version: 8.1
+php_version: 8.5
 web_root_dir_name: web
 web_application: drupal8
 prod_server_primary_name: www.bigcorp.net
@@ -408,7 +408,7 @@ inventories/staging/group_vars/all.yml:
 ---
 linux_owner: bigcorp
 project: bigcorp
-php_version: 8.1
+php_version: 8.5
 web_root_dir_name: web
 web_application: drupal8
 staging_server_dns_name: stg.bigcorp.net
