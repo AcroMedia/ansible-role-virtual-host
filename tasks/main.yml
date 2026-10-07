@@ -283,6 +283,16 @@
     var: nginx_location_extras
     verbosity: 1
 
+- name: Detect the installed nginx version, which decides how http2 is enabled in the vhost template
+  command: /usr/sbin/nginx -v
+  register: x__nginx_version_result
+  changed_when: false
+  check_mode: false
+
+- name: Record the nginx version
+  set_fact:
+    x__nginx_version: "{{ x__nginx_version_result.stderr | regex_search('nginx/([0-9.]+)', '\\1') | first }}"
+
 - name: Update nginx virtual host configuration for {{ linux_owner }}/{{ project }}
   template:
     src: "{{ role_path }}/templates/etc/nginx/sites-available/ACCOUNT-PROJECT.conf.j2"

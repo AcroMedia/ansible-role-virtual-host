@@ -128,7 +128,7 @@ nginx_listeners:
 ```
   - `port`, integer, defaults to `80`
   - `ssl`, boolean, defaults to `false`.
-  - `http2`, boolean, defaults to `false`, and is ignored unless `ssl` is `true`.
+  - `http2`, boolean, defaults to `true`, and is ignored unless `ssl` is `true`. Rendered as `http2 on;` on nginx 1.25.1 or newer (where `listen ... http2` is deprecated and warns on every `nginx -t`) and as the `listen ... http2` parameter on older nginx; the role reads the installed version with `nginx -v`.
   - `server_name` string, always required.
   - `aliases`, optional list of strings. Exists purely for playbook readability. In the nginx template, the list of alias values are simply appended to server_name.
   - `redirect_url`, string, defaults to empty. If specified, the nginx listener will push all traffic to the specified URL. Include the protocol, target server name, and either the exact URI path (`/example`) on the domain, or `$request_uri` (with no slash) to reuse the requested path.

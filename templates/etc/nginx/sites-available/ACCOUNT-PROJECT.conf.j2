@@ -3,7 +3,10 @@
 {% for listener in nginx_listeners %}
 server {
   listen {{ listener.port | default('80') }}
-{%- if listener.ssl | default(false) %} ssl {%- if listener.http2 | default(true) %} http2 {%- endif -%}{%- endif -%};
+{%- if listener.ssl | default(false) %} ssl {%- if (listener.http2 | default(true)) and (x__nginx_version is version('1.25.1', '<')) %} http2 {%- endif -%}{%- endif -%};
+{% if (listener.ssl | default(false)) and (listener.http2 | default(true)) and (x__nginx_version is version('1.25.1', '>=')) %}
+  http2 on;
+{% endif %}
 {% for header in listener.add_headers|default([]) %}
   add_header {{ header.name }} "{{ header.value }}"{{ header.always | default(false) | ternary(' always', '') }};
 {% endfor %}
