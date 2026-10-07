@@ -66,6 +66,6 @@
   hosts: all
   become: no
   vars:
-    php_version: 8.0
+    php_version: "{{ _molecule_verify_alternate_version }}"
   roles:
     - role: ansible-role-virtual-host

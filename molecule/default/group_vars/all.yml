@@ -15,9 +15,12 @@ nginx_robots_policy: production
 # ---------------------------------
 php_default_version: 8.5
 php_use_legacy_module_lists: false
-php_versions:
+php_versions:  # make sure to specify at least 2 items; the verify stage makes sure version switching works.
   - 8.4
   - 8.5
+# verify.yml re-applies the role with this version to prove a vhost can switch PHP versions;
+# it must be one the php role installed, so it is taken from php_versions rather than written out.
+_molecule_verify_alternate_version: "{{ php_versions | map('string') | reject('equalto', php_default_version | string) | first }}"
 
 # ---------------------------------
 # acromedia.virtual-host
