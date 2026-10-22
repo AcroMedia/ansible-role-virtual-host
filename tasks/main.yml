@@ -203,6 +203,7 @@
   args:
     creates: /home/{{ linux_owner }}/.acro-add-website/{{ project }}
   register: aaw_result
+  no_log: true
 
 - name: debug aaw_result
   debug:
